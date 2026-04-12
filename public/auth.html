@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masuk / Daftar - RGS STORE</title>
+    <link href="../css/style.css" rel="stylesheet"> <!-- Fallback if using compiled tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: { 50: '#f0fdf4', 100: '#dcfce7', 500: '#22c55e', 600: '#16a34a', 700: '#15803d' }
+            },
+            fontFamily: { sans: ['Inter', 'sans-serif'] }
+          }
+        }
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased min-h-screen flex items-center justify-center">
+
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md animate-fade-in relative overflow-hidden">
+        <!-- Decoration -->
+        <div class="absolute -top-10 -right-10 w-40 h-40 bg-primary-100 rounded-full mix-blend-multiply filter blur-xl opacity-70"></div>
+        <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-primary-100 rounded-full mix-blend-multiply filter blur-xl opacity-70"></div>
+
+        <div class="relative z-10">
+            <div class="text-center mb-8">
+                <a href="index.html" class="inline-block mb-4">
+                    <h1 class="text-3xl font-extrabold text-primary-600 tracking-tight">RGS <span class="text-gray-800">STORE</span></h1>
+                </a>
+                <p class="text-sm text-gray-500 font-medium tracking-wide">Login untuk melanjutkan</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="flex border-b mb-6">
+                <button id="tab-login" class="flex-1 py-2 font-semibold text-primary-600 border-b-2 border-primary-600 focus:outline-none" onclick="switchTab('login')">Masuk</button>
+                <button id="tab-register" class="flex-1 py-2 font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 focus:outline-none" onclick="switchTab('register')">Daftar</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="form-login" class="space-y-4" onsubmit="handleAuth(event, 'login')">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="login-email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition" placeholder="contoh@email.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="login-password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition" placeholder="••••••••">
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <label class="flex items-center text-gray-600 cursor-pointer">
+                        <input type="checkbox" class="rounded text-primary-500 focus:ring-primary-500 mr-2"> Ingat saya
+                    </label>
+                    <a href="#" class="text-primary-600 hover:underline font-medium">Lupa Password?</a>
+                </div>
+                <button type="submit" class="w-full bg-primary-500 text-white font-bold py-2.5 rounded-lg shadow-md hover:bg-primary-600 focus:ring-4 focus:ring-primary-300 transition mt-4">Masuk</button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="form-register" class="space-y-4 hidden" onsubmit="handleAuth(event, 'register')">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                    <input type="text" id="reg-name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition" placeholder="John Doe">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="reg-email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition" placeholder="contoh@email.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="reg-password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition" placeholder="Minimal 6 karakter">
+                </div>
+                <button type="submit" class="w-full bg-primary-500 text-white font-bold py-2.5 rounded-lg shadow-md hover:bg-primary-600 focus:ring-4 focus:ring-primary-300 transition mt-4">Daftar Akun</button>
+            </form>
+
+            <!-- Dummy Hint -->
+            <div class="mt-6 text-xs text-center text-gray-400 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                <p><strong>Demo Mode:</strong> <br>Login menggunakan sembarang email/password untuk akun User. <br>Gunakan email <code class="bg-gray-200 px-1 rounded text-gray-700">admin@rgs.com</code> untuk akun Admin.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        function switchTab(tab) {
+            const loginForm = document.getElementById('form-login');
+            const registerForm = document.getElementById('form-register');
+            const tabLogin = document.getElementById('tab-login');
+            const tabRegister = document.getElementById('tab-register');
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                tabLogin.className = "flex-1 py-2 font-semibold text-primary-600 border-b-2 border-primary-600 focus:outline-none";
+                tabRegister.className = "flex-1 py-2 font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 focus:outline-none";
+            } else {
+                registerForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+                tabRegister.className = "flex-1 py-2 font-semibold text-primary-600 border-b-2 border-primary-600 focus:outline-none";
+                tabLogin.className = "flex-1 py-2 font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 focus:outline-none";
+            }
+        }
+
+        function handleAuth(e, type) {
+            e.preventDefault();
+            
+            let user = {};
+            
+            if (type === 'login') {
+                const email = document.getElementById('login-email').value;
+                user = {
+                    id: 'u_' + Date.now(),
+                    name: email.split('@')[0],
+                    email: email,
+                    role: email === 'admin@rgs.com' ? 'admin' : 'user'
+                };
+            } else {
+                const name = document.getElementById('reg-name').value;
+                const email = document.getElementById('reg-email').value;
+                user = {
+                    id: 'u_' + Date.now(),
+                    name: name,
+                    email: email,
+                    role: 'user'
+                };
+            }
+
+            // Save to LocalStorage
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            appUtils.showToast('Login berhasil! Mengalihkan...', 'success');
+            
+            setTimeout(() => {
+                if(user.role === 'admin') {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'index.html';
+                }
+            }, 1000);
+        }
+        
+        // Redirect if already logged in
+        if (appUtils.getCurrentUser()) {
+             window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
