@@ -32,14 +32,15 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.db = void 0;
-const node_postgres_1 = require("drizzle-orm/node-postgres");
-const pg_1 = require("pg");
+const mysql2_1 = require("drizzle-orm/mysql2");
+const promise_1 = __importDefault(require("mysql2/promise"));
 const schema = __importStar(require("./schema"));
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
-const pool = new pg_1.Pool({
-    connectionString: process.env.DATABASE_URL,
-});
-exports.db = (0, node_postgres_1.drizzle)(pool, { schema });
+const poolConnection = promise_1.default.createPool(process.env.DATABASE_URL);
+exports.db = (0, mysql2_1.drizzle)(poolConnection, { schema, mode: 'default' });
