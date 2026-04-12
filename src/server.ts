@@ -5,6 +5,7 @@ import authRoutes from './routes/auth.routes';
 import productRoutes from './routes/product.routes';
 import transactionRoutes from './routes/transaction.routes';
 import { errorHandler } from './middleware/error.middleware';
+import db from './config/db';
 
 dotenv.config();
 
@@ -33,3 +34,14 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+async function testDB() {
+  try {
+    await db.query('SELECT 1');
+    console.log('✅ Database Connected');
+  } catch (err) {
+    console.error('❌ Database Error:', err);
+  }
+}
+
+testDB();

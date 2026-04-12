@@ -43,6 +43,7 @@ const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const product_routes_1 = __importDefault(require("./routes/product.routes"));
 const transaction_routes_1 = __importDefault(require("./routes/transaction.routes"));
 const error_middleware_1 = require("./middleware/error.middleware");
+const db_1 = __importDefault(require("./config/db"));
 dotenv.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
@@ -62,3 +63,13 @@ app.use(error_middleware_1.errorHandler);
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+async function testDB() {
+    try {
+        await db_1.default.query('SELECT 1');
+        console.log('✅ Database Connected');
+    }
+    catch (err) {
+        console.error('❌ Database Error:', err);
+    }
+}
+testDB();

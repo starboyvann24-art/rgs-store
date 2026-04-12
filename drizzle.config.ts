@@ -7,7 +7,10 @@ export default defineConfig({
   out: './drizzle',
   dialect: 'mysql',
   dbCredentials: {
-    url: process.env.DATABASE_URL as string,
+    host: 'localhost',
+    user: 'tgevicsg_rgs_user',
+    password: 'GANTI_PASSWORD_DISINI',
+    database: 'tgevicsg_rgs_store',
   },
 });
 

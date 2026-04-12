@@ -47,13 +47,16 @@ const seed = async () => {
         // Hash admin password
         const adminPassword = await bcrypt_1.default.hash('admin123', 10);
         // Insert Admin
-        const [adminUser] = await index_1.db.insert(schema_1.users).values({
+        const email = 'admin@rgsstore.com';
+        const id = crypto.randomUUID();
+        await index_1.db.insert(schema_1.users).values({
+            id,
             name: 'Super Admin',
-            email: 'admin@rgsstore.com',
+            email,
             password: adminPassword,
             role: 'admin',
-        }).returning();
-        console.log(`Admin User Created: ${adminUser.email}`);
+        });
+        console.log(`Admin User Created: ${email}`);
         // Insert Dummy Products
         const dummyProducts = [
             {

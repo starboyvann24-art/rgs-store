@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcrypt';
-import { db } from '../db';
-import { users } from '../db/schema';
-import { eq } from 'drizzle-orm';
+import db from '../config/db';
 import { generateToken } from '../utils/jwt';
 import { sendResponse } from '../utils/response';
 
@@ -10,26 +8,20 @@ export const register = async (req: Request, res: Response, next: NextFunction):
   try {
     const { name, email, password, whatsapp, role } = req.body;
 
-    const existingUser = await db.select().from(users).where(eq(users.email, email));
-    if (existingUser.length > 0) {
+    const [existingUsers] = await db.query<any>('SELECT * FROM users WHERE email = ?', [email]);
+    if (existingUsers.length > 0) {
       sendResponse(res, 400, false, 'Email is already registered');
       return;
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const id = crypto.randomUUID();
+    await db.query(
+      'INSERT INTO users (id, name, email, password, whatsapp, role) VALUES (?, ?, ?, ?, ?, ?)',
+      [id, name, email, hashedPassword, whatsapp, role || 'user']
+    );
 
-    const [newUser] = await db.insert(users).values({
-      name,
-      email,
-      password: hashedPassword,
-      whatsapp,
-      role: role || 'user',
-    }).returning({
-      id: users.id,
-      name: users.name,
-      email: users.email,
-      role: users.role,
-    });
+    const newUser = { id, name, email, role: role || 'user' };
 
     const token = generateToken({ id: newUser.id, role: newUser.role });
 
@@ -46,7 +38,8 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
   try {
     const { email, password } = req.body;
 
-    const [user] = await db.select().from(users).where(eq(users.email, email));
+    const [rows] = await db.query<any>('SELECT * FROM users WHERE email = ?', [email]);
+    const user = rows[0];
     if (!user) {
       sendResponse(res, 401, false, 'Invalid credentials');
       return;

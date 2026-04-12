@@ -38,9 +38,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.db = void 0;
 const mysql2_1 = require("drizzle-orm/mysql2");
-const promise_1 = __importDefault(require("mysql2/promise"));
+const db_1 = __importDefault(require("../config/db"));
 const schema = __importStar(require("./schema"));
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
-const poolConnection = promise_1.default.createPool(process.env.DATABASE_URL);
-exports.db = (0, mysql2_1.drizzle)(poolConnection, { schema, mode: 'default' });
+exports.db = (0, mysql2_1.drizzle)(db_1.default, { schema, mode: 'default' });
