@@ -1,0 +1,27 @@
+# RGS STORE — Apache Configuration for Node.js Proxy (Optional)
+# Jika Anda menggunakan Apache sebagai reverse proxy ke Node.js
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Compress static assets
+    <IfModule mod_deflate.c>
+        AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+    </IfModule>
+
+    # Force HTTPS
+    RewriteCond % {HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Handle SPA Fallsback (If not using Express fallback)
+    # RewriteCond %{REQUEST_FILENAME} !-f
+    # RewriteCond %{REQUEST_FILENAME} !-d
+    # RewriteRule . /index.html [L]
+</IfModule>
+
+# Cache Control
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 1 month"
+    ExpiresByType text/html "access plus 0 seconds"
+</IfModule>

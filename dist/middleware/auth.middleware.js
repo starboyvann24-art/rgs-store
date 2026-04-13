@@ -3,10 +3,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.isAdmin = exports.verifyToken = void 0;
 const jwt_1 = require("../utils/jwt");
 const response_1 = require("../utils/response");
+/**
+ * Verifies JWT token from Authorization header (Bearer <token>)
+ * Attaches decoded user data to req.user
+ */
 const verifyToken = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        (0, response_1.sendResponse)(res, 401, false, 'Akses ditolak. Token tidak ditemukan.');
+        return;
+    }
+    const token = authHeader.split(' ')[1];
     if (!token) {
-        (0, response_1.sendResponse)(res, 401, false, 'No token provided. Access denied.');
+        (0, response_1.sendResponse)(res, 401, false, 'Akses ditolak. Format token tidak valid.');
         return;
     }
     try {
@@ -15,18 +24,27 @@ const verifyToken = (req, res, next) => {
         next();
     }
     catch (error) {
-        (0, response_1.sendResponse)(res, 401, false, 'Invalid token.');
+        if (error.name === 'TokenExpiredError') {
+            (0, response_1.sendResponse)(res, 401, false, 'Token sudah kadaluarsa. Silakan login kembali.');
+            return;
+        }
+        (0, response_1.sendResponse)(res, 401, false, 'Token tidak valid.');
         return;
     }
 };
 exports.verifyToken = verifyToken;
+/**
+ * Checks if the authenticated user has admin role
+ * Must be used AFTER verifyToken middleware
+ */
 const isAdmin = (req, res, next) => {
     if (req.user && req.user.role === 'admin') {
         next();
     }
     else {
-        (0, response_1.sendResponse)(res, 403, false, 'Requires admin role. Access denied.');
+        (0, response_1.sendResponse)(res, 403, false, 'Akses ditolak. Hanya admin yang diizinkan.');
         return;
     }
 };
 exports.isAdmin = isAdmin;
+//# sourceMappingURL=auth.middleware.js.map

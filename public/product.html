@@ -6,89 +6,41 @@
     <title>Detail Produk - RGS STORE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-             colors: { primary: { 50: '#f0fdf4', 100: '#dcfce7', 500: '#22c55e', 600: '#16a34a', 700: '#15803d' } },
-             fontFamily: { sans: ['Inter', 'sans-serif'] }
-          }
-        }
-      }
+      tailwind.config = { theme: { extend: { colors: { primary: { 50:'#f0fdf4',100:'#dcfce7',500:'#22c55e',600:'#16a34a',700:'#15803d' } }, fontFamily: { sans: ['Inter','sans-serif'] } } } }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans antialiased pb-24 md:pb-0">
 
-    <!-- Simple Navbar -->
-    <nav class="bg-white shadow-sm border-b">
+    <!-- Navbar -->
+    <nav class="bg-white/80 backdrop-blur-lg shadow-sm border-b sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center h-16">
-                <!-- Back Button -->
-                <a href="index.html" class="flex items-center text-gray-500 hover:text-primary-600 transition font-medium">
-                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                <a href="index.html" class="flex items-center text-gray-500 hover:text-primary-600 transition font-medium text-sm">
+                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                     Kembali
                 </a>
-                
-                <!-- Right Menu: Cart -->
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center gap-4">
                     <a href="cart.html" class="relative text-gray-500 hover:text-primary-600 transition">
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                         <span id="cart-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
                     </a>
+                    <div id="navbar-auth"></div>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Product Detail Content -->
     <main class="max-w-7xl mx-auto px-4 py-6 md:py-12">
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" id="product-container">
-            <div class="flex flex-col md:flex-row">
-                
-                <!-- Product Image -->
-                <div class="w-full md:w-5/12 bg-gray-50 p-6 flex justify-center items-center h-64 md:h-auto border-b md:border-b-0 md:border-r border-gray-100" id="product-img-wrapper">
-                    <!-- Skeleton -->
-                    <div class="w-full h-full bg-gray-200 animate-pulse rounded-xl"></div>
-                </div>
-
-                <!-- Product Info & Actions -->
-                <div class="w-full md:w-7/12 p-6 md:p-8 flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center space-x-2 mb-2">
-                           <span id="product-category" class="px-2.5 py-1 bg-gray-100 text-gray-600 text-[10px] uppercase font-bold rounded">...</span>
-                           <span id="product-stock-badge" class="px-2.5 py-1 text-[10px] uppercase font-bold rounded">...</span>
-                        </div>
-                        <h1 id="product-name" class="text-2xl md:text-3xl font-bold text-gray-900 mb-2 leading-tight">Memuat Data...</h1>
-                        
-                        <div class="flex items-end mb-6" id="product-price-section">
-                            <!-- Injected Price -->
-                        </div>
-
-                        <div class="border-t border-gray-100 py-4">
-                            <h3 class="font-semibold text-gray-800 mb-2 text-sm uppercase tracking-wide">Deskripsi Produk</h3>
-                            <p id="product-desc" class="text-gray-600 text-sm md:text-base leading-relaxed whitespace-pre-line text-justify">
-                                <!-- Injected Desc -->
-                            </p>
-                        </div>
-
-                        <!-- Variants -->
-                        <div class="border-t border-gray-100 py-4" id="variants-section">
-                            <h3 class="font-semibold text-gray-800 mb-3 text-sm uppercase tracking-wide">Pilih Varian</h3>
-                            <div class="flex flex-wrap gap-2" id="variants-container">
-                                <!-- Pills Data -->
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- Fixed Mobile Bottom Bar or Inline Block Desktop -->
-                    <div class="fixed md:static bottom-0 left-0 right-0 bg-white md:bg-transparent border-t md:border-t-0 p-4 md:p-0 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:shadow-none flex space-x-3 mt-4">
-                        <button id="btn-add-cart" class="flex-1 bg-primary-500 hover:bg-primary-600 text-white font-bold py-3.5 rounded-xl transition shadow-md flex justify-center items-center focus:ring-4 focus:ring-primary-100 disabled:opacity-50 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                            Tambah ke Keranjang
-                        </button>
-                    </div>
-                    
+            <!-- Loading skeleton -->
+            <div class="flex flex-col md:flex-row" id="product-skeleton">
+                <div class="w-full md:w-5/12 bg-gray-100 h-64 md:h-96 animate-pulse"></div>
+                <div class="w-full md:w-7/12 p-6 md:p-8 space-y-4">
+                    <div class="h-4 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+                    <div class="h-8 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+                    <div class="h-10 bg-gray-200 rounded w-1/3 animate-pulse"></div>
+                    <div class="h-20 bg-gray-100 rounded animate-pulse mt-6"></div>
                 </div>
             </div>
         </div>
@@ -96,79 +48,106 @@
 
     <script src="js/app.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await appUtils.configureNavbar();
+
             const urlParams = new URLSearchParams(window.location.search);
             const productId = urlParams.get('id');
-            const products = appUtils.getProducts();
-            const product = products.find(p => p.id === productId);
-            
+
+            // Fetch single product directly by ID
+            const product = await appUtils.getProductById(productId);
+
             let selectedVariant = null;
 
             if (!product) {
                 document.getElementById('product-container').innerHTML = `
                     <div class="p-16 text-center">
-                        <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                        <h2 class="text-2xl font-bold text-gray-700">Produk Tidak Ditemukan</h2>
-                        <a href="index.html" class="inline-block mt-4 text-primary-600 hover:underline">Kembali ke Beranda</a>
-                    </div>
-                `;
+                        <svg class="w-20 h-20 text-gray-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <h2 class="text-2xl font-bold text-gray-600">Produk Tidak Ditemukan</h2>
+                        <a href="index.html" class="inline-block mt-4 text-primary-600 hover:underline font-semibold">Kembali ke Beranda</a>
+                    </div>`;
                 return;
             }
 
-            // Populate Data
-            document.getElementById('product-category').textContent = product.category;
-            document.getElementById('product-name').textContent = product.name;
-            document.getElementById('product-desc').textContent = product.description;
-            
-            const imgWrapper = document.getElementById('product-img-wrapper');
-            imgWrapper.innerHTML = `<img src="${product.image}" alt="${product.name}" class="max-w-full max-h-full rounded-lg object-contain shadow-sm animate-fade-in">`;
-            
-            // Stock Badge & Button Logic
-            const btnAddCart = document.getElementById('btn-add-cart');
-            const stockBadge = document.getElementById('product-stock-badge');
-            
-            if (product.stock > 0) {
-                stockBadge.textContent = `Tersedia: ${product.stock}`;
-                stockBadge.classList.add('bg-green-100', 'text-green-700');
-            } else {
-                stockBadge.textContent = `Stok Habis`;
-                stockBadge.classList.add('bg-red-100', 'text-red-700');
-                btnAddCart.disabled = true;
-                btnAddCart.innerHTML = 'Stok Habis';
+            const fp = parseInt(product.final_price);
+            const op = parseInt(product.price);
+            const disc = parseInt(product.discount);
+            const stock = parseInt(product.stock);
+            const oos = stock === 0;
+            const imgSrc = product.image_url || 'https://via.placeholder.com/600x400?text=No+Image';
+
+            // Parse variants (stored as JSON string or comma-separated)
+            let variants = [];
+            if (product.variants) {
+                try { variants = JSON.parse(product.variants); } catch (e) {
+                    variants = product.variants.split(',').map(v => v.trim()).filter(v => v);
+                }
             }
 
-            // Price Section
-            const priceSection = document.getElementById('product-price-section');
-            if (product.discount > 0) {
-                priceSection.innerHTML = `
+            document.title = `${product.name} - RGS STORE`;
+
+            // Replace skeleton with real content
+            document.getElementById('product-container').innerHTML = `
+            <div class="flex flex-col md:flex-row">
+                <div class="w-full md:w-5/12 bg-gray-50 flex justify-center items-center border-b md:border-b-0 md:border-r border-gray-100 relative overflow-hidden">
+                    ${oos ? '<div class="absolute inset-0 bg-black/40 z-10 flex items-center justify-center"><span class="bg-gray-900/80 text-white px-6 py-2 rounded-full font-bold text-sm border border-gray-500">Stok Habis</span></div>' : ''}
+                    <img src="${imgSrc}" alt="${product.name}" class="w-full h-64 md:h-full object-cover">
+                </div>
+                <div class="w-full md:w-7/12 p-6 md:p-8 flex flex-col justify-between">
                     <div>
-                        <div class="flex items-center space-x-2">
-                            <span class="px-1.5 py-0.5 bg-red-100 text-red-600 text-xs font-bold rounded">-${product.discount}%</span>
-                            <span class="text-sm text-gray-400 line-through">${appUtils.formatRupiah(product.originalPrice)}</span>
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-3 py-1 bg-gray-100 text-gray-600 text-[10px] uppercase font-bold rounded-lg">${product.category}</span>
+                            <span class="px-3 py-1 text-[10px] uppercase font-bold rounded-lg ${oos ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">${oos ? 'Stok Habis' : 'Tersedia: ' + stock}</span>
                         </div>
-                        <div class="text-3xl font-extrabold text-primary-600 mt-1">${appUtils.formatRupiah(product.finalPrice)}</div>
+                        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4 leading-tight">${product.name}</h1>
+
+                        <div class="mb-6">
+                            ${disc > 0 ? `
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-bold rounded">-${disc}%</span>
+                                    <span class="text-sm text-gray-400 line-through">${appUtils.formatRupiah(op)}</span>
+                                </div>
+                            ` : ''}
+                            <div class="text-3xl font-extrabold text-primary-600">${appUtils.formatRupiah(fp)}</div>
+                        </div>
+
+                        <div class="border-t border-gray-100 py-4">
+                            <h3 class="font-semibold text-gray-800 mb-2 text-sm uppercase tracking-wide">Deskripsi</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed whitespace-pre-line">${product.description || 'Tidak ada deskripsi.'}</p>
+                        </div>
+
+                        <div id="variants-section" class="border-t border-gray-100 py-4">
+                            <h3 class="font-semibold text-gray-800 mb-3 text-sm uppercase tracking-wide">Pilih Varian</h3>
+                            <div class="flex flex-wrap gap-2" id="variants-container"></div>
+                        </div>
                     </div>
-                `;
-            } else {
-                priceSection.innerHTML = `
-                    <div class="text-3xl font-extrabold text-primary-600">${appUtils.formatRupiah(product.finalPrice)}</div>
-                `;
-            }
+
+                    <!-- Action Buttons -->
+                    <div class="fixed md:static bottom-0 left-0 right-0 bg-white md:bg-transparent border-t md:border-t-0 p-4 md:p-0 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:shadow-none flex gap-3 mt-4">
+                        <button id="btn-buy-now" class="flex-1 border-2 border-primary-500 text-primary-600 hover:bg-primary-50 font-bold py-3.5 rounded-xl transition flex justify-center items-center disabled:opacity-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed">
+                            Beli Sekarang
+                        </button>
+                        <button id="btn-add-cart" class="flex-1 bg-primary-500 hover:bg-primary-600 text-white font-bold py-3.5 rounded-xl transition shadow-md flex justify-center items-center disabled:opacity-50 disabled:bg-gray-300 disabled:cursor-not-allowed">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                            Keranjang
+                        </button>
+                    </div>
+                </div>
+            </div>`;
 
             // Variants
             const varContainer = document.getElementById('variants-container');
-            if(product.variants && product.variants.length > 0) {
-                selectedVariant = product.variants[0]; // default select first
-                product.variants.forEach((vr) => {
+            if (variants.length > 0) {
+                selectedVariant = variants[0];
+                variants.forEach(vr => {
                     const btn = document.createElement('button');
-                    btn.className = `variant-btn px-4 py-2 rounded-lg border text-sm font-semibold transition ${vr === selectedVariant ? 'border-primary-500 bg-primary-50 text-primary-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`;
+                    btn.type = 'button';
+                    btn.className = `variant-btn px-4 py-2 rounded-xl border-2 text-sm font-semibold transition ${vr === selectedVariant ? 'border-primary-500 bg-primary-50 text-primary-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`;
                     btn.textContent = vr;
-                    btn.onclick = (e) => {
+                    btn.onclick = () => {
                         selectedVariant = vr;
-                        document.querySelectorAll('.variant-btn').forEach(b => {
-                            b.className = 'variant-btn px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition';
-                        });
-                        e.target.className = 'variant-btn px-4 py-2 rounded-lg border border-primary-500 bg-primary-50 text-sm font-semibold text-primary-600 transition';
+                        document.querySelectorAll('.variant-btn').forEach(b => { b.className = 'variant-btn px-4 py-2 rounded-xl border-2 border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition'; });
+                        btn.className = 'variant-btn px-4 py-2 rounded-xl border-2 border-primary-500 bg-primary-50 text-sm font-semibold text-primary-600 transition';
                     };
                     varContainer.appendChild(btn);
                 });
@@ -176,32 +155,28 @@
                 document.getElementById('variants-section').style.display = 'none';
             }
 
-            // Add To Cart Action
+            const btnAddCart = document.getElementById('btn-add-cart');
+            const btnBuyNow = document.getElementById('btn-buy-now');
+
+            if (oos) {
+                btnAddCart.disabled = true;
+                btnBuyNow.disabled = true;
+            }
+
+            // Add to Cart
             btnAddCart.addEventListener('click', () => {
-                const cart = appUtils.getCart();
-                
-                // Check existing
-                const existingIndex = cart.findIndex(c => c.id === product.id && c.variant === selectedVariant);
-                
-                if (existingIndex !== -1) {
-                    if (cart[existingIndex].qty + 1 > product.stock) {
-                        appUtils.showToast('Gagal! Melebihi stok yang tersedia', 'error');
-                        return;
-                    }
-                    cart[existingIndex].qty += 1;
-                } else {
-                    cart.push({
-                        id: product.id,
-                        name: product.name,
-                        image: product.image,
-                        price: product.finalPrice,
-                        variant: selectedVariant,
-                        qty: 1
-                    });
+                appUtils.addToCart(product, selectedVariant, 1);
+                appUtils.showToast('Ditambahkan ke keranjang!', 'success');
+            });
+
+            // Buy Now
+            btnBuyNow.addEventListener('click', () => {
+                if (!appUtils.isLoggedIn()) {
+                    appUtils.showToast('Silakan login terlebih dahulu', 'error');
+                    setTimeout(() => { window.location.href = 'login.html'; }, 1200);
+                    return;
                 }
-                
-                appUtils.saveCart(cart);
-                appUtils.showToast('Produk ditambahkan ke keranjang!', 'success');
+                window.location.href = `checkout.html?id=${product.id}`;
             });
         });
     </script>

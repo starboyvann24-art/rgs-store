@@ -36,7 +36,8 @@
             </button>
         </nav>
         <div class="p-4 border-t border-gray-800 mt-auto">
-             <button onclick="logout()" class="w-full text-center px-4 py-2 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition font-medium">Logout Admin</button>
+             <a href="index.html" class="block w-full text-center px-4 py-2 text-gray-400 hover:text-white rounded-lg transition font-medium text-xs mb-2">← Kembali ke Toko</a>
+             <button onclick="appUtils.logout()" class="w-full text-center px-4 py-2 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition font-medium">Logout Admin</button>
         </div>
     </aside>
 
@@ -46,7 +47,7 @@
         <!-- Mobile Topbar -->
         <header class="bg-gray-900 text-white p-4 flex justify-between items-center md:hidden h-16 sticky top-0 z-40">
             <h1 class="text-xl font-extrabold tracking-tighter text-primary-500">RGS <span class="text-white">ADMIN</span></h1>
-            <button onclick="logout()" class="text-xs border px-2 py-1 rounded">Logout</button>
+            <button onclick="appUtils.logout()" class="text-xs border px-2 py-1 rounded">Logout</button>
         </header>
         
         <!-- Mobile Nav Tabs -->
@@ -59,9 +60,9 @@
         <div class="p-4 md:p-8 overflow-y-auto flex-grow relative pb-24">
             
             <!-- TAB: Dashboard -->
-            <div id="tab-dashboard" class="tab-content active animate-fade-in">
+            <div id="tab-dashboard" class="tab-content active">
                 <h2 class="text-2xl font-bold mb-6">Overview Statistik</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                         <div class="text-gray-500 font-medium mb-1 flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-blue-500"></div> Total Penjualan</div>
                         <div class="text-3xl font-extrabold text-blue-600" id="stat-revenue">Rp 0</div>
@@ -71,14 +72,18 @@
                         <div class="text-3xl font-extrabold text-gray-800" id="stat-orders">0</div>
                     </div>
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <div class="text-gray-500 font-medium mb-1 flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-yellow-500"></div> Produk Aktif</div>
+                        <div class="text-gray-500 font-medium mb-1 flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-yellow-500"></div> Menunggu Proses</div>
+                        <div class="text-3xl font-extrabold text-yellow-600" id="stat-pending">0</div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <div class="text-gray-500 font-medium mb-1 flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-green-500"></div> Produk Aktif</div>
                         <div class="text-3xl font-extrabold text-gray-800" id="stat-products">0</div>
                     </div>
                 </div>
             </div>
 
             <!-- TAB: Produk -->
-            <div id="tab-products" class="tab-content animate-fade-in">
+            <div id="tab-products" class="tab-content">
                 <div class="flex flex-col md:flex-row justify-between mb-6">
                     <h2 class="text-2xl font-bold mb-4 md:mb-0">Manajemen Produk</h2>
                     <button onclick="openFormModal()" class="bg-primary-500 hover:bg-primary-600 text-white font-bold py-2.5 px-5 rounded-lg shadow transition">+ Tambah Produk Baru</button>
@@ -96,32 +101,28 @@
                                 <th class="p-4 font-semibold text-gray-600 text-right">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody id="admin-table-products" class="divide-y divide-gray-100">
-                            <!-- Injected rows -->
-                        </tbody>
+                        <tbody id="admin-table-products" class="divide-y divide-gray-100"></tbody>
                     </table>
                 </div>
             </div>
 
             <!-- TAB: Pesanan -->
-            <div id="tab-orders" class="tab-content animate-fade-in">
+            <div id="tab-orders" class="tab-content">
                 <h2 class="text-2xl font-bold mb-6">Daftar Pesanan Masuk</h2>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
                     <table class="w-full text-left min-w-[900px]">
                         <thead class="bg-gray-50 border-b">
                             <tr>
-                                <th class="p-4 font-semibold text-gray-600">ID / Waktu</th>
+                                <th class="p-4 font-semibold text-gray-600">Order / Waktu</th>
                                 <th class="p-4 font-semibold text-gray-600">Pelanggan</th>
                                 <th class="p-4 font-semibold text-gray-600">Item</th>
                                 <th class="p-4 font-semibold text-gray-600">Total</th>
                                 <th class="p-4 font-semibold text-gray-600 text-center">Status</th>
-                                <th class="p-4 font-semibold text-gray-600 text-center">Aksi (Kirim)</th>
+                                <th class="p-4 font-semibold text-gray-600 text-center">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody id="admin-table-orders" class="divide-y divide-gray-100">
-                            <!-- Injected order rows -->
-                        </tbody>
+                        <tbody id="admin-table-orders" class="divide-y divide-gray-100"></tbody>
                     </table>
                 </div>
             </div>
@@ -161,7 +162,7 @@
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-1">Harga Asli (Rp)</label>
-                            <input type="number" id="form-price" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                            <input type="number" id="form-price" required min="1" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                              <div>
@@ -170,27 +171,24 @@
                              </div>
                              <div>
                                 <label class="block text-xs font-semibold text-gray-600 mb-1">Stok Aktif</label>
-                                <input type="number" id="form-stock" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                                <input type="number" id="form-stock" required min="0" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
                              </div>
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-xs font-semibold text-gray-600 mb-1">Deskripsi & Aturan</label>
-                            <textarea id="form-desc" rows="3" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"></textarea>
+                            <textarea id="form-desc" rows="3" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"></textarea>
                         </div>
                         
                         <div class="md:col-span-2">
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">Image Thumbnail (Base64/URL)</label>
-                            <div class="flex gap-2">
-                                <input type="file" id="form-file" accept="image/*" class="w-1/2 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100">
-                                <input type="text" id="form-image-data" placeholder="atau paste URL" required class="w-1/2 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none text-xs">
-                            </div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Image URL</label>
+                            <input type="text" id="form-image-url" placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none text-xs">
                         </div>
                     </div>
                 </form>
             </div>
             <div class="p-4 border-t bg-gray-50 rounded-b-2xl flex justify-end gap-2">
                 <button onclick="closeFormModal()" class="px-4 py-2 font-medium bg-white border rounded-lg text-gray-600 hover:bg-gray-100 transition">Batal</button>
-                <button type="submit" form="form-admin-product" class="px-4 py-2 font-bold bg-primary-500 text-white rounded-lg shadow hover:bg-primary-600 transition">Simpan Produk</button>
+                <button type="submit" form="form-admin-product" id="btn-save-product" class="px-4 py-2 font-bold bg-primary-500 text-white rounded-lg shadow hover:bg-primary-600 transition">Simpan Produk</button>
             </div>
         </div>
     </div>
@@ -198,185 +196,163 @@
     <!-- Core App Logic -->
     <script src="js/app.js"></script>
     <script>
-        // Check admin
-        function checkAdminAuth() {
-            const user = appUtils.getCurrentUser();
-            if(!user || user.role !== 'admin') {
-                window.location.href = 'auth.html';
-                return false;
-            }
-            return true;
-        }
+        let cachedProducts = [];
+        let cachedOrders = [];
 
-        // TAB MNGMT
+        // TAB MANAGEMENT
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
-            
-            // Menu stylings desktop
+
             document.querySelectorAll('.admin-tab').forEach(el => {
                 el.classList.remove('bg-primary-600', 'text-white');
                 el.classList.add('text-gray-300', 'hover:bg-gray-800');
             });
-            const activeDesk = document.getElementById('btn-tab-' + tabId);
-            if(activeDesk) {
-                activeDesk.classList.add('bg-primary-600', 'text-white');
-                activeDesk.classList.remove('text-gray-300', 'hover:bg-gray-800');
-            }
+            const desk = document.getElementById('btn-tab-' + tabId);
+            if (desk) { desk.classList.add('bg-primary-600', 'text-white'); desk.classList.remove('text-gray-300', 'hover:bg-gray-800'); }
 
-            // Menu stylings mobile
-             document.querySelectorAll('.admin-tab-mob').forEach(el => {
+            document.querySelectorAll('.admin-tab-mob').forEach(el => {
                 el.classList.remove('bg-primary-100', 'text-primary-700');
                 el.classList.add('text-gray-600', 'bg-gray-100');
             });
-            const activeMob = document.getElementById('mob-tab-' + tabId);
-            if(activeMob) {
-                activeMob.classList.add('bg-primary-100', 'text-primary-700');
-                activeMob.classList.remove('text-gray-600', 'bg-gray-100');
-            }
+            const mob = document.getElementById('mob-tab-' + tabId);
+            if (mob) { mob.classList.add('bg-primary-100', 'text-primary-700'); mob.classList.remove('text-gray-600', 'bg-gray-100'); }
         }
 
-        // RENDER DATA
-        function loadDashboard() {
-            const products = appUtils.getProducts();
-            const orders = appUtils.getOrders();
+        // LOAD DATA
+        async function loadDashboard() {
+            // Get stats from API
+            const stats = await appUtils.getOrderStats();
+            document.getElementById('stat-revenue').textContent = appUtils.formatRupiah(stats.total_revenue);
+            document.getElementById('stat-orders').textContent = stats.total_orders;
+            document.getElementById('stat-pending').textContent = stats.pending_orders;
 
-            // Stats
-            const totalRev = orders.filter(o => o.status === 'Success').reduce((sum, o) => sum + o.totalPrice, 0);
-            document.getElementById('stat-revenue').textContent = appUtils.formatRupiah(totalRev);
-            document.getElementById('stat-orders').textContent = orders.length;
-            document.getElementById('stat-products').textContent = products.length;
+            // Load products
+            cachedProducts = await appUtils.getAllProductsAdmin();
+            document.getElementById('stat-products').textContent = cachedProducts.filter(p => p.is_active).length;
 
-            renderProductsTable(products);
-            renderOrdersTable(orders);
+            // Load all orders
+            cachedOrders = await appUtils.getAllOrders();
+
+            renderProductsTable();
+            renderOrdersTable();
         }
 
-        function renderProductsTable(products) {
+        function renderProductsTable() {
             const tbody = document.getElementById('admin-table-products');
             tbody.innerHTML = '';
-            
-            products.forEach((p, idx) => {
+            if (cachedProducts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-gray-400">Belum ada produk. Klik "+ Tambah Produk Baru" untuk mulai.</td></tr>';
+                return;
+            }
+            cachedProducts.forEach((p, idx) => {
+                const fp = parseInt(p.final_price);
+                const disc = parseInt(p.discount);
+                const stock = parseInt(p.stock);
+                const imgSrc = p.image_url || 'https://via.placeholder.com/40x40?text=N';
                 tbody.innerHTML += `
                 <tr class="hover:bg-gray-50">
-                    <td class="p-4 text-center text-gray-500">${idx+1}</td>
+                    <td class="p-4 text-center text-gray-500">${idx + 1}</td>
                     <td class="p-4">
                         <div class="flex items-center gap-3">
-                            <img src="${p.image}" class="w-10 h-10 rounded border object-cover">
+                            <img src="${imgSrc}" class="w-10 h-10 rounded border object-cover">
                             <div>
                                 <p class="font-bold text-gray-800 line-clamp-1">${p.name}</p>
                                 <span class="bg-gray-100 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold text-gray-500">${p.category}</span>
+                                ${!p.is_active ? '<span class="bg-red-100 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold text-red-500 ml-1">Nonaktif</span>' : ''}
                             </div>
                         </div>
                     </td>
-                    <td class="p-4 font-semibold text-primary-600">${appUtils.formatRupiah(p.finalPrice)}</td>
+                    <td class="p-4 font-semibold text-primary-600">${appUtils.formatRupiah(fp)}</td>
                     <td class="p-4 text-center">
-                        ${p.discount > 0 ? `<span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold">-${p.discount}%</span>` : '-'}
+                        ${disc > 0 ? `<span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold">-${disc}%</span>` : '-'}
                     </td>
                     <td class="p-4">
-                        <span class="px-2 py-1 ${p.stock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} rounded text-xs font-bold">${p.stock}</span>
+                        <span class="px-2 py-1 ${stock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} rounded text-xs font-bold">${stock}</span>
                     </td>
                     <td class="p-4 text-right space-x-2">
                         <button onclick="editProduct('${p.id}')" class="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded font-semibold transition">Edit</button>
-                        <button onclick="deleteProduct('${p.id}')" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded font-semibold transition">Hapus</button>
+                        <button onclick="deleteProduct('${p.id}', '${p.name.replace(/'/g, "\\'")}')" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded font-semibold transition">Hapus</button>
                     </td>
                 </tr>`;
             });
         }
 
-        function renderOrdersTable(orders) {
+        function renderOrdersTable() {
             const tbody = document.getElementById('admin-table-orders');
             tbody.innerHTML = '';
-            
-            // Sort by latest
-            orders.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach((o) => {
-                const dateFmt = new Date(o.date).toLocaleDateString('id', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
-                const isSuccess = o.status === 'Success';
-                
+            if (cachedOrders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-gray-400">Belum ada pesanan masuk.</td></tr>';
+                return;
+            }
+            cachedOrders.forEach(o => {
+                const date = appUtils.formatDateShort(o.created_at);
+                const badge = appUtils.getStatusBadge(o.status);
                 tbody.innerHTML += `
                 <tr class="hover:bg-gray-50">
                     <td class="p-4">
-                        <p class="font-bold text-gray-800">${o.orderId}</p>
-                        <p class="text-[10px] text-gray-500">${dateFmt}</p>
+                        <p class="font-bold text-gray-800">#${o.order_number}</p>
+                        <p class="text-[10px] text-gray-500">${date}</p>
                     </td>
-                    <td class="p-4 text-xs font-medium text-gray-600">${o.userEmail}<br><span class="text-gray-400">Via: ${o.paymentMethod}</span></td>
+                    <td class="p-4 text-xs font-medium text-gray-600">${o.user_name || '-'}<br><span class="text-gray-400">${o.user_email || '-'}</span></td>
                     <td class="p-4 text-xs">
-                        <span class="break-words line-clamp-2">${o.items.map(it => `[${it.qty}x] ${it.name}`).join(', ')}</span>
+                        <span class="line-clamp-2">${o.product_name}</span>
+                        <span class="text-gray-400">x${o.qty}</span>
                     </td>
-                    <td class="p-4 font-bold text-primary-600">${appUtils.formatRupiah(o.totalPrice)}</td>
+                    <td class="p-4 font-bold text-primary-600">${appUtils.formatRupiah(parseInt(o.total_price))}</td>
+                    <td class="p-4 text-center">${badge}</td>
                     <td class="p-4 text-center">
-                        <span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${isSuccess ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-yellow-100 text-yellow-700 border border-yellow-200'}">${o.status}</span>
-                    </td>
-                    <td class="p-4 text-center">
-                        ${!isSuccess ? `<button onclick="processOrder('${o.orderId}')" class="text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded shadow-sm font-bold transition">Proses & Kirim</button>` : `<span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">Selesai</span>`}
+                        <select onchange="changeOrderStatus('${o.id}', this.value)" class="text-xs border rounded-lg px-2 py-1.5 bg-white focus:ring-2 focus:ring-primary-500 outline-none">
+                            <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Pending</option>
+                            <option value="processing" ${o.status === 'processing' ? 'selected' : ''}>Proses</option>
+                            <option value="success" ${o.status === 'success' ? 'selected' : ''}>Selesai</option>
+                            <option value="failed" ${o.status === 'failed' ? 'selected' : ''}>Gagal</option>
+                            <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>Batal</option>
+                        </select>
                     </td>
                 </tr>`;
             });
         }
 
-        // CRUD ACTIONS
-        function processOrder(orderId) {
-            const text = prompt("Masukkan detail informasi Lisensi/Akun (Email, Password, atau Link Invite):");
-            if(text && text.trim() !== '') {
-                const orders = appUtils.getOrders();
-                const idx = orders.findIndex(o => o.orderId === orderId);
-                if(idx > -1) {
-                    orders[idx].status = 'Success';
-                    orders[idx].credentialsDelivered = text;
-                    appUtils.saveOrders(orders);
-                    appUtils.showToast('Pesanan berhasil diproses dan dikirim!');
-                    loadDashboard();
-                }
+        // ORDER STATUS CHANGE
+        async function changeOrderStatus(orderId, newStatus) {
+            const result = await appUtils.updateOrderStatus(orderId, newStatus);
+            if (result.success) {
+                appUtils.showToast(`Status diperbarui: ${newStatus}`, 'success');
+                await loadDashboard();
             } else {
-                alert("Pengiriman dibatalkan. Lisensi tidak boleh kosong!");
-            }
-        }
-
-        function deleteProduct(id) {
-            if(confirm('Yakin ingin menghapus produk ini?')) {
-                let products = appUtils.getProducts();
-                products = products.filter(p => p.id !== id);
-                appUtils.saveProducts(products);
-                loadDashboard();
-                appUtils.showToast('Berhasil dihapus', 'success');
+                appUtils.showToast(result.message, 'error');
             }
         }
 
         // MODAL LOGIC
         const modal = document.getElementById('modal-product');
-        const fileInput = document.getElementById('form-file');
-        const imgDataInput = document.getElementById('form-image-data');
-        
-        fileInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if(file) {
-                const b64 = await appUtils.convertImageToBase64(file);
-                imgDataInput.value = b64;
-            }
-        });
 
         function openFormModal(product = null) {
             document.getElementById('form-admin-product').reset();
-            if(product) {
-                 document.getElementById('modal-product-title').textContent = "Edit Produk";
-                 document.getElementById('form-id').value = product.id;
-                 document.getElementById('form-name').value = product.name;
-                 document.getElementById('form-category').value = product.category;
-                 document.getElementById('form-variants').value = product.variants ? product.variants.join(', ') : '';
-                 document.getElementById('form-price').value = product.originalPrice;
-                 document.getElementById('form-discount').value = product.discount;
-                 document.getElementById('form-stock').value = product.stock;
-                 document.getElementById('form-desc').value = product.description;
-                 document.getElementById('form-image-data').value = product.image;
+            document.getElementById('form-discount').value = '0';
+            if (product) {
+                document.getElementById('modal-product-title').textContent = 'Edit Produk';
+                document.getElementById('form-id').value = product.id;
+                document.getElementById('form-name').value = product.name;
+                document.getElementById('form-category').value = product.category;
+                let varStr = '';
+                if (product.variants) {
+                    try { varStr = JSON.parse(product.variants).join(', '); }
+                    catch (e) { varStr = product.variants; }
+                }
+                document.getElementById('form-variants').value = varStr;
+                document.getElementById('form-price').value = product.price;
+                document.getElementById('form-discount').value = product.discount;
+                document.getElementById('form-stock').value = product.stock;
+                document.getElementById('form-desc').value = product.description || '';
+                document.getElementById('form-image-url').value = product.image_url || '';
             } else {
-                 document.getElementById('modal-product-title').textContent = "Tambah Produk";
-                 document.getElementById('form-id').value = '';
+                document.getElementById('modal-product-title').textContent = 'Tambah Produk';
+                document.getElementById('form-id').value = '';
             }
-
             modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                document.getElementById('modal-product-inner').classList.remove('scale-95');
-            }, 10);
+            setTimeout(() => { modal.classList.remove('opacity-0'); document.getElementById('modal-product-inner').classList.remove('scale-95'); }, 10);
         }
 
         function closeFormModal() {
@@ -386,51 +362,66 @@
         }
 
         function editProduct(id) {
-            const products = appUtils.getProducts();
-            const product = products.find(p => p.id === id);
-            if(product) openFormModal(product);
+            const p = cachedProducts.find(p => p.id === id);
+            if (p) openFormModal(p);
         }
 
-        document.getElementById('form-admin-product').addEventListener('submit', (e) => {
+        async function deleteProduct(id, name) {
+            if (!confirm(`Hapus produk "${name}"?`)) return;
+            const result = await appUtils.deleteProduct(id);
+            if (result.success) {
+                appUtils.showToast('Produk berhasil dihapus', 'success');
+                await loadDashboard();
+            } else {
+                appUtils.showToast(result.message, 'error');
+            }
+        }
+
+        // SAVE PRODUCT (Create or Update)
+        document.getElementById('form-admin-product').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const id = document.getElementById('form-id').value || 'prod-' + Date.now();
-            const name = document.getElementById('form-name').value;
-            const category = document.getElementById('form-category').value;
+            const btn = document.getElementById('btn-save-product');
+            btn.disabled = true;
+            btn.textContent = 'Menyimpan...';
+
+            const editId = document.getElementById('form-id').value;
             const variantsRaw = document.getElementById('form-variants').value;
-            const vars = variantsRaw ? variantsRaw.split(',').map(v=>v.trim()).filter(v=>v) : [];
-            const price = parseInt(document.getElementById('form-price').value);
-            const discount = parseInt(document.getElementById('form-discount').value);
-            const stock = parseInt(document.getElementById('form-stock').value);
-            const desc = document.getElementById('form-desc').value;
-            const image = document.getElementById('form-image-data').value;
+            const variants = variantsRaw ? JSON.stringify(variantsRaw.split(',').map(v => v.trim()).filter(v => v)) : null;
 
-            const finalPrice = Math.round(price - (price * (discount/100)));
-
-            const newProd = {
-                id, name, category, variants: vars, originalPrice: price, discount, finalPrice, stock, description: desc, image
+            const data = {
+                name: document.getElementById('form-name').value,
+                category: document.getElementById('form-category').value,
+                price: parseInt(document.getElementById('form-price').value),
+                discount: parseInt(document.getElementById('form-discount').value) || 0,
+                stock: parseInt(document.getElementById('form-stock').value),
+                description: document.getElementById('form-desc').value,
+                image_url: document.getElementById('form-image-url').value,
+                variants: variants
             };
 
-            const products = appUtils.getProducts();
-            const existIdx = products.findIndex(p => p.id === id);
-            
-            if(existIdx > -1) products[existIdx] = newProd;
-            else products.push(newProd);
+            let result;
+            if (editId) {
+                result = await appUtils.updateProduct(editId, data);
+            } else {
+                result = await appUtils.createProduct(data);
+            }
 
-            appUtils.saveProducts(products);
-            appUtils.showToast('Data produk tersimpan');
-            closeFormModal();
-            loadDashboard();
+            if (result.success) {
+                appUtils.showToast(editId ? 'Produk berhasil diperbarui!' : 'Produk berhasil ditambahkan!', 'success');
+                closeFormModal();
+                await loadDashboard();
+            } else {
+                appUtils.showToast(result.message, 'error');
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Simpan Produk';
         });
 
-        function logout() {
-             localStorage.removeItem('currentUser');
-             window.location.href = 'auth.html';
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            if(checkAdminAuth()) {
-                loadDashboard();
-            }
+        // INIT
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!appUtils.requireAdmin()) return;
+            await loadDashboard();
         });
     </script>
 </body>

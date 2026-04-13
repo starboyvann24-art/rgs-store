@@ -40,12 +40,19 @@ exports.verifyJwtToken = exports.generateToken = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
-const JWT_SECRET = process.env.JWT_SECRET || 'super_secret';
+// ============================================================
+// RGS STORE — JWT Token Utilities
+// ============================================================
+const JWT_SECRET = process.env.JWT_SECRET || 'rgs_store_default_secret_change_me';
 const generateToken = (payload) => {
-    return jsonwebtoken_1.default.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+    const options = {
+        expiresIn: 604800 // 7 days in seconds
+    };
+    return jsonwebtoken_1.default.sign(payload, JWT_SECRET, options);
 };
 exports.generateToken = generateToken;
 const verifyJwtToken = (token) => {
     return jsonwebtoken_1.default.verify(token, JWT_SECRET);
 };
 exports.verifyJwtToken = verifyJwtToken;
+//# sourceMappingURL=jwt.js.map

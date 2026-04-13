@@ -1,11 +1,34 @@
 import { Request, Response, NextFunction } from 'express';
 import { sendResponse } from '../utils/response';
 
-export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error(err.stack);
-  
-  const statusCode = err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
+// ============================================================
+// RGS STORE — Global Error Handler Middleware
+// ============================================================
 
-  sendResponse(res, statusCode, false, message, null);
+export const errorHandler = (
+  err: any,
+  _req: Request,
+  res: Response,
+  _next: NextFunction
+): void => {
+  // Log the full error for debugging
+  console.error('');
+  console.error('═══ ERROR ═══════════════════════════════════');
+  console.error('Timestamp:', new Date().toISOString());
+  console.error('Message:', err.message);
+  if (err.stack) {
+    console.error('Stack:', err.stack);
+  }
+  console.error('═════════════════════════════════════════════');
+  console.error('');
+
+  // Determine status code
+  const statusCode: number = err.statusCode || err.status || 500;
+
+  // Don't expose internal error details in production
+  const message: string = statusCode === 500
+    ? 'Terjadi kesalahan internal server. Silakan coba lagi.'
+    : err.message || 'Terjadi kesalahan.';
+
+  sendResponse(res, statusCode, false, message);
 };

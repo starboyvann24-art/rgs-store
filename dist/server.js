@@ -37,39 +37,87 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const cors_1 = __importDefault(require("cors"));
+const path_1 = __importDefault(require("path"));
 const dotenv = __importStar(require("dotenv"));
+// Load environment variables FIRST before anything else
+dotenv.config();
+const database_1 = require("./config/database");
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const product_routes_1 = __importDefault(require("./routes/product.routes"));
-const transaction_routes_1 = __importDefault(require("./routes/transaction.routes"));
+const order_routes_1 = __importDefault(require("./routes/order.routes"));
+const settings_routes_1 = __importDefault(require("./routes/settings.routes"));
 const error_middleware_1 = require("./middleware/error.middleware");
-const db_1 = __importDefault(require("./config/db"));
-dotenv.config();
+const response_1 = require("./utils/response");
+// ============================================================
+// RGS STORE — Main Server (Node.js Monolithic for cPanel)
+// Express serves both API and static frontend from /public
+// ============================================================
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
-app.use((0, cors_1.default)());
-app.use(express_1.default.json());
-// Main App Routes
+// ─── BODY PARSERS ─────────────────────────────────────────────
+app.use(express_1.default.json({ limit: '10mb' }));
+app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
+// ─── STATIC FILES (Frontend) ─────────────────────────────────
+// Serve all files from /public directory (HTML, CSS, JS, images)
+app.use(express_1.default.static(path_1.default.join(__dirname, '..', 'public')));
+// ─── API ROUTES ───────────────────────────────────────────────
 const apiRouter = express_1.default.Router();
+// Health check endpoint
+apiRouter.get('/health', (_req, res) => {
+    res.status(200).json({
+        success: true,
+        message: 'RGS STORE API is running',
+        timestamp: new Date().toISOString(),
+        version: '2.0.0'
+    });
+});
+// Mount route modules
 apiRouter.use('/auth', auth_routes_1.default);
 apiRouter.use('/products', product_routes_1.default);
-apiRouter.use('/transactions', transaction_routes_1.default);
-apiRouter.get('/health', (req, res) => {
-    res.status(200).json({ success: true, message: 'API is running linearly' });
-});
+apiRouter.use('/orders', order_routes_1.default);
+apiRouter.use('/settings', settings_routes_1.default);
+// Register API router under /api/v1
 app.use('/api/v1', apiRouter);
-// Error Middleware
-app.use(error_middleware_1.errorHandler);
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// ─── 404 HANDLER FOR API ROUTES ───────────────────────────────
+app.use('/api', (req, res) => {
+    (0, response_1.sendResponse)(res, 404, false, `API endpoint not found: ${req.method} ${req.originalUrl}`);
 });
-async function testDB() {
+// ─── SPA FALLBACK ─────────────────────────────────────────────
+// All non-API routes serve index.html (for frontend routing)
+app.get('*', (_req, res) => {
+    res.sendFile(path_1.default.join(__dirname, '..', 'public', 'index.html'));
+});
+// ─── GLOBAL ERROR HANDLER ─────────────────────────────────────
+app.use(error_middleware_1.errorHandler);
+// ─── START SERVER ─────────────────────────────────────────────
+async function startServer() {
     try {
-        await db_1.default.query('SELECT 1');
-        console.log('✅ Database Connected');
+        // Test database connection
+        const dbOk = await (0, database_1.testConnection)();
+        if (!dbOk) {
+            console.error('❌ Failed to connect to database. Check your .env configuration.');
+            process.exit(1);
+        }
+        // Initialize database tables
+        await (0, database_1.initializeDatabase)();
+        // Start listening
+        app.listen(PORT, () => {
+            console.log('');
+            console.log('╔══════════════════════════════════════════════╗');
+            console.log('║         🛒  RGS STORE  v2.0.0  🛒          ║');
+            console.log('╠══════════════════════════════════════════════╣');
+            console.log(`║  🌐  Server  : http://localhost:${PORT}         ║`);
+            console.log(`║  📡  API     : http://localhost:${PORT}/api/v1   ║`);
+            console.log('║  ✅  Status  : Running                       ║');
+            console.log('╚══════════════════════════════════════════════╝');
+            console.log('');
+        });
     }
-    catch (err) {
-        console.error('❌ Database Error:', err);
+    catch (error) {
+        console.error('❌ Failed to start server:', error);
+        process.exit(1);
     }
 }
-testDB();
+startServer();
+exports.default = app;
+//# sourceMappingURL=server.js.map

@@ -2,10 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendResponse = void 0;
 const sendResponse = (res, statusCode, success, message, data = null) => {
-    return res.status(statusCode).json({
+    const responseBody = {
         success,
         message,
-        data,
-    });
+        data
+    };
+    res.status(statusCode).json(responseBody);
 };
 exports.sendResponse = sendResponse;
+//# sourceMappingURL=response.js.map

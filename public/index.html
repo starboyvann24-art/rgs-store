@@ -3,277 +3,347 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RGS STORE - Marketplace Digital Premium</title>
-    <!-- Tailwind CSS (CDN for guaranteed execution, normally use precompiled in prod) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              primary: { 50: '#f0fdf4', 100: '#dcfce7', 500: '#22c55e', 600: '#16a34a', 700: '#15803d' }
-            },
-            fontFamily: { sans: ['Inter', 'sans-serif'] },
-            animation: { 'marquee': 'marquee 25s linear infinite' },
-            keyframes: {
-                marquee: { '0%': { transform: 'translateX(100%)' }, '100%': { transform: 'translateX(-100%)' } }
-            }
-          }
-        }
-      }
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>RGS STORE — Produk Digital Premium Termurah</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="RGS STORE - Marketplace Produk Digital Premium: Netflix, Spotify, Canva, YouTube Premium, dan banyak lagi dengan harga termurah dan proses instan.">
+    <meta name="keywords" content="RGS Store, Netflix murah, Spotify premium, YouTube premium murah, produk digital">
+    
+    <!-- CSS Dependencies -->
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        /* Custom scrollbar to hide horizontal scrollbar for pills */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .marquee-container { overflow: hidden; white-space: nowrap; }
+        /* Small local overrides for index specific layout */
+        .hero-section {
+            padding: 4rem 1.5rem;
+            text-align: center;
+            background: radial-gradient(circle at center, rgba(34, 197, 94, 0.1) 0%, transparent 70%);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            background: linear-gradient(to bottom right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i { color: var(--primary); }
+
+        /* Floating WA */
+        .wa-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #25d366;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+            z-index: 1000;
+            transition: 0.3s;
+        }
+
+        .wa-float:hover { transform: scale(1.1); box-shadow: 0 6px 30px rgba(37, 211, 102, 0.6); }
+
+        footer {
+            background: var(--dark);
+            border-top: 1px solid var(--border);
+            padding: 4rem 1.5rem 2rem;
+            margin-top: 5rem;
+        }
+
+        .footer-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 1fr;
+            gap: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .footer-grid { grid-template-columns: 1fr; gap: 30px; }
+            .hero-title { font-size: 2.25rem; }
+        }
+
+        .footer-logo { font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; color: var(--primary); }
+        .footer-text { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1.5rem; }
+        .footer-links h4 { margin-bottom: 1.25rem; font-weight: 700; color: white; }
+        .footer-links ul li { margin-bottom: 0.75rem; list-style: none; font-size: 0.9rem; color: var(--text-dim); }
+        .footer-links ul li a:hover { color: var(--primary); }
+
+        .copyright {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .btn-cart {
+            position: relative;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-main);
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            font-weight: 800;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+<body>
 
-    <!-- Marquee Banner -->
-    <div class="bg-primary-600 text-white text-xs md:text-sm py-2 font-medium marquee-container relative z-40">
-        <div class="inline-block animate-marquee">
-            ⚡ PROMO WEEKEND: Diskon Hingga 50% untuk Semua Produk Streaming Premium! Gunakan Kode: RGSWEEKEND ⚡ | Garansi 100% Legal & Aman | Dukungan CS 24/7
-        </div>
+    <div class="glow-blob blob-1"></div>
+    <div class="glow-blob blob-2"></div>
+
+    <div class="main-wrapper">
+        <!-- Navbar -->
+        <nav class="navbar-premium">
+            <div class="nav-container">
+                <a href="/" class="logo-brand">
+                    RGS <span>STORE</span>
+                </a>
+
+                <div class="search-wrapper">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="main-search" class="search-input" placeholder="Cari Netflix, Spotify, Canva...">
+                </div>
+
+                <div class="flex items-center gap-4" style="display: flex; align-items: center; gap: 15px;">
+                    <a href="/cart.html" class="btn-cart">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span class="cart-badge" id="cart-count">0</span>
+                    </a>
+                    <div id="nav-auth-container" class="auth-box">
+                        <!-- Injected by app.js -->
+                        <div class="shimmer" style="width: 80px; height: 35px; border-radius: 8px;"></div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <header class="hero-section">
+            <h1 class="hero-title">Unlock Premium<br>Digital Experience</h1>
+            <p class="hero-subtitle">Platform terpercaya untuk berlangganan produk digital premium dengan harga mahasiswa dan garansi purna jual.</p>
+            <div class="hero-actions">
+                <a href="#katalog" class="btn-cta">Gaskeun Belanja <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+        </header>
+
+        <!-- Catalog Container -->
+        <main class="max-w-1200" style="max-width: 1200px; margin: 0 auto; padding: 0 1.5rem;" id="katalog">
+            
+            <div class="section-title">
+                <i class="fa-solid fa-fire"></i> Terpopuler Hari Ini
+            </div>
+
+            <!-- Category Filter -->
+            <div class="category-scroller" id="cat-list">
+                <button class="cat-item active" data-val="All">Semua Produk</button>
+                <button class="cat-item" data-val="Streaming">Streaming</button>
+                <button class="cat-item" data-val="Productivity">Produktivitas</button>
+                <button class="cat-item" data-val="Music">Musik</button>
+                <button class="cat-item" data-val="Gaming">Gaming</button>
+                <button class="cat-item" data-val="Discord">Discord</button>
+            </div>
+
+            <!-- Product Grid -->
+            <div id="product-list" class="product-grid">
+                <!-- Skelenton Loading -->
+                <div class="premium-card shimmer" style="height: 350px;"></div>
+                <div class="premium-card shimmer" style="height: 350px;"></div>
+                <div class="premium-card shimmer" style="height: 350px;"></div>
+                <div class="premium-card shimmer" style="height: 350px;"></div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" style="display: none; text-align: center; padding: 4rem 0;">
+                <img src="https://cdni.iconscout.com/illustration/premium/thumb/empty-cart-5521508-4610092.png" style="width: 250px; opacity: 0.5;">
+                <h3 style="color: var(--text-dim); margin-top: 1rem;">Produk tidak ditemukan...</h3>
+            </div>
+
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-grid">
+                <div>
+                    <div class="footer-logo">RGS STORE</div>
+                    <p class="footer-text">Marketplace digital legal 100% termurah di Indonesia. Berdiri sejak 2021 dengan ribuan testimoni pelanggan puas.</p>
+                    <div class="social-links" style="display: flex; gap: 15px;">
+                        <a href="https://wa.me/62882016259591" class="btn-cart"><i class="fa-brands fa-whatsapp"></i></a>
+                        <a href="https://discord.gg/huWJNZ4m9" class="btn-cart"><i class="fa-brands fa-discord"></i></a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Layanan</h4>
+                    <ul>
+                        <li><a href="#">Streaming Akun</a></li>
+                        <li><a href="#">Tools Produktivitas</a></li>
+                        <li><a href="#">App Musik Premium</a></li>
+                        <li><a href="#">Voucher Game</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Bantuan</h4>
+                    <ul>
+                        <li><a href="#">Cara Order</a></li>
+                        <li><a href="#">Cek Status Pesanan</a></li>
+                        <li><a href="#">Hubungi Admin</a></li>
+                        <li><a href="#">Syarat & Ketentuan</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Kontak Kami</h4>
+                    <ul>
+                        <li>Email: support@rgsstore.com</li>
+                        <li>WA: 0882-0162-59591</li>
+                        <li>Jam Kerja: 09:00 - 22:00</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2026 RGS STORE. All Reserved by RGS Community.
+            </div>
+        </footer>
+
+        <!-- WhatsApp Floating -->
+        <a href="https://wa.me/62882016259591" target="_blank" class="wa-float">
+            <i class="fa-brands fa-whatsapp"></i>
+        </a>
     </div>
 
-    <!-- Sticky Navbar -->
-    <nav class="bg-white shadow-sm sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16 md:h-20">
-                <!-- Logo -->
-                <div class="flex-shrink-0 flex items-center">
-                    <a href="index.html" class="text-2xl md:text-3xl font-extrabold text-primary-600 tracking-tighter">RGS <span class="text-gray-800">STORE</span></a>
-                </div>
-                
-                <!-- Search Bar -->
-                <div class="flex-1 flex justify-center px-4 md:px-8 max-w-3xl">
-                    <div class="w-full relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        </div>
-                        <input type="text" id="searchInput" class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all" placeholder="Cari Netflix, Spotify, Discord...">
-                    </div>
-                </div>
-
-                <!-- Right Menu: Cart & Profile -->
-                <div class="flex items-center space-x-6">
-                    <a href="cart.html" class="relative text-gray-500 hover:text-primary-600 transition">
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                        <!-- Badge dynamic rendering in app.js -->
-                        <span id="cart-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
-                    </a>
-                    
-                    <div id="navbar-auth" class="hidden md:block">
-                        <!-- Injected by app.js -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        
-        <!-- Hero Banner Section -->
-        <section class="rounded-2xl overflow-hidden relative shadow-lg group cursor-pointer h-48 md:h-72">
-            <img src="https://images.unsplash.com/photo-1616469829581-73993eb86b02?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80" alt="Banner" class="w-full h-full object-cover group-hover:scale-105 transition duration-700 ease-in-out">
-            <div class="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/40 to-transparent"></div>
-            <div class="absolute inset-0 flex flex-col justify-center px-8 md:px-16 text-white w-full md:w-2/3">
-                <span class="inline-block px-3 py-1 bg-primary-500 text-xs font-bold rounded-full mb-3 w-max uppercase tracking-wider">Spesial Hari Ini</span>
-                <h2 class="text-3xl md:text-5xl font-extrabold mb-2 leading-tight">Berlangganan Makin Hemat & Praktis</h2>
-                <p class="text-sm md:text-lg text-gray-200 max-w-xl hidden md:block">Dapatkan akses akun premium dengan jaminan legal 100%, proses instan, dan dukungan pelanggan ramah.</p>
-            </div>
-        </section>
-
-        <!-- Categories Filter (Pills) -->
-        <section>
-            <h3 class="text-lg font-bold text-gray-800 mb-4">Kategori Pilihan</h3>
-            <div class="flex overflow-x-auto space-x-3 pb-2 no-scrollbar" id="category-pills">
-                <button class="category-btn active px-5 py-2.5 rounded-xl border border-primary-500 bg-primary-50 text-primary-600 font-semibold text-sm whitespace-nowrap transition" data-val="All">🌍 Semua Kategori</button>
-                <button class="category-btn px-5 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 font-semibold text-sm whitespace-nowrap transition" data-val="Streaming">📺 Streaming</button>
-                <button class="category-btn px-5 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 font-semibold text-sm whitespace-nowrap transition" data-val="Music">🎵 Musik</button>
-                <button class="category-btn px-5 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 font-semibold text-sm whitespace-nowrap transition" data-val="Game">🎮 TopUp & Game</button>
-                <button class="category-btn px-5 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 font-semibold text-sm whitespace-nowrap transition" data-val="Discord">💬 Discord</button>
-                <button class="category-btn px-5 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 font-semibold text-sm whitespace-nowrap transition" data-val="Productivity">🛠️ Produktivitas</button>
-            </div>
-        </section>
-
-        <!-- Product Grid Section -->
-        <section>
-            <div class="flex justify-between items-end mb-6">
-                <div>
-                    <h3 class="text-xl font-bold text-gray-800">Rekomendasi Untukmu</h3>
-                    <p class="text-sm text-gray-500 mt-1">Produk digital terbaik dengan harga terjangkau</p>
-                </div>
-            </div>
-            
-            <!-- Dynamic Grid -->
-            <div id="product-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                <!-- Data akan di-inject lewat JS -->
-            </div>
-            
-            <!-- Empty State (Hidden) -->
-            <div id="empty-state" class="hidden py-16 flex flex-col items-center justify-center text-center">
-                <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                <p class="text-lg font-bold text-gray-700">Waduh, produk tidak ditemukan!</p>
-                <p class="text-gray-500 text-sm mt-1">Coba gunakan kata kunci lain atau pilih kategori yang berbeda.</p>
-            </div>
-        </section>
-        
-    </main>
-
-    <!-- Footer Area -->
-    <footer class="bg-white border-t mt-16 pt-12 pb-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-                <!-- Col 1 -->
-                <div>
-                    <h3 class="text-2xl font-extrabold text-primary-600 tracking-tighter mb-4">RGS <span class="text-gray-800">STORE</span></h3>
-                    <p class="text-sm text-gray-500 leading-relaxed max-w-xs mb-6">Marketplace produk digital premium, tercepat, termurah, dan 100% legal dan garansi di Indonesia.</p>
-                    <div class="flex space-x-4 text-gray-400">
-                        <a href="#" class="hover:text-primary-500"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg></a>
-                        <a href="#" class="hover:text-primary-500"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
-                    </div>
-                </div>
-                <!-- Col 2 -->
-                <div>
-                    <h4 class="font-bold text-gray-800 mb-4">Jelajahi</h4>
-                    <ul class="space-y-3 text-sm text-gray-500">
-                        <li><a href="#" class="hover:text-primary-600">Tentang Kami</a></li>
-                        <li><a href="#" class="hover:text-primary-600">Blog & Artikel</a></li>
-                        <li><a href="#" class="hover:text-primary-600">Karir</a></li>
-                        <li><a href="#" class="hover:text-primary-600">Kebijakan Privasi</a></li>
-                    </ul>
-                </div>
-                <!-- Col 3 -->
-                <div>
-                    <h4 class="font-bold text-gray-800 mb-4">Bantuan</h4>
-                    <ul class="space-y-3 text-sm text-gray-500">
-                        <li><a href="#" class="hover:text-primary-600">Pusat Bantuan</a></li>
-                        <li><a href="#" class="hover:text-primary-600">Syarat & Ketentuan</a></li>
-                        <li><a href="#" class="hover:text-primary-600">Cara Pembelian</a></li>
-                        <li><a href="#" class="hover:text-primary-600">FAQ</a></li>
-                    </ul>
-                </div>
-                <!-- Col 4 -->
-                <div>
-                    <h4 class="font-bold text-gray-800 mb-4">Metode Pembayaran</h4>
-                    <div class="flex flex-wrap gap-2">
-                        <div class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-bold text-gray-700 bg-gray-50">QRIS</div>
-                        <div class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-bold text-blue-800 bg-gray-50">BCA</div>
-                        <div class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-bold text-blue-600 bg-gray-50">Mandiri</div>
-                        <div class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-bold text-blue-500 bg-gray-50">DANA</div>
-                        <div class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-bold text-green-500 bg-gray-50">GoPay</div>
-                        <div class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-bold text-purple-600 bg-gray-50">OVO</div>
-                    </div>
-                </div>
-            </div>
-            <div class="border-t pt-8 text-center text-sm text-gray-400">
-                <p>&copy; 2026 RGS STORE. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Floating CS Widget -->
-    <a href="#" class="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all z-50 group flex items-center justify-center">
-        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.898-4.45 9.896-9.898a9.851 9.851 0 00-2.895-6.987 9.852 9.852 0 00-6.989-2.894c-5.451 0-9.901 4.45-9.904 9.897-.001 2.146.589 3.865 1.626 5.568l-1.154 4.221 4.331-1.144zm7.986-10.428c-.147-.247-.532-.395-1.116-.689-.584-.294-3.456-1.706-3.99-1.902-.533-.197-.923-.295-1.312.295-.389.59-1.503 1.903-1.841 2.297-.339.395-.678.443-1.262.149-3.239-1.626-4.945-3.076-6.79-6.195-.339-.571.328-.528 1.488-2.833.151-.302.077-.573-.037-.819-.115-.246-1.313-3.178-1.8-4.354-.476-1.149-.958-.992-1.312-1.011-.339-.018-.727-.02-1.116-.02-.389 0-1.02.147-1.554.736-.534.59-2.04 1.992-2.04 4.856 0 2.865 2.088 5.635 2.379 6.027.292.392 4.108 6.275 9.948 8.8 1.389.597 2.472.955 3.315 1.222 1.393.442 2.662.379 3.666.23 1.135-.169 3.457-1.411 3.944-2.775.487-1.363.487-2.532.339-2.775z"/></svg>
-    </a>
-
-    <!-- Core App Logic -->
-    <script src="js/app.js"></script>
+    <!-- Scripts -->
+    <script src="/js/app.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const grid = document.getElementById('product-grid');
+        document.addEventListener('DOMContentLoaded', async () => {
+            const productList = document.getElementById('product-list');
             const emptyState = document.getElementById('empty-state');
-            const searchInput = document.getElementById('searchInput');
-            const categoryBtns = document.querySelectorAll('.category-btn');
-            
-            let currentFilter = 'All';
-            let searchQuery = '';
+            const catButtons = document.querySelectorAll('.cat-item');
+            const searchInput = document.getElementById('main-search');
 
-            function renderProducts() {
-                const products = appUtils.getProducts();
-                grid.innerHTML = '';
+            let currentCategory = 'All';
+
+            async function loadProducts(query = '', category = 'All') {
+                productList.innerHTML = `
+                    <div class="premium-card shimmer" style="height: 350px;"></div>
+                    <div class="premium-card shimmer" style="height: 350px;"></div>
+                    <div class="premium-card shimmer" style="height: 350px;"></div>
+                    <div class="premium-card shimmer" style="height: 350px;"></div>
+                `;
                 
-                // Filter logic
-                const filtered = products.filter(p => {
-                    const matchCategory = currentFilter === 'All' || p.category === currentFilter;
-                    const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-                    return matchCategory && matchSearch;
+                const products = await store.getProducts({ 
+                    search: query, 
+                    category: category === 'All' ? '' : category 
                 });
 
-                if(filtered.length === 0) {
-                    grid.classList.add('hidden');
-                    emptyState.classList.remove('hidden');
+                if (products.length === 0) {
+                    productList.style.display = 'none';
+                    emptyState.style.display = 'block';
                     return;
                 }
 
-                grid.classList.remove('hidden');
-                emptyState.classList.add('hidden');
+                productList.style.display = 'grid';
+                emptyState.style.display = 'none';
+                productList.innerHTML = '';
 
-                // Render Card
-                filtered.forEach(p => {
-                    const isOutOfStock = p.stock === 0;
-                    const priceHtml = p.discount > 0 
-                        ? `<p class="text-xs text-gray-400 line-through">${appUtils.formatRupiah(p.originalPrice)}</p>
-                           <p class="text-sm md:text-base font-bold text-primary-600">${appUtils.formatRupiah(p.finalPrice)}</p>`
-                        : `<p class="text-sm md:text-base font-bold text-primary-600">${appUtils.formatRupiah(p.finalPrice)}</p>`;
-
-                    const discountBadge = p.discount > 0 
-                        ? `<div class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-lg z-10 shadow-sm">-${p.discount}%</div>` 
-                        : '';
-
-                    const stockOverlay = isOutOfStock
-                        ? `<div class="absolute inset-0 bg-black/60 z-20 flex items-center justify-center rounded-t-2xl"><span class="bg-gray-800 text-white px-4 py-1.5 rounded-full font-semibold text-sm border border-gray-600">Stock Habis</span></div>`
-                        : '';
-
+                products.forEach((p, index) => {
+                    const priceFormatted = store.formatRupiah(p.final_price);
+                    const oldPrice = p.discount > 0 ? store.formatRupiah(p.price) : '';
+                    const discountBadge = p.discount > 0 ? `<div class="card-badge">OFF ${p.discount}%</div>` : '';
+                    
                     const card = `
-                        <a href="product.html?id=${p.id}" class="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition duration-300 flex flex-col overflow-hidden relative group ${isOutOfStock ? 'opacity-80 pointer-events-none' : ''}">
-                            ${discountBadge}
-                            <div class="relative w-full aspect-[4/3] bg-gray-100 overflow-hidden">
-                                ${stockOverlay}
-                                <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        <div class="premium-card stagger-in" style="animation-delay: ${index * 0.1}s">
+                            <div class="card-image-wrap">
+                                ${discountBadge}
+                                <img src="${p.image_url || 'https://via.placeholder.com/300'}" alt="${p.name}">
                             </div>
-                            <div class="p-4 flex flex-col flex-grow">
-                                <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1">${p.category}</span>
-                                <h4 class="text-sm font-semibold text-gray-800 line-clamp-2 md:leading-snug mb-3 flex-grow">${p.name}</h4>
-                                <div class="mt-auto flex justify-between items-end">
-                                    <div>${priceHtml}</div>
+                            <div class="card-content">
+                                <span class="card-category">${p.category}</span>
+                                <h3 class="card-title">${p.name}</h3>
+                                <div class="card-price-row">
+                                    <div class="price-wrap">
+                                        ${oldPrice ? `<div class="price-was">${oldPrice}</div>` : ''}
+                                        <div class="price-now">${priceFormatted}</div>
+                                    </div>
+                                    <a href="/product.html?id=${p.id}" class="btn-cta-small" style="background: rgba(34,197,94,0.1); color: var(--primary); padding: 8px 12px; border-radius: 8px; font-weight: 700;">Detail</a>
                                 </div>
                             </div>
-                        </a>
+                        </div>
                     `;
-                    grid.insertAdjacentHTML('beforeend', card);
+                    productList.insertAdjacentHTML('beforeend', card);
                 });
             }
 
-            // Events
-            searchInput.addEventListener('input', (e) => {
-                searchQuery = e.target.value;
-                renderProducts();
-            });
-
-            categoryBtns.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    // Update active styling
-                    categoryBtns.forEach(b => {
-                        b.classList.remove('bg-primary-50', 'text-primary-600', 'border-primary-500', 'active');
-                        b.classList.add('bg-white', 'text-gray-600', 'border-gray-200');
-                    });
-                    const target = e.target;
-                    target.classList.remove('bg-white', 'text-gray-600', 'border-gray-200');
-                    target.classList.add('bg-primary-50', 'text-primary-600', 'border-primary-500', 'active');
-                    
-                    currentFilter = target.getAttribute('data-val');
-                    renderProducts();
+            // Category Click Handler
+            catButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    catButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentCategory = btn.dataset.val;
+                    loadProducts(searchInput.value, currentCategory);
                 });
             });
 
-            // Initial render
-            renderProducts();
+            // Search Handler
+            let searchTimer;
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(() => {
+                    loadProducts(e.target.value, currentCategory);
+                }, 500);
+            });
+
+            // Initial Load
+            loadProducts();
         });
     </script>
 </body>
