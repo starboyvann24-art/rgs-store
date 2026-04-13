@@ -2,8 +2,9 @@ import express, { Express, Request, Response, NextFunction } from 'express';
 import path from 'path';
 import * as dotenv from 'dotenv';
 
-// Load environment variables FIRST before anything else
-dotenv.config();
+// Load .env with absolute path — wajib agar terbaca di cPanel/Phusion Passenger
+// __dirname di dist/server.js → naik 1 level → root project
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 
 import { testConnection, initializeDatabase } from './config/database';
 import authRoutes from './routes/auth.routes';

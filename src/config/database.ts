@@ -1,7 +1,9 @@
 import mysql, { Pool, PoolOptions } from 'mysql2/promise';
 import * as dotenv from 'dotenv';
+import path from 'path';
 
-dotenv.config();
+// Absolute path agar .env selalu terbaca di cPanel
+dotenv.config({ path: path.resolve(__dirname, '..', '..', '.env') });
 
 // ============================================================
 // RGS STORE — MySQL Database Connection & Schema Initializer

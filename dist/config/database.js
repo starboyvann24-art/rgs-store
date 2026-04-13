@@ -42,7 +42,9 @@ exports.generateUUID = generateUUID;
 exports.generateOrderNumber = generateOrderNumber;
 const promise_1 = __importDefault(require("mysql2/promise"));
 const dotenv = __importStar(require("dotenv"));
-dotenv.config();
+const path_1 = __importDefault(require("path"));
+// Absolute path agar .env selalu terbaca di cPanel
+dotenv.config({ path: path_1.default.resolve(__dirname, '..', '..', '.env') });
 // ============================================================
 // RGS STORE — MySQL Database Connection & Schema Initializer
 // Production-ready connection pool with auto table creation

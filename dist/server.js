@@ -39,8 +39,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const path_1 = __importDefault(require("path"));
 const dotenv = __importStar(require("dotenv"));
-// Load environment variables FIRST before anything else
-dotenv.config();
+// Load .env with absolute path — wajib agar terbaca di cPanel/Phusion Passenger
+// __dirname di dist/server.js → naik 1 level → root project
+dotenv.config({ path: path_1.default.resolve(__dirname, '..', '.env') });
 const database_1 = require("./config/database");
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const product_routes_1 = __importDefault(require("./routes/product.routes"));
