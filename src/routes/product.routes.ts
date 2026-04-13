@@ -7,10 +7,10 @@ import {
   updateProduct,
   deleteProduct,
   getCategories
-} from '../controllers/product.controller.js';
-import { validate } from '../middleware/validate.middleware.js';
-import { createProductSchema, updateProductSchema } from '../validations/product.validation.js';
-import { verifyToken, isAdmin } from '../middleware/auth.middleware.js';
+} from '../controllers/product.controller';
+import { validate } from '../middleware/validate.middleware';
+import { createProductSchema, updateProductSchema } from '../validations/product.validation';
+import { verifyToken, isAdmin } from '../middleware/auth.middleware';
 
 // ============================================================
 // RGS STORE — Product Routes

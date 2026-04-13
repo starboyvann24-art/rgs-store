@@ -58,7 +58,7 @@ app.use('/api', (req: Request, res: Response) => {
 
 // ─── SPA FALLBACK ─────────────────────────────────────────────
 // All non-API routes serve index.html (for frontend routing)
-app.get('*', (_req: Request, res: Response) => {
+app.use((_req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
