@@ -84,7 +84,7 @@ app.use('/api', (req, res) => {
 });
 // ─── SPA FALLBACK ─────────────────────────────────────────────
 // All non-API routes serve index.html (for frontend routing)
-app.get('*', (_req, res) => {
+app.use((_req, res) => {
     res.sendFile(path_1.default.join(__dirname, '..', 'public', 'index.html'));
 });
 // ─── GLOBAL ERROR HANDLER ─────────────────────────────────────
