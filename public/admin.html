@@ -218,6 +218,67 @@
 
     </div>
 
+    <!-- Modal Form Produk (RESTORED & FIXED) -->
+    <div id="modal-product" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 hidden opacity-0 transition-opacity">
+        <div id="modal-product-inner" class="bg-white rounded-2xl shadow-xl w-full max-w-2xl transform scale-95 transition-transform overflow-hidden">
+            <div class="p-5 border-b flex justify-between items-center bg-gray-50">
+                <h3 class="font-bold text-gray-800 text-lg" id="modal-product-title">Tambah Produk</h3>
+                <button onclick="closeFormModal()" class="text-gray-400 hover:text-red-500"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+            <div class="p-6 max-h-[70vh] overflow-y-auto">
+                <form id="formTambahProduk" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="hidden" id="form-id">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Nama Produk</label>
+                        <input type="text" id="form-name" name="name" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Kategori</label>
+                        <select id="form-category" name="category" class="w-full px-3 py-2 border rounded-lg focus:ring-2 bg-white">
+                            <option value="Mobile Legends">Mobile Legends</option>
+                            <option value="Free Fire">Free Fire</option>
+                            <option value="PUBG Mobile">PUBG Mobile</option>
+                            <option value="Genshin Impact">Genshin Impact</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Stok</label>
+                        <input type="number" id="form-stock" name="stock" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Harga Dasar (Rp)</label>
+                        <input type="number" id="form-price" name="price" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Diskon (%)</label>
+                        <input type="number" id="form-discount" name="discount" value="0" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Varian (Pisahkan dengan koma)</label>
+                        <input type="text" name="variants_input" id="form-variants" placeholder="5 Diamond, 10 Diamond, dst" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Deskripsi</label>
+                        <textarea id="form-desc" name="description" rows="3" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"></textarea>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Gambar Produk</label>
+                        <input type="file" id="form-image" name="image" accept="image/*" class="w-full px-3 py-2 border rounded-lg text-xs bg-white">
+                        <div id="current-image-container" class="mt-2 hidden">
+                            <p class="text-[10px] text-gray-400 mb-1">Gambar Saat Ini:</p>
+                            <img id="current-image" src="" class="h-20 rounded border">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="p-4 border-t bg-gray-50 flex justify-end gap-2">
+                <button type="button" onclick="closeFormModal()" class="px-4 py-2 font-medium bg-white border rounded-lg text-gray-600 hover:bg-gray-100 transition">Batal</button>
+                <button type="button" onclick="window.submitProdukBaru(event)" id="btn-save-product" class="px-6 py-2 font-bold bg-primary-500 text-white rounded-lg shadow hover:bg-primary-600 transition">Simpan Produk</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Form Payment -->
     <div id="modal-payment" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 hidden opacity-0 transition-opacity">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg transform scale-95 transition-transform">
@@ -271,6 +332,50 @@
 
     <script src="js/app.js"></script>
     <script>
+        // NUCLEAR FIX: Global Submit Function
+        window.submitProdukBaru = async function(e) {
+            if(e) e.preventDefault();
+            alert("Tombol Hidup! Memulai pengiriman..."); 
+
+            const form = document.getElementById('formTambahProduk');
+            if(!form) {
+                alert("Error: Form HTML 'formTambahProduk' tidak ditemukan!");
+                return;
+            }
+
+            const formData = new FormData(form);
+            const id = document.getElementById('form-id').value;
+            
+            // Manual variant parsing for FormData to match backend
+            const vStr = document.getElementById('form-variants').value;
+            const vArr = vStr.split(',').map(x => x.trim()).filter(x => x);
+            formData.set('variants', JSON.stringify(vArr));
+
+            try {
+                const url = id ? `/api/products/${id}` : '/api/products';
+                const method = id ? 'PUT' : 'POST';
+                
+                // Get token from appUtils or localStorage
+                const token = localStorage.getItem('rgs_token');
+
+                const response = await fetch(url, {
+                    method: method,
+                    body: formData,
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                if(!response.ok) throw new Error(data.message || 'Gagal di server');
+
+                alert("ALHAMDULILLAH! Produk berhasil ditambahkan/diperbarui!");
+                window.location.reload();
+            } catch (err) {
+                alert("Gagal mengirim: " + err.message);
+            }
+        };
+
         (function() {
             let cachedProducts = [];
             let currentUserId = null;
