@@ -17,7 +17,7 @@ const poolConfig: PoolOptions = {
   port: parseInt(process.env.DB_PORT || '3306', 10),
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'rgs_store',
+  database: 'tgevcisg_rgs_store', // SYNCED: cPanel DB Name
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
@@ -193,14 +193,13 @@ const INSERT_DEFAULT_PAYMENT_METHODS = `
 `;
 
 // ─── REAL PRODUCT SEEDER ──────────────────────────────────────
-// 7 produk digital real: Streaming, Discord, Hosting
 const PRODUCTS_SEED = [
   {
     name: 'Netflix Premium 4K (1 Bulan)',
     category: 'Streaming',
     description: 'Akun Netflix Premium 4K Ultra HD. Privat Profile. Garansi replace 1x24 jam.',
-    price: 45000,
-    discount: 22,
+    price: 35000,
+    discount: 0,
     stock: 99,
     image_url: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg'
   },
@@ -208,8 +207,8 @@ const PRODUCTS_SEED = [
     name: 'Netflix Premium 4K (3 Bulan)',
     category: 'Streaming',
     description: 'Akun Netflix Premium 4K 3 Bulan. Hemat & Stabil. Garansi Full.',
-    price: 130000,
-    discount: 24,
+    price: 99000,
+    discount: 0,
     stock: 50,
     image_url: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg'
   },
@@ -217,8 +216,8 @@ const PRODUCTS_SEED = [
     name: 'Spotify Premium (1 Bulan)',
     category: 'Music',
     description: 'Spotify Premium Individual. Akun baru/lama. Tanpa iklan.',
-    price: 25000,
-    discount: 20,
+    price: 20000,
+    discount: 0,
     stock: 99,
     image_url: 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg'
   },
@@ -226,8 +225,8 @@ const PRODUCTS_SEED = [
     name: 'Spotify Premium (3 Bulan)',
     category: 'Music',
     description: 'Spotify Premium 3 Bulan. Lebih hemat & praktis.',
-    price: 65000,
-    discount: 15,
+    price: 55000,
+    discount: 0,
     stock: 50,
     image_url: 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg'
   },
@@ -235,8 +234,8 @@ const PRODUCTS_SEED = [
     name: 'YouTube Premium (1 Bulan)',
     category: 'Streaming',
     description: 'YouTube Premium No Ads, Background Play. via Invite Family.',
-    price: 20000,
-    discount: 25,
+    price: 15000,
+    discount: 0,
     stock: 99,
     image_url: 'https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg'
   },
@@ -244,8 +243,8 @@ const PRODUCTS_SEED = [
     name: 'YouTube Premium (3 Bulan)',
     category: 'Streaming',
     description: 'YouTube Premium 3 Bulan. Nonton makin nyaman tanpa gangguan.',
-    price: 55000,
-    discount: 27,
+    price: 40000,
+    discount: 0,
     stock: 50,
     image_url: 'https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg'
   },
@@ -253,8 +252,8 @@ const PRODUCTS_SEED = [
     name: 'Discord Nitro Boost (1 Bulan)',
     category: 'Discord',
     description: 'Nitro Boost dengan 2 server boost, emoji custom, & avatar animasi.',
-    price: 80000,
-    discount: 25,
+    price: 60000,
+    discount: 0,
     stock: 50,
     image_url: 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0b5061df29d55a92d945_full_logo_blurple_RGB.svg'
   },
@@ -262,8 +261,8 @@ const PRODUCTS_SEED = [
     name: 'Discord Nitro Basic (1 Bulan)',
     category: 'Discord',
     description: 'Nitro Basic dengan emoji custom & badge eksklusif.',
-    price: 45000,
-    discount: 33,
+    price: 30000,
+    discount: 0,
     stock: 50,
     image_url: 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0b5061df29d55a92d945_full_logo_blurple_RGB.svg'
   },
@@ -271,8 +270,8 @@ const PRODUCTS_SEED = [
     name: 'Panel Pterodactyl 4GB RAM',
     category: 'Hosting',
     description: 'Panel Pterodactyl 4GB RAM, 2 CPU Core, 20GB SSD. Hosting Bot/Web.',
-    price: 35000,
-    discount: 28,
+    price: 25000,
+    discount: 0,
     stock: 20,
     image_url: 'https://pterodactyl.io/images/logo.png'
   }

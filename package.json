@@ -2,11 +2,11 @@
   "name": "rgs-store",
   "version": "2.0.0",
   "description": "RGS STORE — Marketplace Digital Premium (Node.js Monolithic)",
-  "main": "dist/server.js",
+  "main": "app.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node app.js",
     "db:init": "ts-node src/db/migrate.ts"
   },
   "keywords": [
