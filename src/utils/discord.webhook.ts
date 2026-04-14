@@ -24,10 +24,11 @@ interface DiscordEmbed {
  * Fails silently — will never throw or crash the main app.
  */
 export async function sendDiscordWebhook(embed: DiscordEmbed): Promise<void> {
-  const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
+  const FALLBACK_URL = 'https://discord.com/api/webhooks/1493406609861251153/O1-aaY3nsVmW7MRl_Q8AEwbkcYCipL7pj0gjqBm2JEC-rTHUkZBdkkUSUO5XUkaxNSWv';
+  const webhookUrl = process.env.DISCORD_WEBHOOK_URL || FALLBACK_URL;
 
   if (!webhookUrl || !webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
-    // Silently skip — webhook not configured
+    // Should not happen with fallback, but safe check
     return;
   }
 

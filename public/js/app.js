@@ -106,6 +106,8 @@ const store = {
         return res.success ? res.data : [];
     },
 
+    async getAllProductsAdmin() { return this.getAdminProducts(); },
+
     // ─── ORDERS ───────────────────────────────────────────────
     async createOrder(data) {
         return this.apiCall('/orders', { method: 'POST', body: JSON.stringify(data) });
@@ -249,12 +251,19 @@ const store = {
         });
     },
 
+    formatDateShort(dt) {
+        if (!dt) return '-';
+        return new Date(dt).toLocaleDateString('id-ID', {
+            day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+        });
+    },
+
     statusBadge(status) {
         const map = {
             pending:    '<span class="badge badge-pending">⏳ Pending</span>',
             processing: '<span class="badge badge-processing">🔄 Proses</span>',
             shipped:    '<span class="badge badge-shipped">📦 Dikirim</span>',
-            success:    '<span class="badge badge-success">✅ Sukses</span>',
+            success:    '<span class="badge badge-success">✅ Selesai</span>',
             failed:     '<span class="badge badge-failed">❌ Gagal</span>',
             cancelled:  '<span class="badge badge-cancelled">🚫 Batal</span>',
             open:       '<span class="badge badge-open">📭 Open</span>',
@@ -264,12 +273,19 @@ const store = {
         return map[status] || `<span class="badge">${status}</span>`;
     },
 
-    renderStars(rating, max = 5) {
-        let html = '';
-        for (let i = 1; i <= max; i++) {
-            html += `<span class="star ${i <= rating ? 'active' : ''}">★</span>`;
+    getStatusBadge(status) { return this.statusBadge(status); },
+
+    renderStars(rating, total = 0) {
+        let starsHtml = '';
+        const r = Math.round(rating || 0);
+        for (let i = 1; i <= 5; i++) {
+            starsHtml += `<span class="star ${i <= r ? 'active' : ''}" style="color:${i <= r ? '#f59e0b' : '#334155'}; font-size:0.8rem">★</span>`;
         }
-        return `<div class="star-rating">${html}</div>`;
+        return `
+            <div style="display:flex;align-items:center;gap:4px">
+                <div style="display:flex">${starsHtml}</div>
+                ${total > 0 ? `<span style="font-size:0.7rem;color:var(--text-muted);font-weight:600">(${total})</span>` : ''}
+            </div>`;
     },
 
     // ─── NAVBAR ───────────────────────────────────────────────

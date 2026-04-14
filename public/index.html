@@ -170,7 +170,7 @@
         </div>
     </div>
     <div class="footer-bottom">
-        <span class="dev-credit">Created with 💚 by <span class="dev-name">Evan</span> | RGS STORE © 2026. All rights reserved.</span>
+        <span class="dev-credit">Created with 💚 by <span class="dev-name cursor-pointer">Evan</span> | RGS STORE © 2026</span>
     </div>
 </footer>
 
@@ -214,11 +214,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         emptyState.style.display = 'none';
         productList.innerHTML = '';
 
-        products.forEach((p, i) => {
+        for (const [i, p] of products.entries()) {
             const finalPrice = store.formatRupiah(p.final_price);
             const origPrice  = p.discount > 0 ? store.formatRupiah(p.price) : '';
             const disc       = p.discount > 0 ? `<div class="discount-badge">-${p.discount}%</div>` : '';
             const imgSrc     = p.image_url || 'https://placehold.co/400x400/1e293b/22c55e?text=RGS';
+            
+            // Get review summary if available or just render placeholder stars
+            // Note: In high production, we'd include this in getProducts response
+            const reviewData = await store.getProductReviews(p.id);
+            const stars      = store.renderStars(reviewData.summary.avg_rating, reviewData.summary.total);
 
             productList.insertAdjacentHTML('beforeend', `
                 <div class="product-card fade-up" style="animation-delay:${i * 0.07}s" onclick="location.href='/product.html?id=${p.id}'">
@@ -229,14 +234,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="product-card-body">
                         <div class="product-cat">${p.category}</div>
                         <div class="product-name">${p.name}</div>
-                        <div class="product-price-row">
+                        <div style="margin-bottom:10px">${stars}</div>
+                        <div class="product-price-row" style="display:flex; flex-direction:column; gap:2px">
                             ${origPrice ? `<div class="price-was">${origPrice}</div>` : ''}
                             <div class="price-now">${finalPrice}</div>
                         </div>
                         <div class="btn-detail">Lihat Detail →</div>
                     </div>
                 </div>`);
-        });
+        }
     }
 
     catPills.forEach(btn => {

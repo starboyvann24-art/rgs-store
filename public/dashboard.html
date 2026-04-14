@@ -101,30 +101,65 @@
                 return;
             }
 
-            orders.forEach(o => {
-                const badge = appUtils.getStatusBadge(o.status);
-                const date = appUtils.formatDate(o.created_at);
+                orders.forEach(o => {
+                    const badge = appUtils.getStatusBadge(o.status);
+                    const date = appUtils.formatDate(o.created_at);
+                    const isDone = o.status === 'success' || o.status === 'shipped';
 
-                ctn.insertAdjacentHTML('beforeend', `
-                    <div class="border border-gray-200 rounded-xl p-5 hover:border-gray-300 transition bg-white shadow-sm">
-                        <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3 border-b pb-4 mb-4">
-                            <div>
-                                <span class="font-bold text-gray-800">#${o.order_number}</span>
-                                <p class="text-xs text-gray-500 mt-0.5">${date}</p>
+                    ctn.insertAdjacentHTML('beforeend', `
+                        <div class="border border-gray-200 rounded-xl p-5 hover:border-gray-300 transition bg-white shadow-sm">
+                            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3 border-b pb-4 mb-4">
+                                <div>
+                                    <span class="font-bold text-gray-800">#${o.order_number}</span>
+                                    <p class="text-xs text-gray-500 mt-0.5">${date}</p>
+                                </div>
+                                ${badge}
                             </div>
-                            ${badge}
-                        </div>
-                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                            <div>
-                                <p class="font-semibold text-gray-800">${o.product_name}</p>
-                                <p class="text-xs text-gray-500 mt-0.5">Jumlah: ${o.qty} · Metode: ${o.payment_method}</p>
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                <div>
+                                    <p class="font-semibold text-gray-800">${o.product_name}</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">Jumlah: ${o.qty} · Metode: ${o.payment_method}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-extrabold text-primary-600 text-lg">${appUtils.formatRupiah(parseInt(o.total_price))}</p>
+                                    ${isDone ? `<button onclick="openReviewModal('${o.id}', '${o.product_id}', '${o.product_name.replace(/'/g,"\\'")}')" class="text-[10px] font-bold text-orange-500 hover:underline mt-1">⭐️ Tulis Ulasan</button>` : ''}
+                                </div>
                             </div>
-                            <p class="font-extrabold text-primary-600 text-lg">${appUtils.formatRupiah(parseInt(o.total_price))}</p>
+                            ${o.credentials ? `
+                            <div class="mt-4 p-3 bg-gray-900 rounded-lg border border-primary-500/30">
+                                <label class="block text-[10px] uppercase font-black text-primary-500 mb-1 tracking-widest">Akses / Kredensial Produk:</label>
+                                <div class="font-mono text-xs text-green-400 break-all select-all">${o.credentials}</div>
+                            </div>` : ''}
                         </div>
-                    </div>
-                `);
-            });
+                });
+
+                window.openReviewModal = function(orderId, productId, productName) {
+                    const rating = prompt(`Berikan rating untuk "${productName}" (1-5):`, "5");
+                    if (!rating || isNaN(rating) || rating < 1 || rating > 5) return;
+                    const comment = prompt(`Tulis ulasan singkat Anda:`, "Mantap, proses cepat!");
+                    if (!comment) return;
+                    
+                    store.createReview(orderId, rating, comment).then(res => {
+                        if (res.success) appUtils.showToast('Ulasan berhasil dikirim!', 'success');
+                        else appUtils.showToast(res.message, 'error');
+                    });
+                };
+            }
         });
     </script>
+    <!-- Footer -->
+    <footer style="margin-top:4rem">
+        <div class="footer-bottom">
+            <span class="dev-credit">Created with 💚 by <span class="dev-name cursor-pointer">Evan</span> | RGS STORE © 2026</span>
+        </div>
+    </footer>
+
+    <!-- Floating Buttons -->
+    <a href="https://wa.me/62882016259591" target="_blank" class="wa-float" title="Chat WhatsApp">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+    <button class="cs-float" onclick="store.openTicketModal()" title="Buat Tiket Bantuan">
+        <i class="fa-solid fa-headset"></i>
+    </button>
 </body>
 </html>

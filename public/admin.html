@@ -34,6 +34,10 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
                 Pesanan Masuk
             </button>
+            <button onclick="switchTab('tickets')" id="btn-tab-tickets" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 text-gray-300 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                Pusat Bantuan
+            </button>
         </nav>
         <div class="p-4 border-t border-gray-800 mt-auto">
              <a href="index.html" class="block w-full text-center px-4 py-2 text-gray-400 hover:text-white rounded-lg transition font-medium text-xs mb-2">← Kembali ke Toko</a>
@@ -79,6 +83,10 @@
                         <div class="text-gray-500 font-medium mb-1 flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-green-500"></div> Produk Aktif</div>
                         <div class="text-3xl font-extrabold text-gray-800" id="stat-products">0</div>
                     </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <div class="text-gray-500 font-medium mb-1 flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-red-500"></div> Tiket Aktif</div>
+                        <div class="text-3xl font-extrabold text-red-600" id="stat-tickets">0</div>
+                    </div>
                 </div>
             </div>
 
@@ -111,18 +119,37 @@
                 <h2 class="text-2xl font-bold mb-6">Daftar Pesanan Masuk</h2>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
-                    <table class="w-full text-left min-w-[900px]">
+                    <table class="w-full text-left min-w-[1000px]">
                         <thead class="bg-gray-50 border-b">
                             <tr>
                                 <th class="p-4 font-semibold text-gray-600">Order / Waktu</th>
                                 <th class="p-4 font-semibold text-gray-600">Pelanggan</th>
                                 <th class="p-4 font-semibold text-gray-600">Item</th>
                                 <th class="p-4 font-semibold text-gray-600">Total</th>
+                                <th class="p-4 font-semibold text-gray-600">Kredensial / Akun</th>
                                 <th class="p-4 font-semibold text-gray-600 text-center">Status</th>
-                                <th class="p-4 font-semibold text-gray-600 text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="admin-table-orders" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB: Tiket -->
+            <div id="tab-tickets" class="tab-content">
+                <h2 class="text-2xl font-bold mb-6">Pusat Bantuan (Tiket CS)</h2>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+                    <table class="w-full text-left min-w-[900px]">
+                        <thead class="bg-gray-50 border-b">
+                            <tr>
+                                <th class="p-4 font-semibold text-gray-600">Tiket #</th>
+                                <th class="p-4 font-semibold text-gray-600">User</th>
+                                <th class="p-4 font-semibold text-gray-600">Subject / Masalah</th>
+                                <th class="p-4 font-semibold text-gray-600">Status</th>
+                                <th class="p-4 font-semibold text-gray-600 text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-tickets" class="divide-y divide-gray-100"></tbody>
                     </table>
                 </div>
             </div>
@@ -231,11 +258,16 @@
             cachedProducts = await appUtils.getAllProductsAdmin();
             document.getElementById('stat-products').textContent = cachedProducts.filter(p => p.is_active).length;
 
+            // Load tickets
+            const tickets = await appUtils.getAllTickets();
+            document.getElementById('stat-tickets').textContent = tickets.filter(t => t.status !== 'closed').length;
+
             // Load all orders
             cachedOrders = await appUtils.getAllOrders();
 
             renderProductsTable();
             renderOrdersTable();
+            renderTicketsTable(tickets);
         }
 
         function renderProductsTable() {
@@ -288,6 +320,8 @@
             cachedOrders.forEach(o => {
                 const date = appUtils.formatDateShort(o.created_at);
                 const badge = appUtils.getStatusBadge(o.status);
+                const showCreds = o.status === 'processing' || o.status === 'shipped' || o.status === 'success';
+                
                 tbody.innerHTML += `
                 <tr class="hover:bg-gray-50">
                     <td class="p-4">
@@ -296,13 +330,19 @@
                     </td>
                     <td class="p-4 text-xs font-medium text-gray-600">${o.user_name || '-'}<br><span class="text-gray-400">${o.user_email || '-'}</span></td>
                     <td class="p-4 text-xs">
-                        <span class="line-clamp-2">${o.product_name}</span>
+                        <span class="line-clamp-2 font-semibold">${o.product_name}</span>
                         <span class="text-gray-400">x${o.qty}</span>
                     </td>
                     <td class="p-4 font-bold text-primary-600">${appUtils.formatRupiah(parseInt(o.total_price))}</td>
-                    <td class="p-4 text-center">${badge}</td>
+                    <td class="p-4">
+                        ${showCreds ? `
+                        <div class="flex gap-1">
+                            <input type="text" id="creds-${o.id}" value="${o.credentials || ''}" placeholder="Kirim Akun/Link..." class="text-[10px] border rounded px-2 py-1 flex-grow outline-none focus:ring-1 focus:ring-primary-500">
+                            <button onclick="sendCredentials('${o.id}')" class="bg-primary-500 text-white p-1 rounded hover:bg-primary-600" title="Kirim"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></button>
+                        </div>` : '<span class="text-gray-300 text-[10px]">Menunggu Proses</span>'}
+                    </td>
                     <td class="p-4 text-center">
-                        <select onchange="changeOrderStatus('${o.id}', this.value)" class="text-xs border rounded-lg px-2 py-1.5 bg-white focus:ring-2 focus:ring-primary-500 outline-none">
+                        <select onchange="changeOrderStatus('${o.id}', this.value)" class="text-[10px] border rounded px-1 py-1 bg-white outline-none">
                             <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Pending</option>
                             <option value="processing" ${o.status === 'processing' ? 'selected' : ''}>Proses</option>
                             <option value="success" ${o.status === 'success' ? 'selected' : ''}>Selesai</option>
@@ -312,6 +352,57 @@
                     </td>
                 </tr>`;
             });
+        }
+
+        async function sendCredentials(orderId) {
+            const creds = document.getElementById(`creds-${orderId}`).value;
+            if (!creds) return appUtils.showToast('Kredensial wajib diisi!', 'error');
+            
+            const res = await appUtils.deliverOrder(orderId, creds);
+            if (res.success) {
+                appUtils.showToast('Kredensial berhasil dikirim!', 'success');
+                await loadDashboard();
+            } else {
+                appUtils.showToast(res.message, 'error');
+            }
+        }
+
+        function renderTicketsTable(tickets) {
+            const tbody = document.getElementById('admin-table-tickets');
+            tbody.innerHTML = '';
+            if (tickets.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-400">Belum ada tiket bantuan.</td></tr>';
+                return;
+            }
+            tickets.forEach(t => {
+                const badge = appUtils.getStatusBadge(t.status);
+                tbody.innerHTML += `
+                <tr class="hover:bg-gray-50">
+                    <td class="p-4 font-bold">#${t.ticket_number}</td>
+                    <td class="p-4 text-xs font-medium">${t.user_name}<br><span class="text-gray-400">${t.user_email}</span></td>
+                    <td class="p-4 text-xs">
+                        <p class="font-bold">${t.subject}</p>
+                        <p class="text-gray-500 line-clamp-1">${t.message}</p>
+                    </td>
+                    <td class="p-4 text-center">${badge}</td>
+                    <td class="p-4 text-right">
+                        <button onclick="replyTicket('${t.id}')" class="text-[10px] bg-blue-100 text-blue-700 font-bold px-3 py-1.5 rounded hover:bg-blue-200 transition">Balas & Tutup</button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        async function replyTicket(id) {
+            const reply = prompt("Kirim balasan ke user (Tiket akan otomatis ditutup):");
+            if (!reply) return;
+            
+            const res = await appUtils.replyTicket(id, reply);
+            if (res.success) {
+                appUtils.showToast('Tiket berhasil dibalas dan ditutup.', 'success');
+                await loadDashboard();
+            } else {
+                appUtils.showToast(res.message, 'error');
+            }
         }
 
         // ORDER STATUS CHANGE
