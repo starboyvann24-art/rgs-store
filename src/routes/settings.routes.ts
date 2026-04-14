@@ -8,10 +8,10 @@ import { verifyToken, isAdmin } from '../middleware/auth.middleware';
 
 const router: Router = Router();
 
-// GET /api/v1/settings — Get all settings (public)
+// GET /api/settings — Get all settings (public)
 router.get('/', getSettings);
 
-// PUT /api/v1/settings — Update settings (admin only)
+// PUT /api/settings — Update settings (admin only)
 router.put('/', verifyToken, isAdmin, updateSettings);
 
 export default router;

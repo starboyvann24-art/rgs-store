@@ -22,31 +22,31 @@ const router: Router = Router();
 
 // --- SPECIFIC ROUTES FIRST (before /:id) ---
 
-// GET /api/v1/products/categories/list — Get distinct categories
+// GET /api/products/categories/list — Get distinct categories
 router.get('/categories/list', getCategories);
 
-// GET /api/v1/products/admin/all — Get ALL products including inactive (admin only)
+// GET /api/products/admin/all — Get ALL products including inactive (admin only)
 router.get('/admin/all', verifyToken, isAdmin, getAllProducts);
 
 // --- PUBLIC ROUTES ---
 
-// GET /api/v1/products — Get active products (with optional ?category=&search=)
+// GET /api/products — Get active products (with optional ?category=&search=)
 router.get('/', getProducts);
 
 // --- PARAMETERIZED ROUTES LAST ---
 
-// GET /api/v1/products/:id — Get single product
+// GET /api/products/:id — Get single product
 router.get('/:id', getProductById);
 
 // --- ADMIN ROUTES (auth + admin role) ---
 
-// POST /api/v1/products — Create new product
+// POST /api/products — Create new product
 router.post('/', verifyToken, isAdmin, uploadProductLogo.single('image'), createProduct);
 
-// PUT /api/v1/products/:id — Update product
+// PUT /api/products/:id — Update product
 router.put('/:id', verifyToken, isAdmin, uploadProductLogo.single('image'), updateProduct);
 
-// DELETE /api/v1/products/:id — Delete product
+// DELETE /api/products/:id — Delete product
 router.delete('/:id', verifyToken, isAdmin, deleteProduct);
 
 export default router;

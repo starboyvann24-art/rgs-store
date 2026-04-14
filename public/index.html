@@ -203,16 +203,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (query) params.search = query;
         if (cat !== 'All') params.category = cat;
 
-        const products = await store.getProducts(params);
+        try {
+            const products = await store.getProducts(params);
 
-        if (!products.length) {
-            productList.style.display = 'none';
-            emptyState.style.display = 'block';
+            if (!products.length) {
+                productList.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+            productList.style.display = 'grid';
+            emptyState.style.display = 'none';
+            productList.innerHTML = '';
+            
+            // ... render products ...
+        } catch (err) {
+            console.error('Home Load Error:', err);
+            productList.innerHTML = `
+                <div style="grid-column: 1 / -1; padding: 40px; text-align: center;">
+                    <p style="color:var(--text-muted); margin-bottom: 20px;">Gagal memuat produk. Silakan periksa koneksi internet Anda.</p>
+                    <button onclick="location.reload()" class="btn-orange" style="padding: 10px 20px;">Coba Lagi 🔄</button>
+                </div>`;
             return;
         }
-        productList.style.display = 'grid';
-        emptyState.style.display = 'none';
-        productList.innerHTML = '';
 
         for (const [i, p] of products.entries()) {
             const finalPrice = store.formatRupiah(p.final_price);

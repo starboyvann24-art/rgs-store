@@ -19,26 +19,26 @@ import { verifyToken, isAdmin } from '../middleware/auth.middleware';
 const router: Router = Router();
 
 // USER ROUTES (requires auth)
-// POST /api/v1/orders — Create new order
+// POST /api/orders — Create new order
 router.post('/', verifyToken, validate(createOrderSchema), createOrder);
 
-// GET /api/v1/orders/me — Get my orders
+// GET /api/orders/me — Get my orders
 router.get('/me', verifyToken, getMyOrders);
 
 // ADMIN ROUTES (auth + admin role)
-// GET /api/v1/orders/stats/summary — Get order statistics
+// GET /api/orders/stats/summary — Get order statistics
 router.get('/stats/summary', verifyToken, isAdmin, getOrderStats);
 
-// GET /api/v1/orders — Get all orders (admin)
+// GET /api/orders — Get all orders (admin)
 router.get('/', verifyToken, isAdmin, getAllOrders);
 
-// GET /api/v1/orders/:id — Get single order (admin or owner)
+// GET /api/orders/:id — Get single order (admin or owner)
 router.get('/:id', verifyToken, getOrderById);
 
-// PUT /api/v1/orders/:id/status — Update order status (admin)
+// PUT /api/orders/:id/status — Update order status (admin)
 router.put('/:id/status', verifyToken, isAdmin, validate(updateOrderStatusSchema), updateOrderStatus);
 
-// PUT /api/v1/orders/:id/deliver — Ship order + set credentials (admin)
+// PUT /api/orders/:id/deliver — Ship order + set credentials (admin)
 router.put('/:id/deliver', verifyToken, isAdmin, validate(deliverOrderSchema), deliverOrder);
 
 export default router;

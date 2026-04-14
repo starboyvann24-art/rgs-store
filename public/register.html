@@ -55,23 +55,33 @@
         document.getElementById('form-register').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-submit');
-            btn.disabled = true;
-            btn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white inline mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Loading...';
+            
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white inline mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Loading...';
 
-            const res = await appUtils.register(
-                document.getElementById('reg-name').value,
-                document.getElementById('reg-email').value,
-                document.getElementById('reg-password').value,
-                document.getElementById('reg-whatsapp').value
-            );
+                const res = await appUtils.register(
+                    document.getElementById('reg-name').value,
+                    document.getElementById('reg-email').value,
+                    document.getElementById('reg-password').value,
+                    document.getElementById('reg-whatsapp').value
+                );
 
-            if (res.success) {
-                appUtils.showToast('Registrasi berhasil!', 'success');
-                setTimeout(() => { window.location.href = 'index.html'; }, 800);
-            } else {
-                appUtils.showToast(res.message, 'error');
-                btn.disabled = false;
-                btn.innerHTML = 'Daftar Akun';
+                if (res.success) {
+                    appUtils.showToast('Registrasi berhasil!', 'success');
+                    setTimeout(() => { window.location.href = 'index.html'; }, 800);
+                } else {
+                    appUtils.showToast(res.message, 'error');
+                }
+            } catch (err) {
+                console.error('Register Error:', err);
+                appUtils.showToast('Gagal mendaftar. Coba lagi nanti.', 'error');
+            } finally {
+                const resuccess = (appUtils.getToken() !== null);
+                if (!resuccess) {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Daftar Akun';
+                }
             }
         });
     </script>

@@ -50,24 +50,35 @@
         document.getElementById('form-login').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-submit');
-            btn.disabled = true;
-            btn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white inline mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Logging in...';
+            
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white inline mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Logging in...';
 
-            const res = await appUtils.login(
-                document.getElementById('login-email').value,
-                document.getElementById('login-password').value
-            );
+                const res = await appUtils.login(
+                    document.getElementById('login-email').value,
+                    document.getElementById('login-password').value
+                );
 
-            if (res.success) {
-                appUtils.showToast('Login berhasil!', 'success');
-                setTimeout(() => {
-                    const user = res.data.user;
-                    window.location.href = user.role === 'admin' ? 'admin.html' : 'index.html';
-                }, 800);
-            } else {
-                appUtils.showToast(res.message, 'error');
-                btn.disabled = false;
-                btn.innerHTML = 'Masuk Sekarang';
+                if (res.success) {
+                    appUtils.showToast('Login berhasil!', 'success');
+                    setTimeout(() => {
+                        const user = res.data.user;
+                        window.location.href = user.role === 'admin' ? 'admin.html' : 'index.html';
+                    }, 800);
+                } else {
+                    appUtils.showToast(res.message, 'error');
+                }
+            } catch (err) {
+                console.error('Login Error:', err);
+                appUtils.showToast('Terjadi kesalahan saat login. Coba lagi.', 'error');
+            } finally {
+                // Ensure button is reset even on crash
+                const resuccess = (appUtils.getToken() !== null);
+                if (!resuccess) {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Masuk Sekarang';
+                }
             }
         });
     </script>

@@ -10,13 +10,13 @@ import { verifyToken } from '../middleware/auth.middleware';
 
 const router: Router = Router();
 
-// POST /api/v1/auth/register — Register new user
+// POST /api/auth/register — Register new user
 router.post('/register', validate(registerSchema), register);
 
-// POST /api/v1/auth/login — Login
+// POST /api/auth/login — Login
 router.post('/login', validate(loginSchema), login);
 
-// GET /api/v1/auth/me — Get current user profile (protected)
+// GET /api/auth/me — Get current user profile (protected)
 router.get('/me', verifyToken, getMe);
 
 export default router;

@@ -8,10 +8,10 @@ import { verifyToken } from '../middleware/auth.middleware';
 
 const router: Router = Router();
 
-// POST /api/v1/reviews — Create review for completed order (user)
+// POST /api/reviews — Create review for completed order (user)
 router.post('/', verifyToken, createReview);
 
-// GET /api/v1/reviews/product/:productId — Get product reviews (public)
+// GET /api/reviews/product/:productId — Get product reviews (public)
 router.get('/product/:productId', getProductReviews);
 
 export default router;

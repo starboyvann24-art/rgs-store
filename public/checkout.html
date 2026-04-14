@@ -119,11 +119,9 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // Guard: must be logged in
-            if (!appUtils.requireAuth()) return;
+            if (!appUtils.requireLogin()) return;
 
             const user = appUtils.getSavedUser();
-
-            // Get product ID from URL
             const urlParams = new URLSearchParams(window.location.search);
             const productId = urlParams.get('id');
 
@@ -132,38 +130,47 @@
                 return;
             }
 
-            // Load product from API
-            const product = await appUtils.getProductById(productId);
+            try {
+                // Load product from API
+                const product = await appUtils.getProductById(productId);
 
-            if (!product) {
-                document.getElementById('checkout-loading').innerHTML = '<p class="text-red-500 font-semibold">Produk tidak ditemukan.</p><a href="index.html" class="text-primary-600 hover:underline text-sm mt-2 inline-block">Kembali</a>';
+                if (!product) {
+                    document.getElementById('checkout-loading').innerHTML = '<p class="text-red-500 font-semibold">Produk tidak ditemukan.</p><a href="index.html" class="text-primary-600 hover:underline text-sm mt-2 inline-block">Kembali</a>';
+                    return;
+                }
+                
+                // ... fill UI ...
+                const price = parseInt(product.final_price);
+                const imgSrc = product.image_url || 'https://via.placeholder.com/100x100?text=No+Image';
+
+                // Fill form with user data
+                document.getElementById('co-name').value = user.name;
+                document.getElementById('co-email').value = user.email;
+
+                // Fill product detail
+                document.getElementById('checkout-product-detail').innerHTML = `
+                    <img src="${imgSrc}" class="w-16 h-16 rounded-xl object-cover border border-gray-100 shadow-sm" alt="${product.name}">
+                    <div class="flex-grow">
+                        <p class="font-semibold text-gray-800">${product.name}</p>
+                        <p class="text-xs text-gray-500">${product.category}</p>
+                    </div>
+                    <p class="font-bold text-primary-600 text-lg">${appUtils.formatRupiah(price)}</p>
+                `;
+
+                // Fill totals
+                document.getElementById('co-subtotal').textContent = appUtils.formatRupiah(price);
+                document.getElementById('co-total').textContent = appUtils.formatRupiah(price);
+
+                // Show content, hide loading
+                document.getElementById('checkout-loading').classList.add('hidden');
+                document.getElementById('checkout-content').classList.remove('hidden');
+            } catch (err) {
+                console.error('Checkout Load Error:', err);
+                document.getElementById('checkout-loading').innerHTML = `
+                    <p class="text-red-500 font-semibold">Gagal memuat data checkout.</p>
+                    <button onclick="location.reload()" class="btn-orange text-xs mt-4">Muat Ulang 🔄</button>`;
                 return;
             }
-
-            const price = parseInt(product.final_price);
-            const imgSrc = product.image_url || 'https://via.placeholder.com/100x100?text=No+Image';
-
-            // Fill form with user data
-            document.getElementById('co-name').value = user.name;
-            document.getElementById('co-email').value = user.email;
-
-            // Fill product detail
-            document.getElementById('checkout-product-detail').innerHTML = `
-                <img src="${imgSrc}" class="w-16 h-16 rounded-xl object-cover border border-gray-100 shadow-sm" alt="${product.name}">
-                <div class="flex-grow">
-                    <p class="font-semibold text-gray-800">${product.name}</p>
-                    <p class="text-xs text-gray-500">${product.category}</p>
-                </div>
-                <p class="font-bold text-primary-600 text-lg">${appUtils.formatRupiah(price)}</p>
-            `;
-
-            // Fill totals
-            document.getElementById('co-subtotal').textContent = appUtils.formatRupiah(price);
-            document.getElementById('co-total').textContent = appUtils.formatRupiah(price);
-
-            // Show content, hide loading
-            document.getElementById('checkout-loading').classList.add('hidden');
-            document.getElementById('checkout-content').classList.remove('hidden');
 
             // Payment selection UI
             const paymentRadios = document.querySelectorAll('input[name="payment"]');
@@ -180,22 +187,26 @@
                 const btn = document.getElementById('btn-pay');
                 const method = document.querySelector('input[name="payment"]:checked').value;
 
-                btn.disabled = true;
-                btn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Memproses...';
+                try {
+                    btn.disabled = true;
+                    btn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Memproses...';
 
-                const result = await appUtils.createOrder(product.id, 1, method);
+                    const result = await appUtils.createOrder({
+                        product_id: productId,
+                        payment_method: method
+                    });
 
-                if (result.success) {
-                    appUtils.showToast('Pesanan berhasil! Menuju WhatsApp...', 'success');
-
-                    // Use WA URL from API response
-                    const waUrl = result.data.whatsapp_url;
-
-                    setTimeout(() => {
-                        window.location.href = waUrl;
-                    }, 1500);
-                } else {
-                    appUtils.showToast(result.message, 'error');
+                    if (result.success) {
+                        appUtils.showToast('Pesanan berhasil! Menuju WhatsApp...', 'success');
+                        const waUrl = result.data.whatsapp_url;
+                        setTimeout(() => { window.location.href = waUrl; }, 1200);
+                    } else {
+                        appUtils.showToast(result.message, 'error');
+                    }
+                } catch (err) {
+                    console.error('Order Error:', err);
+                    appUtils.showToast('Terjadi kesalahan saat membuat pesanan.', 'error');
+                } finally {
                     btn.disabled = false;
                     btn.innerHTML = 'Bayar Sekarang <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>';
                 }

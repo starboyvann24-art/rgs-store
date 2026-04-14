@@ -435,6 +435,11 @@ const store = {
 window.store = store;
 window.appUtils = store; // Legacy pages use appUtils
 
+// Alias for backward compatibility with product.html
+store.configureNavbar = function() {
+    return this.updateNavbar();
+};
+
 // Auto-run on every page
 document.addEventListener('DOMContentLoaded', () => {
     store.updateNavbar();

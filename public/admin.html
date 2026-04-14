@@ -256,26 +256,33 @@
 
         // LOAD DATA
         async function loadDashboard() {
-            // Get stats from API
-            const stats = await appUtils.getOrderStats();
-            document.getElementById('stat-revenue').textContent = appUtils.formatRupiah(stats.total_revenue);
-            document.getElementById('stat-orders').textContent = stats.total_orders;
-            document.getElementById('stat-pending').textContent = stats.pending_orders;
+            try {
+                // Get stats from API
+                const stats = await appUtils.getOrderStats();
+                if (stats) {
+                    document.getElementById('stat-revenue').textContent = appUtils.formatRupiah(stats.total_revenue || 0);
+                    document.getElementById('stat-orders').textContent = stats.total_orders || 0;
+                    document.getElementById('stat-pending').textContent = stats.pending_orders || 0;
+                }
 
-            // Load products
-            cachedProducts = await appUtils.getAllProductsAdmin();
-            document.getElementById('stat-products').textContent = cachedProducts.filter(p => p.is_active).length;
+                // Load products
+                cachedProducts = await appUtils.getAllProductsAdmin() || [];
+                document.getElementById('stat-products').textContent = cachedProducts.filter(p => p.is_active).length;
 
-            // Load tickets
-            const tickets = await appUtils.getAllTickets();
-            document.getElementById('stat-tickets').textContent = tickets.filter(t => t.status !== 'closed').length;
+                // Load tickets
+                const tickets = await appUtils.getAllTickets() || [];
+                document.getElementById('stat-tickets').textContent = tickets.filter(t => t.status !== 'closed').length;
 
-            // Load all orders
-            cachedOrders = await appUtils.getAllOrders();
+                // Load all orders
+                cachedOrders = await appUtils.getAllOrders() || [];
 
-            renderProductsTable();
-            renderOrdersTable();
-            renderTicketsTable(tickets);
+                renderProductsTable();
+                renderOrdersTable();
+                renderTicketsTable(tickets);
+            } catch (err) {
+                console.error('Admin Load Error:', err);
+                appUtils.showToast('Gagal sinkronisasi data dari server.', 'error');
+            }
         }
 
         function renderProductsTable() {
@@ -513,23 +520,28 @@
                 formData.append('image', imageFile);
             }
 
-            let result;
-            if (editId) {
-                result = await appUtils.updateProduct(editId, formData);
-            } else {
-                result = await appUtils.createProduct(formData);
-            }
+            try {
+                let result;
+                if (editId) {
+                    result = await appUtils.updateProduct(editId, formData);
+                } else {
+                    result = await appUtils.createProduct(formData);
+                }
 
-            if (result.success) {
-                appUtils.showToast(editId ? 'Produk berhasil diperbarui!' : 'Produk berhasil ditambahkan!', 'success');
-                closeFormModal();
-                await loadDashboard();
-            } else {
-                appUtils.showToast(result.message, 'error');
+                if (result.success) {
+                    appUtils.showToast(editId ? 'Produk berhasil diperbarui!' : 'Produk berhasil ditambahkan!', 'success');
+                    closeFormModal();
+                    await loadDashboard();
+                } else {
+                    appUtils.showToast(result.message, 'error');
+                }
+            } catch (err) {
+                console.error('Save Product Error:', err);
+                appUtils.showToast('Gagal menyimpan produk. Coba lagi.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Simpan Produk';
             }
-
-            btn.disabled = false;
-            btn.textContent = 'Simpan Produk';
         });
 
         // IMAGE PREVIEW LOGIC
