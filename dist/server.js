@@ -52,7 +52,6 @@ const review_routes_1 = __importDefault(require("./routes/review.routes"));
 const payment_routes_1 = __importDefault(require("./routes/payment.routes"));
 const message_routes_1 = __importDefault(require("./routes/message.routes"));
 const auth_middleware_1 = require("./middleware/auth.middleware");
-const error_middleware_1 = require("./middleware/error.middleware");
 const response_1 = require("./utils/response");
 // ============================================================
 // RGS STORE — Main Server (Node.js Monolithic for cPanel)
@@ -109,8 +108,11 @@ app.use('/api', (req, res) => {
 app.use((_req, res) => {
     res.sendFile(path_1.default.join(__dirname, '..', 'public', 'index.html'));
 });
-// ─── GLOBAL ERROR HANDLER ─────────────────────────────────────
-app.use(error_middleware_1.errorHandler);
+// ─── GLOBAL ERROR HANDLER (HARDCODE FIX) ──────────────────────
+app.use((err, req, res, next) => {
+    console.error("CRITICAL SERVER ERROR:", err);
+    res.status(500).json({ success: false, message: err.message || "Internal Server Error" });
+});
 // ─── START SERVER ─────────────────────────────────────────────
 async function startServer() {
     try {

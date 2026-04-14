@@ -3,59 +3,36 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadQris = exports.uploadProductLogo = void 0;
+exports.uploadQris = exports.uploadProductLogo = exports.upload = void 0;
 const multer_1 = __importDefault(require("multer"));
-const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
-// Ensure upload directory exists
-const uploadDir = path_1.default.join(__dirname, '..', '..', 'public', 'logos');
-if (!fs_1.default.existsSync(uploadDir)) {
-    fs_1.default.mkdirSync(uploadDir, { recursive: true });
-}
-// Configure storage
+const path_1 = __importDefault(require("path"));
+// Storage configuration with auto-folder creation
 const storage = multer_1.default.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir);
+    destination: function (req, file, cb) {
+        let destFolder = 'public/uploads';
+        if (file.fieldname === 'qris_image') {
+            destFolder = 'public/qris';
+        }
+        else if (file.fieldname === 'image') {
+            destFolder = 'public/logos';
+        }
+        // AUTO CREATE FOLDER JIKA TIDAK ADA (INI WAJIB!)
+        const dir = path_1.default.join(process.cwd(), destFolder);
+        if (!fs_1.default.existsSync(dir)) {
+            fs_1.default.mkdirSync(dir, { recursive: true });
+        }
+        cb(null, dir);
     },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        const ext = path_1.default.extname(file.originalname);
-        cb(null, 'product-' + uniqueSuffix + ext);
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path_1.default.extname(file.originalname));
     }
 });
-// File filter (images only)
-const fileFilter = (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|webp|svg/;
-    const ext = allowedTypes.test(path_1.default.extname(file.originalname).toLowerCase());
-    const mime = allowedTypes.test(file.mimetype);
-    if (ext && mime) {
-        return cb(null, true);
-    }
-    cb(new Error('Hanya file gambar yang diperbolehkan!'));
-};
-// --- QRIS UPLOAD CONFIG ---
-const qrisDir = path_1.default.join(__dirname, '..', '..', 'public', 'qris');
-if (!fs_1.default.existsSync(qrisDir)) {
-    fs_1.default.mkdirSync(qrisDir, { recursive: true });
-}
-const qrisStorage = multer_1.default.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, qrisDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        const ext = path_1.default.extname(file.originalname);
-        cb(null, 'qris-' + uniqueSuffix + ext);
-    }
+exports.upload = (0, multer_1.default)({
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 } // Increase to 5MB
 });
-exports.uploadProductLogo = (0, multer_1.default)({
-    storage,
-    limits: { fileSize: 2 * 1024 * 1024 },
-    fileFilter
-});
-exports.uploadQris = (0, multer_1.default)({
-    storage: qrisStorage,
-    limits: { fileSize: 2 * 1024 * 1024 },
-    fileFilter
-});
+// For backward compatibility in routes
+exports.uploadProductLogo = exports.upload;
+exports.uploadQris = exports.upload;
 //# sourceMappingURL=upload.middleware.js.map

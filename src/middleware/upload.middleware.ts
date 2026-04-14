@@ -1,64 +1,34 @@
-import { Request } from 'express';
-import multer, { FileFilterCallback, StorageEngine } from 'multer';
-import path from 'path';
+import multer from 'multer';
 import fs from 'fs';
+import path from 'path';
 
-// Ensure upload directory exists
-const uploadDir = path.join(__dirname, '..', '..', 'public', 'logos');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Configure storage
-const storage: StorageEngine = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
+// Storage configuration with auto-folder creation
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    let destFolder = 'public/uploads';
+    if (file.fieldname === 'qris_image') {
+      destFolder = 'public/qris';
+    } else if (file.fieldname === 'image') {
+      destFolder = 'public/logos';
+    }
+    
+    // AUTO CREATE FOLDER JIKA TIDAK ADA (INI WAJIB!)
+    const dir = path.join(process.cwd(), destFolder);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
   },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
-    cb(null, 'product-' + uniqueSuffix + ext);
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname));
   }
 });
 
-// File filter (images only)
-const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
-  const allowedTypes = /jpeg|jpg|png|webp|svg/;
-  const ext = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mime = allowedTypes.test(file.mimetype);
-
-  if (ext && mime) {
-    return cb(null, true);
-  }
-  cb(new Error('Hanya file gambar yang diperbolehkan!'));
-};
-
-// --- QRIS UPLOAD CONFIG ---
-
-const qrisDir = path.join(__dirname, '..', '..', 'public', 'qris');
-if (!fs.existsSync(qrisDir)) {
-  fs.mkdirSync(qrisDir, { recursive: true });
-}
-
-const qrisStorage: StorageEngine = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, qrisDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
-    cb(null, 'qris-' + uniqueSuffix + ext);
-  }
+export const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 } // Increase to 5MB
 });
 
-export const uploadProductLogo = multer({
-  storage,
-  limits: { fileSize: 2 * 1024 * 1024 },
-  fileFilter
-});
-
-export const uploadQris = multer({
-  storage: qrisStorage,
-  limits: { fileSize: 2 * 1024 * 1024 },
-  fileFilter
-});
+// For backward compatibility in routes
+export const uploadProductLogo = upload;
+export const uploadQris = upload;

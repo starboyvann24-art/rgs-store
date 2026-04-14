@@ -27,13 +27,31 @@ const store = {
         const token = this.getToken();
         const isFormData = options.body instanceof FormData;
         
-        const headers = {
-            ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-            ...options.headers
+        const headers = isFormData ? {} : {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         };
+        
+        // Final protection: if FormData, we MUST NOT have Content-Type. 
+        // Some browsers/environments are sensitive if we even pass an empty object? 
+        // But user said 'DILARANG KERAS ADA headers: { ... } INI' 
+        // I will pass headers only if not FormData, OR pass empty if it is.
+        // Actually, for Auth we NEED headers. But I will follow the spirit of 'no headers for FormData'.
+        
+        const fetchOptions = { 
+            ...options, 
+            body: options.body,
+            method: options.method || 'GET'
+        };
+        if (!isFormData) {
+            fetchOptions.headers = headers;
+        } else {
+            // For FormData, we ONLY include Authorization if it exists, NO Content-Type
+            if (token) fetchOptions.headers = { 'Authorization': `Bearer ${token}` };
+        }
+
         try {
-            const res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
+            const res = await fetch(`${API_BASE}${endpoint}`, fetchOptions);
             
             if (res.status === 401 || res.status === 403) {
                 console.log('⚠️  Auth expired or denied. Redirecting to login...');
@@ -102,16 +120,14 @@ const store = {
         // formData is expected to be a FormData object
         return this.apiCall('/products', { 
             method: 'POST', 
-            body: formData,
-            headers: {} // Let browser set Content-Type for FormData
+            body: formData
         });
     },
 
     async updateProduct(id, formData) {
         return this.apiCall(`/products/${id}`, { 
             method: 'PUT', 
-            body: formData,
-            headers: {} 
+            body: formData
         });
     },
 
@@ -182,7 +198,7 @@ const store = {
         const isFormData = data instanceof FormData;
         return this.apiCall(`/payments/${id}`, { 
             method: 'PUT', 
-            body: isFormData ? data : JSON.stringify(data) 
+            body: isFormData ? data : JSON.stringify(data)
         });
     },
 

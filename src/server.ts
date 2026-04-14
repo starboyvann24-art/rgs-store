@@ -86,8 +86,11 @@ app.use((_req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
-// ─── GLOBAL ERROR HANDLER ─────────────────────────────────────
-app.use(errorHandler);
+// ─── GLOBAL ERROR HANDLER (HARDCODE FIX) ──────────────────────
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error("CRITICAL SERVER ERROR:", err);
+  res.status(500).json({ success: false, message: err.message || "Internal Server Error" });
+});
 
 // ─── START SERVER ─────────────────────────────────────────────
 async function startServer(): Promise<void> {
