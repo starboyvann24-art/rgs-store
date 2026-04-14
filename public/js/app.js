@@ -34,16 +34,23 @@ const store = {
         };
         try {
             const res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
-            const data = await res.json();
-            if (res.status === 401) {
+            
+            if (res.status === 401 || res.status === 403) {
+                console.log('⚠️  Auth expired or denied. Redirecting to login...');
                 this.removeAuth();
-                const onPublic = ['/', '/index.html', '/login.html', '/register.html', '/tos.html', '/product.html'].some(p => window.location.pathname.endsWith(p));
-                if (!onPublic) window.location.href = '/login.html';
+                const onPublic = ['/', '/index.html', '/login.html', '/register.html', '/tos.html', '/product.html'].some(p => window.location.pathname.includes(p));
+                if (!onPublic) {
+                    alert('Sesi Anda berakhir. Silakan login kembali.');
+                    window.location.href = '/login.html';
+                }
+                return { success: false, message: 'Unauthorized / Forbidden' };
             }
+
+            const data = await res.json();
             return data;
         } catch (err) {
-            console.error('API Error:', err);
-            return { success: false, message: 'Gagal terhubung ke server. Coba lagi.' };
+            console.error('📡 API Error:', { endpoint, err });
+            return { success: false, message: 'Gagal terhubung ke server. Periksa koneksi internet Anda.' };
         }
     },
 
@@ -154,25 +161,25 @@ const store = {
 
     // ─── PAYMENT METHODS ───────────────────────────────────────
     async getPaymentMethods() {
-        const res = await this.apiCall('/payment-methods');
+        const res = await this.apiCall('/payments');
         return res.success ? res.data : [];
     },
 
     async getAllPaymentMethods() {
-        const res = await this.apiCall('/payment-methods/all');
+        const res = await this.apiCall('/payments/all');
         return res.success ? res.data : [];
     },
 
     async createPaymentMethod(data) {
-        return this.apiCall('/payment-methods', { method: 'POST', body: JSON.stringify(data) });
+        return this.apiCall('/payments', { method: 'POST', body: JSON.stringify(data) });
     },
 
     async updatePaymentMethod(id, data) {
-        return this.apiCall(`/payment-methods/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+        return this.apiCall(`/payments/${id}`, { method: 'PUT', body: JSON.stringify(data) });
     },
 
     async deletePaymentMethod(id) {
-        return this.apiCall(`/payment-methods/${id}`, { method: 'DELETE' });
+        return this.apiCall(`/payments/${id}`, { method: 'DELETE' });
     },
 
     // ─── CS TICKETS ────────────────────────────────────────────
@@ -209,24 +216,24 @@ const store = {
 
     // ─── CHAT MESSAGES ─────────────────────────────────────────
     async sendMessage(message, target_user_id = null) {
-        return this.apiCall('/messages', {
+        return this.apiCall('/chat', {
             method: 'POST',
             body: JSON.stringify({ message, target_user_id })
         });
     },
 
     async getMyMessages() {
-        const res = await this.apiCall('/messages');
+        const res = await this.apiCall('/chat');
         return res.success ? res.data : [];
     },
 
     async getChatUsers() {
-        const res = await this.apiCall('/messages/users');
+        const res = await this.apiCall('/chat/users');
         return res.success ? res.data : [];
     },
 
     async getUserMessages(userId) {
-        const res = await this.apiCall(`/messages/user/${userId}`);
+        const res = await this.apiCall(`/chat/user/${userId}`);
         return res.success ? res.data : [];
     },
 

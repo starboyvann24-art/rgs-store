@@ -264,470 +264,525 @@
     <!-- Core App Logic -->
     <script src="js/app.js"></script>
     <script>
-        let cachedProducts = [];
-        let cachedOrders = [];
+        // Use a self-executing function to avoid global namespace pollution
+        (function() {
+            let cachedProducts = [];
+            let cachedOrders = [];
+            let currentUserId = null;
 
-        // TAB MANAGEMENT
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
+            // TAB MANAGEMENT
+            window.switchTab = function(tabId) {
+                try {
+                    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+                    const targetTab = document.getElementById('tab-' + tabId);
+                    if (targetTab) targetTab.classList.add('active');
 
-            document.querySelectorAll('.admin-tab').forEach(el => {
-                el.classList.remove('bg-primary-600', 'text-white');
-                el.classList.add('text-gray-300', 'hover:bg-gray-800');
-            });
-            const desk = document.getElementById('btn-tab-' + tabId);
-            if (desk) { desk.classList.add('bg-primary-600', 'text-white'); desk.classList.remove('text-gray-300', 'hover:bg-gray-800'); }
+                    document.querySelectorAll('.admin-tab').forEach(el => {
+                        el.classList.remove('bg-primary-600', 'text-white');
+                        el.classList.add('text-gray-300', 'hover:bg-gray-800');
+                    });
+                    const desk = document.getElementById('btn-tab-' + tabId);
+                    if (desk) { 
+                        desk.classList.add('bg-primary-600', 'text-white'); 
+                        desk.classList.remove('text-gray-300', 'hover:bg-gray-800'); 
+                    }
 
-            document.querySelectorAll('.admin-tab-mob').forEach(el => {
-                el.classList.remove('bg-primary-100', 'text-primary-700');
-                el.classList.add('text-gray-600', 'bg-gray-100');
-            });
-            const mob = document.getElementById('mob-tab-' + tabId);
-            if (mob) { mob.classList.add('bg-primary-100', 'text-primary-700'); mob.classList.remove('text-gray-600', 'bg-gray-100'); }
-        }
-
-        // LOAD DATA
-        async function loadDashboard() {
-            try {
-                // Get stats from API
-                const stats = await appUtils.getOrderStats();
-                if (stats) {
-                    document.getElementById('stat-revenue').textContent = appUtils.formatRupiah(stats.total_revenue || 0);
-                    document.getElementById('stat-orders').textContent = stats.total_orders || 0;
-                    document.getElementById('stat-pending').textContent = stats.pending_orders || 0;
+                    document.querySelectorAll('.admin-tab-mob').forEach(el => {
+                        el.classList.remove('bg-primary-100', 'text-primary-700');
+                        el.classList.add('text-gray-600', 'bg-gray-100');
+                    });
+                    const mob = document.getElementById('mob-tab-' + tabId);
+                    if (mob) { 
+                        mob.classList.add('bg-primary-100', 'text-primary-700'); 
+                        mob.classList.remove('text-gray-600', 'bg-gray-100'); 
+                    }
+                } catch (e) {
+                    console.error('Tab switch error:', e);
                 }
-
-                // Load products
-                cachedProducts = await appUtils.getAllProductsAdmin() || [];
-                document.getElementById('stat-products').textContent = cachedProducts.filter(p => p.is_active).length;
-
-                // Load tickets
-                const tickets = await appUtils.getAllTickets() || [];
-                document.getElementById('stat-tickets').textContent = tickets.filter(t => t.status !== 'closed').length;
-
-                // Load all orders
-                cachedOrders = await appUtils.getAllOrders() || [];
-
-                renderProductsTable();
-                renderOrdersTable();
-                renderTicketsTable(tickets);
-                renderPaymentsTable();
-                renderChatUsers();
-            } catch (err) {
-                console.error('Admin Load Error:', err);
-                appUtils.showToast('Gagal sinkronisasi data dari server.', 'error');
-            }
-        }
-
-        // PAYMENT MANAGEMENT Logic
-        async function renderPaymentsTable() {
-            const tbody = document.getElementById('admin-table-payments');
-            const data = await appUtils.getAllPaymentMethods();
-            tbody.innerHTML = '';
-            data.forEach(p => {
-                tbody.innerHTML += `
-                <tr class="hover:bg-gray-50">
-                    <td class="p-4 font-bold text-gray-800">${p.name}</td>
-                    <td class="p-4 text-xs capitalize">${p.type}</td>
-                    <td class="p-4 text-xs font-mono">${p.account_number || '-'}</td>
-                    <td class="p-4 text-xs">${p.account_name || '-'}</td>
-                    <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${p.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${p.is_active ? 'AKTIF' : 'NONAKTIF'}</span></td>
-                    <td class="p-4 text-right">
-                        <button onclick="editPayment('${p.id}')" class="text-xs text-blue-600 hover:underline">Edit</button>
-                        <button onclick="deletePayment('${p.id}')" class="ml-2 text-xs text-red-600 hover:underline">Hapus</button>
-                    </td>
-                </tr>`;
-            });
-        }
-
-        function openPaymentModal(pay = null) {
-            document.getElementById('form-payment-method').reset();
-            if (pay) {
-                document.getElementById('pay-id').value = pay.id;
-                document.getElementById('pay-name').value = pay.name;
-                document.getElementById('pay-type').value = pay.type;
-                document.getElementById('pay-number').value = pay.account_number || '';
-                document.getElementById('pay-account-name').value = pay.account_name || '';
-                document.getElementById('pay-active').checked = !!pay.is_active;
-            } else {
-                document.getElementById('pay-id').value = '';
-            }
-            const m = document.getElementById('modal-payment');
-            m.classList.remove('hidden');
-            setTimeout(() => { m.classList.remove('opacity-0'); m.querySelector('div').classList.remove('scale-95'); }, 10);
-        }
-
-        function closePaymentModal() {
-            const m = document.getElementById('modal-payment');
-            m.classList.add('opacity-0');
-            m.querySelector('div').classList.add('scale-95');
-            setTimeout(() => m.classList.add('hidden'), 300);
-        }
-
-        async function editPayment(id) {
-            const all = await appUtils.getAllPaymentMethods();
-            const p = all.find(x => x.id == id);
-            if (p) openPaymentModal(p);
-        }
-
-        async function deletePayment(id) {
-            if (!confirm('Hapus metode pembayaran ini?')) return;
-            const res = await appUtils.deletePaymentMethod(id);
-            if (res.success) { appUtils.showToast('Metode dihapus', 'success'); renderPaymentsTable(); }
-        }
-
-        document.getElementById('form-payment-method').onsubmit = async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('pay-id').value;
-            const data = {
-                name: document.getElementById('pay-name').value,
-                type: document.getElementById('pay-type').value,
-                account_number: document.getElementById('pay-number').value,
-                account_name: document.getElementById('pay-account-name').value,
-                is_active: document.getElementById('pay-active').checked
             };
-            const res = id ? await appUtils.updatePaymentMethod(id, data) : await appUtils.createPaymentMethod(data);
-            if (res.success) { appUtils.showToast('Berhasil disimpan', 'success'); closePaymentModal(); renderPaymentsTable(); }
-        };
 
-        // CHAT Logic
-        let currentUserId = null;
-        async function renderChatUsers() {
-            const list = document.getElementById('chat-user-list');
-            const users = await appUtils.getChatUsers();
-            list.innerHTML = '';
-            if (users.length === 0) { list.innerHTML = '<div class="p-8 text-center text-gray-400 text-xs">Belum ada chat.</div>'; return; }
-            users.forEach(u => {
-                list.innerHTML += `
-                <div onclick="selectUserChat('${u.user_id}', '${u.name}', '${u.email}')" class="p-4 hover:bg-gray-50 cursor-pointer transition ${currentUserId === u.user_id ? 'bg-primary-50 border-r-4 border-primary-500' : ''}">
-                    <p class="font-bold text-sm text-gray-800">${u.name}</p>
-                    <p class="text-[10px] text-gray-500 truncate">${u.last_message || 'N/A'}</p>
-                </div>`;
-            });
-        }
+            // LOAD DATA
+            async function loadDashboard() {
+                try {
+                    const stats = await appUtils.getOrderStats();
+                    if (stats) {
+                        const revEl = document.getElementById('stat-revenue');
+                        const ordEl = document.getElementById('stat-orders');
+                        const penEl = document.getElementById('stat-pending');
+                        if (revEl) revEl.textContent = appUtils.formatRupiah(stats.total_revenue || 0);
+                        if (ordEl) ordEl.textContent = stats.total_orders || 0;
+                        if (penEl) penEl.textContent = stats.pending_orders || 0;
+                    }
 
-        async function selectUserChat(userId, name, email) {
-            currentUserId = userId;
-            document.getElementById('current-chat-name').textContent = name;
-            document.getElementById('current-chat-email').textContent = email;
-            renderChatUsers(); // Refresh active state
-            loadCurrentMessages();
-        }
+                    cachedProducts = await appUtils.getAllProductsAdmin() || [];
+                    const prodStat = document.getElementById('stat-products');
+                    if (prodStat) prodStat.textContent = cachedProducts.filter(p => p.is_active).length;
 
-        async function loadCurrentMessages() {
-            if (!currentUserId) return;
-            const box = document.getElementById('chat-messages');
-            const msgs = await appUtils.getUserMessages(currentUserId);
-            box.innerHTML = '';
-            msgs.forEach(m => {
-                const isMe = m.is_admin === 1;
-                box.innerHTML += `
-                <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
-                    <div class="max-w-[80%] rounded-2xl px-4 py-2 text-sm ${isMe ? 'bg-primary-500 text-white rounded-tr-none' : 'bg-white border text-gray-800 rounded-tl-none'}">
-                        ${m.message}
-                        <div class="text-[8px] mt-1 opacity-70 text-right">${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
-                    </div>
-                </div>`;
-            });
-            box.scrollTop = box.scrollHeight;
-        }
+                    const tickets = await appUtils.getAllTickets() || [];
+                    const tickStat = document.getElementById('stat-tickets');
+                    if (tickStat) tickStat.textContent = tickets.filter(t => t.status !== 'closed').length;
 
-        async function sendAdminChat() {
-            const input = document.getElementById('admin-chat-input');
-            const msg = input.value.trim();
-            if (!msg || !currentUserId) return;
-            const res = await appUtils.sendMessage(msg, currentUserId);
-            if (res.success) {
-                input.value = '';
+                    cachedOrders = await appUtils.getAllOrders() || [];
+
+                    renderProductsTable();
+                    renderOrdersTable();
+                    renderTicketsTable(tickets);
+                    renderPaymentsTable();
+                    renderChatUsers();
+                } catch (err) {
+                    console.error('Admin Load Error:', err);
+                    appUtils.showToast('Gagal sinkronisasi data dari server.', 'error');
+                }
+            }
+
+            // Tables Rendering
+            function renderPaymentsTable() {
+                const tbody = document.getElementById('admin-table-payments');
+                if (!tbody) return;
+                appUtils.getAllPaymentMethods().then(data => {
+                    tbody.innerHTML = '';
+                    data.forEach(p => {
+                        tbody.innerHTML += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-4 font-bold text-gray-800">${p.name}</td>
+                            <td class="p-4 text-xs capitalize">${p.type}</td>
+                            <td class="p-4 text-xs font-mono">${p.account_number || '-'}</td>
+                            <td class="p-4 text-xs">${p.account_name || '-'}</td>
+                            <td class="p-4"><span class="px-2 py-1 rounded text-[10px] font-bold ${p.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${p.is_active ? 'AKTIF' : 'NONAKTIF'}</span></td>
+                            <td class="p-4 text-right">
+                                <button onclick="editPayment('${p.id}')" class="text-xs text-blue-600 hover:underline">Edit</button>
+                                <button onclick="deletePayment('${p.id}')" class="ml-2 text-xs text-red-600 hover:underline">Hapus</button>
+                            </td>
+                        </tr>`;
+                    });
+                }).catch(e => console.error('Render Payments Error:', e));
+            }
+
+            window.openPaymentModal = function(pay = null) {
+                const form = document.getElementById('form-payment-method');
+                if (!form) return;
+                form.reset();
+                if (pay) {
+                    document.getElementById('pay-id').value = pay.id;
+                    document.getElementById('pay-name').value = pay.name;
+                    document.getElementById('pay-type').value = pay.type;
+                    document.getElementById('pay-number').value = pay.account_number || '';
+                    document.getElementById('pay-account-name').value = pay.account_name || '';
+                    document.getElementById('pay-active').checked = !!pay.is_active;
+                } else {
+                    document.getElementById('pay-id').value = '';
+                }
+                const m = document.getElementById('modal-payment');
+                if (m) {
+                    m.classList.remove('hidden');
+                    setTimeout(() => { m.classList.remove('opacity-0'); m.querySelector('div').classList.remove('scale-95'); }, 10);
+                }
+            };
+
+            window.closePaymentModal = function() {
+                const m = document.getElementById('modal-payment');
+                if (m) {
+                    m.classList.add('opacity-0');
+                    m.querySelector('div').classList.add('scale-95');
+                    setTimeout(() => m.classList.add('hidden'), 300);
+                }
+            };
+
+            window.editPayment = async function(id) {
+                const all = await appUtils.getAllPaymentMethods();
+                const p = all.find(x => x.id == id);
+                if (p) openPaymentModal(p);
+            };
+
+            window.deletePayment = async function(id) {
+                if (!confirm('Hapus metode pembayaran ini?')) return;
+                const res = await appUtils.deletePaymentMethod(id);
+                if (res.success) { appUtils.showToast('Metode dihapus', 'success'); renderPaymentsTable(); }
+            };
+
+            // CHAT Logic
+            window.renderChatUsers = async function() {
+                const list = document.getElementById('chat-user-list');
+                if (!list) return;
+                const users = await appUtils.getChatUsers();
+                list.innerHTML = '';
+                if (users.length === 0) { list.innerHTML = '<div class="p-8 text-center text-gray-400 text-xs">Belum ada chat.</div>'; return; }
+                users.forEach(u => {
+                    const div = document.createElement('div');
+                    div.onclick = () => selectUserChat(u.user_id, u.name, u.email);
+                    div.className = `p-4 hover:bg-gray-50 cursor-pointer transition ${currentUserId === u.user_id ? 'bg-primary-50 border-r-4 border-primary-500' : ''}`;
+                    div.innerHTML = `
+                        <p class="font-bold text-sm text-gray-800">${u.name}</p>
+                        <p class="text-[10px] text-gray-500 truncate">${u.last_message || 'N/A'}</p>`;
+                    list.appendChild(div);
+                });
+            };
+
+            window.selectUserChat = async function(userId, name, email) {
+                currentUserId = userId;
+                const nameEl = document.getElementById('current-chat-name');
+                const emailEl = document.getElementById('current-chat-email');
+                if (nameEl) nameEl.textContent = name;
+                if (emailEl) emailEl.textContent = email;
+                renderChatUsers(); 
                 loadCurrentMessages();
-                renderChatUsers();
-            }
-        }
+            };
 
-        function renderProductsTable() {
-            const tbody = document.getElementById('admin-table-products');
-            tbody.innerHTML = '';
-            if (cachedProducts.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-gray-400">Belum ada produk. Klik "+ Tambah Produk Baru" untuk mulai.</td></tr>';
-                return;
-            }
-            cachedProducts.forEach((p, idx) => {
-                const fp = parseInt(p.final_price);
-                const disc = parseInt(p.discount);
-                const stock = parseInt(p.stock);
-                const imgSrc = p.image_url || 'https://via.placeholder.com/40x40?text=N';
-                tbody.innerHTML += `
-                <tr class="hover:bg-gray-50">
-                    <td class="p-4 text-center text-gray-500">${idx + 1}</td>
-                    <td class="p-4">
-                        <div class="flex items-center gap-3">
-                            <img src="${imgSrc}" class="w-10 h-10 rounded border object-cover">
-                            <div>
-                                <p class="font-bold text-gray-800 line-clamp-1">${p.name}</p>
-                                <span class="bg-gray-100 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold text-gray-500">${p.category}</span>
-                                ${!p.is_active ? '<span class="bg-red-100 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold text-red-500 ml-1">Nonaktif</span>' : ''}
-                            </div>
+            window.loadCurrentMessages = async function() {
+                if (!currentUserId) return;
+                const box = document.getElementById('chat-messages');
+                if (!box) return;
+                const msgs = await appUtils.getUserMessages(currentUserId);
+                box.innerHTML = '';
+                msgs.forEach(m => {
+                    const isMe = m.is_admin === 1;
+                    box.innerHTML += `
+                    <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
+                        <div class="max-w-[80%] rounded-2xl px-4 py-2 text-sm ${isMe ? 'bg-primary-500 text-white rounded-tr-none' : 'bg-white border text-gray-800 rounded-tl-none'}">
+                            ${m.message}
+                            <div class="text-[8px] mt-1 opacity-70 text-right">${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
                         </div>
-                    </td>
-                    <td class="p-4 font-semibold text-primary-600">${appUtils.formatRupiah(fp)}</td>
-                    <td class="p-4 text-center">
-                        ${disc > 0 ? `<span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold">-${disc}%</span>` : '-'}
-                    </td>
-                    <td class="p-4">
-                        <span class="px-2 py-1 ${stock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} rounded text-xs font-bold">${stock}</span>
-                    </td>
-                    <td class="p-4 text-right space-x-2">
-                        <button onclick="editProduct('${p.id}')" class="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded font-semibold transition">Edit</button>
-                        <button onclick="deleteProduct('${p.id}', '${p.name.replace(/'/g, "\\'")}')" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded font-semibold transition">Hapus</button>
-                    </td>
-                </tr>`;
-            });
-        }
+                    </div>`;
+                });
+                box.scrollTop = box.scrollHeight;
+            };
 
-        function renderOrdersTable() {
-            const tbody = document.getElementById('admin-table-orders');
-            tbody.innerHTML = '';
-            if (cachedOrders.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-gray-400">Belum ada pesanan masuk.</td></tr>';
-                return;
+            window.sendAdminChat = async function() {
+                const input = document.getElementById('admin-chat-input');
+                if (!input) return;
+                const msg = input.value.trim();
+                if (!msg || !currentUserId) return;
+                const res = await appUtils.sendMessage(msg, currentUserId);
+                if (res.success) {
+                    input.value = '';
+                    loadCurrentMessages();
+                    renderChatUsers();
+                }
+            };
+
+            function renderProductsTable() {
+                const tbody = document.getElementById('admin-table-products');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+                if (cachedProducts.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-gray-400">Belum ada produk. Klik "+ Tambah Produk Baru" untuk mulai.</td></tr>';
+                    return;
+                }
+                cachedProducts.forEach((p, idx) => {
+                    const fp = parseInt(p.final_price);
+                    const disc = parseInt(p.discount);
+                    const stock = parseInt(p.stock);
+                    const imgSrc = p.image_url || 'https://via.placeholder.com/40x40?text=N';
+                    tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-4 text-center text-gray-500">${idx + 1}</td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-3">
+                                <img src="${imgSrc}" class="w-10 h-10 rounded border object-cover">
+                                <div>
+                                    <p class="font-bold text-gray-800 line-clamp-1">${p.name}</p>
+                                    <span class="bg-gray-100 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold text-gray-500">${p.category}</span>
+                                    ${!p.is_active ? '<span class="bg-red-100 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold text-red-500 ml-1">Nonaktif</span>' : ''}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4 font-semibold text-primary-600">${appUtils.formatRupiah(fp)}</td>
+                        <td class="p-4 text-center">
+                            ${disc > 0 ? `<span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold">-${disc}%</span>` : '-'}
+                        </td>
+                        <td class="p-4">
+                            <span class="px-2 py-1 ${stock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} rounded text-xs font-bold">${stock}</span>
+                        </td>
+                        <td class="p-4 text-right space-x-2">
+                            <button onclick="editProduct('${p.id}')" class="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded font-semibold transition">Edit</button>
+                            <button onclick="deleteProduct('${p.id}', '${p.name.replace(/'/g, "\\'")}')" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded font-semibold transition">Hapus</button>
+                        </td>
+                    </tr>`;
+                });
             }
-            cachedOrders.forEach(o => {
-                const date = appUtils.formatDateShort(o.created_at);
-                const badge = appUtils.getStatusBadge(o.status);
-                const showCreds = o.status === 'processing' || o.status === 'shipped' || o.status === 'success';
+
+            function renderOrdersTable() {
+                const tbody = document.getElementById('admin-table-orders');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+                if (cachedOrders.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-gray-400">Belum ada pesanan masuk.</td></tr>';
+                    return;
+                }
+                cachedOrders.forEach(o => {
+                    const date = appUtils.formatDateShort(o.created_at);
+                    const badge = appUtils.getStatusBadge(o.status);
+                    const showCreds = o.status === 'processing' || o.status === 'shipped' || o.status === 'success';
+                    
+                    tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-4">
+                            <p class="font-bold text-gray-800">#${o.order_number}</p>
+                            <p class="text-[10px] text-gray-500">${date}</p>
+                        </td>
+                        <td class="p-4 text-xs font-medium text-gray-600">${o.user_name || '-'}<br><span class="text-gray-400">${o.user_email || '-'}</span></td>
+                        <td class="p-4 text-xs">
+                            <span class="line-clamp-2 font-semibold">${o.product_name}</span>
+                            <span class="text-gray-400">x${o.qty}</span>
+                        </td>
+                        <td class="p-4 font-bold text-primary-600">${appUtils.formatRupiah(parseInt(o.total_price))}</td>
+                        <td class="p-4">
+                            ${showCreds ? `
+                            <div class="flex gap-1">
+                                <input type="text" id="creds-${o.id}" value="${o.credentials || ''}" placeholder="Kirim Akun/Link..." class="text-[10px] border rounded px-2 py-1 flex-grow outline-none focus:ring-1 focus:ring-primary-500">
+                                <button onclick="sendCredentials('${o.id}')" class="bg-primary-500 text-white p-1 rounded hover:bg-primary-600" title="Kirim"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></button>
+                            </div>` : '<span class="text-gray-300 text-[10px]">Menunggu Proses</span>'}
+                        </td>
+                        <td class="p-4 text-center">
+                            <select onchange="changeOrderStatus('${o.id}', this.value)" class="text-[10px] border rounded px-1 py-1 bg-white outline-none">
+                                <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                <option value="processing" ${o.status === 'processing' ? 'selected' : ''}>Proses</option>
+                                <option value="success" ${o.status === 'success' ? 'selected' : ''}>Selesai</option>
+                                <option value="failed" ${o.status === 'failed' ? 'selected' : ''}>Gagal</option>
+                                <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>Batal</option>
+                            </select>
+                        </td>
+                    </tr>`;
+                });
+            }
+
+            window.sendCredentials = async function(orderId) {
+                const credEl = document.getElementById(`creds-${orderId}`);
+                if (!credEl) return;
+                const creds = credEl.value;
+                if (!creds) return appUtils.showToast('Kredensial wajib diisi!', 'error');
                 
-                tbody.innerHTML += `
-                <tr class="hover:bg-gray-50">
-                    <td class="p-4">
-                        <p class="font-bold text-gray-800">#${o.order_number}</p>
-                        <p class="text-[10px] text-gray-500">${date}</p>
-                    </td>
-                    <td class="p-4 text-xs font-medium text-gray-600">${o.user_name || '-'}<br><span class="text-gray-400">${o.user_email || '-'}</span></td>
-                    <td class="p-4 text-xs">
-                        <span class="line-clamp-2 font-semibold">${o.product_name}</span>
-                        <span class="text-gray-400">x${o.qty}</span>
-                    </td>
-                    <td class="p-4 font-bold text-primary-600">${appUtils.formatRupiah(parseInt(o.total_price))}</td>
-                    <td class="p-4">
-                        ${showCreds ? `
-                        <div class="flex gap-1">
-                            <input type="text" id="creds-${o.id}" value="${o.credentials || ''}" placeholder="Kirim Akun/Link..." class="text-[10px] border rounded px-2 py-1 flex-grow outline-none focus:ring-1 focus:ring-primary-500">
-                            <button onclick="sendCredentials('${o.id}')" class="bg-primary-500 text-white p-1 rounded hover:bg-primary-600" title="Kirim"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></button>
-                        </div>` : '<span class="text-gray-300 text-[10px]">Menunggu Proses</span>'}
-                    </td>
-                    <td class="p-4 text-center">
-                        <select onchange="changeOrderStatus('${o.id}', this.value)" class="text-[10px] border rounded px-1 py-1 bg-white outline-none">
-                            <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Pending</option>
-                            <option value="processing" ${o.status === 'processing' ? 'selected' : ''}>Proses</option>
-                            <option value="success" ${o.status === 'success' ? 'selected' : ''}>Selesai</option>
-                            <option value="failed" ${o.status === 'failed' ? 'selected' : ''}>Gagal</option>
-                            <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>Batal</option>
-                        </select>
-                    </td>
-                </tr>`;
-            });
-        }
-
-        async function sendCredentials(orderId) {
-            const creds = document.getElementById(`creds-${orderId}`).value;
-            if (!creds) return appUtils.showToast('Kredensial wajib diisi!', 'error');
-            
-            const res = await appUtils.deliverOrder(orderId, creds);
-            if (res.success) {
-                appUtils.showToast('Kredensial berhasil dikirim!', 'success');
-                await loadDashboard();
-            } else {
-                appUtils.showToast(res.message, 'error');
-            }
-        }
-
-        function renderTicketsTable(tickets) {
-            const tbody = document.getElementById('admin-table-tickets');
-            tbody.innerHTML = '';
-            if (tickets.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-400">Belum ada tiket bantuan.</td></tr>';
-                return;
-            }
-            tickets.forEach(t => {
-                const badge = appUtils.getStatusBadge(t.status);
-                tbody.innerHTML += `
-                <tr class="hover:bg-gray-50">
-                    <td class="p-4 font-bold">#${t.ticket_number}</td>
-                    <td class="p-4 text-xs font-medium">${t.user_name}<br><span class="text-gray-400">${t.user_email}</span></td>
-                    <td class="p-4 text-xs">
-                        <p class="font-bold">${t.subject}</p>
-                        <p class="text-gray-500 line-clamp-1">${t.message}</p>
-                    </td>
-                    <td class="p-4 text-center">${badge}</td>
-                    <td class="p-4 text-right">
-                        <button onclick="replyTicket('${t.id}')" class="text-[10px] bg-blue-100 text-blue-700 font-bold px-3 py-1.5 rounded hover:bg-blue-200 transition">Balas & Tutup</button>
-                    </td>
-                </tr>`;
-            });
-        }
-
-        async function replyTicket(id) {
-            const reply = prompt("Kirim balasan ke user (Tiket akan otomatis ditutup):");
-            if (!reply) return;
-            
-            const res = await appUtils.replyTicket(id, reply);
-            if (res.success) {
-                appUtils.showToast('Tiket berhasil dibalas dan ditutup.', 'success');
-                await loadDashboard();
-            } else {
-                appUtils.showToast(res.message, 'error');
-            }
-        }
-
-        // ORDER STATUS CHANGE
-        async function changeOrderStatus(orderId, newStatus) {
-            const result = await appUtils.updateOrderStatus(orderId, newStatus);
-            if (result.success) {
-                appUtils.showToast(`Status diperbarui: ${newStatus}`, 'success');
-                await loadDashboard();
-            } else {
-                appUtils.showToast(result.message, 'error');
-            }
-        }
-
-        // MODAL LOGIC
-        const modal = document.getElementById('modal-product');
-
-        function openFormModal(product = null) {
-            document.getElementById('form-admin-product').reset();
-            document.getElementById('form-discount').value = '0';
-            if (product) {
-                document.getElementById('modal-product-title').textContent = 'Edit Produk';
-                document.getElementById('form-id').value = product.id;
-                document.getElementById('form-name').value = product.name;
-                document.getElementById('form-category').value = product.category;
-                let varStr = '';
-                if (product.variants) {
-                    try { varStr = JSON.parse(product.variants).join(', '); }
-                    catch (e) { varStr = product.variants; }
-                }
-                document.getElementById('form-variants').value = varStr;
-                document.getElementById('form-price').value = product.price;
-                document.getElementById('form-discount').value = product.discount;
-                document.getElementById('form-stock').value = product.stock;
-                document.getElementById('form-desc').value = product.description || '';
-                
-                // Set current image preview
-                const currentImgCtn = document.getElementById('current-image-container');
-                const currentImg = document.getElementById('current-image');
-                if (product.image_url) {
-                    currentImgCtn.classList.remove('hidden');
-                    currentImg.src = product.image_url;
-                } else {
-                    currentImgCtn.classList.add('hidden');
-                }
-                document.getElementById('image-preview-container').classList.add('hidden');
-            } else {
-                document.getElementById('modal-product-title').textContent = 'Tambah Produk';
-                document.getElementById('form-id').value = '';
-                document.getElementById('current-image-container').classList.add('hidden');
-                document.getElementById('image-preview-container').classList.add('hidden');
-            }
-            modal.classList.remove('hidden');
-            setTimeout(() => { modal.classList.remove('opacity-0'); document.getElementById('modal-product-inner').classList.remove('scale-95'); }, 10);
-        }
-
-        function closeFormModal() {
-            modal.classList.add('opacity-0');
-            document.getElementById('modal-product-inner').classList.add('scale-95');
-            setTimeout(() => { modal.classList.add('hidden'); }, 300);
-        }
-
-        function editProduct(id) {
-            const p = cachedProducts.find(p => p.id === id);
-            if (p) openFormModal(p);
-        }
-
-        async function deleteProduct(id, name) {
-            if (!confirm(`Hapus produk "${name}"?`)) return;
-            const result = await appUtils.deleteProduct(id);
-            if (result.success) {
-                appUtils.showToast('Produk berhasil dihapus', 'success');
-                await loadDashboard();
-            } else {
-                appUtils.showToast(result.message, 'error');
-            }
-        }
-
-        // SAVE PRODUCT (Create or Update)
-        document.getElementById('form-admin-product').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btn-save-product');
-            btn.disabled = true;
-            btn.textContent = 'Menyimpan...';
-
-            const editId = document.getElementById('form-id').value;
-            const variantsRaw = document.getElementById('form-variants').value;
-            const variants = variantsRaw ? JSON.stringify(variantsRaw.split(',').map(v => v.trim()).filter(v => v)) : null;
-
-            const formData = new FormData();
-            formData.append('name', document.getElementById('form-name').value);
-            formData.append('category', document.getElementById('form-category').value);
-            formData.append('price', document.getElementById('form-price').value);
-            formData.append('discount', document.getElementById('form-discount').value || '0');
-            formData.append('stock', document.getElementById('form-stock').value);
-            formData.append('description', document.getElementById('form-desc').value);
-            formData.append('variants', variants || '');
-
-            const imageFile = document.getElementById('form-image').files[0];
-            if (imageFile) {
-                formData.append('image', imageFile);
-            }
-
-            try {
-                let result;
-                if (editId) {
-                    result = await appUtils.updateProduct(editId, formData);
-                } else {
-                    result = await appUtils.createProduct(formData);
-                }
-
-                console.log("Hasil simpan produk:", result);
-                if (result.success) {
-                    appUtils.showToast(editId ? '✅ Produk berhasil diperbarui!' : '✅ Produk berhasil ditambahkan ke database!', 'success');
-                    closeFormModal();
+                const res = await appUtils.deliverOrder(orderId, creds);
+                if (res.success) {
+                    appUtils.showToast('Kredensial berhasil dikirim!', 'success');
                     await loadDashboard();
                 } else {
-                    appUtils.showToast('❌ ' + result.message, 'error');
+                    appUtils.showToast(res.message, 'error');
                 }
-            } catch (err) {
-                console.error('Save Product Error:', err);
-                appUtils.showToast('Gagal menyimpan produk. Coba lagi.', 'error');
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'Simpan Produk';
-            }
-        });
+            };
 
-        // IMAGE PREVIEW LOGIC
-        document.getElementById('form-image').addEventListener('change', function(e) {
-            const container = document.getElementById('image-preview-container');
-            const preview = document.getElementById('image-preview');
-            const file = e.target.files[0];
-            
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    preview.src = event.target.result;
-                    container.classList.remove('hidden');
+            function renderTicketsTable(tickets) {
+                const tbody = document.getElementById('admin-table-tickets');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+                if (tickets.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-400">Belum ada tiket bantuan.</td></tr>';
+                    return;
                 }
-                reader.readAsDataURL(file);
-            } else {
-                container.classList.add('hidden');
+                tickets.forEach(t => {
+                    const badge = appUtils.getStatusBadge(t.status);
+                    tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-4 font-bold">#${t.ticket_number}</td>
+                        <td class="p-4 text-xs font-medium">${t.user_name}<br><span class="text-gray-400">${t.user_email}</span></td>
+                        <td class="p-4 text-xs">
+                            <p class="font-bold">${t.subject}</p>
+                            <p class="text-gray-500 line-clamp-1">${t.message}</p>
+                        </td>
+                        <td class="p-4 text-center">${badge}</td>
+                        <td class="p-4 text-right">
+                            <button onclick="replyTicket('${t.id}')" class="text-[10px] bg-blue-100 text-blue-700 font-bold px-3 py-1.5 rounded hover:bg-blue-200 transition">Balas & Tutup</button>
+                        </td>
+                    </tr>`;
+                });
             }
-        });
 
-        // INIT
-        document.addEventListener('DOMContentLoaded', async () => {
-            if (!appUtils.requireAdmin()) return;
-            await loadDashboard();
-        });
+            window.replyTicket = async function(id) {
+                const reply = prompt("Kirim balasan ke user (Tiket akan otomatis ditutup):");
+                if (!reply) return;
+                const res = await appUtils.replyTicket(id, reply);
+                if (res.success) {
+                    appUtils.showToast('Tiket berhasil dibalas dan ditutup.', 'success');
+                    await loadDashboard();
+                } else {
+                    appUtils.showToast(res.message, 'error');
+                }
+            };
+
+            window.changeOrderStatus = async function(orderId, newStatus) {
+                const result = await appUtils.updateOrderStatus(orderId, newStatus);
+                if (result.success) {
+                    appUtils.showToast(`Status diperbarui: ${newStatus}`, 'success');
+                    await loadDashboard();
+                } else {
+                    appUtils.showToast(result.message, 'error');
+                }
+            };
+
+            window.openFormModal = function(product = null) {
+                const form = document.getElementById('form-admin-product');
+                if (!form) return;
+                form.reset();
+                const discEl = document.getElementById('form-discount');
+                if (discEl) discEl.value = '0';
+
+                const modalTitle = document.getElementById('modal-product-title');
+                const idEl = document.getElementById('form-id');
+                const nameEl = document.getElementById('form-name');
+                const catEl = document.getElementById('form-category');
+                const varEl = document.getElementById('form-variants');
+                const priceEl = document.getElementById('form-price');
+                const stockEl = document.getElementById('form-stock');
+                const descEl = document.getElementById('form-desc');
+                const currentImgCtn = document.getElementById('current-image-container');
+                const currentImg = document.getElementById('current-image');
+                const previewCtn = document.getElementById('image-preview-container');
+
+                if (product) {
+                    if (modalTitle) modalTitle.textContent = 'Edit Produk';
+                    if (idEl) idEl.value = product.id;
+                    if (nameEl) nameEl.value = product.name;
+                    if (catEl) catEl.value = product.category;
+                    let varStr = '';
+                    if (product.variants) {
+                        try { varStr = JSON.parse(product.variants).join(', '); }
+                        catch (e) { varStr = product.variants; }
+                    }
+                    if (varEl) varEl.value = varStr;
+                    if (priceEl) priceEl.value = product.price;
+                    if (discEl) discEl.value = product.discount;
+                    if (stockEl) stockEl.value = product.stock;
+                    if (descEl) descEl.value = product.description || '';
+                    
+                    if (product.image_url) {
+                        if (currentImgCtn) currentImgCtn.classList.remove('hidden');
+                        if (currentImg) currentImg.src = product.image_url;
+                    } else {
+                        if (currentImgCtn) currentImgCtn.classList.add('hidden');
+                    }
+                    if (previewCtn) previewCtn.classList.add('hidden');
+                } else {
+                    if (modalTitle) modalTitle.textContent = 'Tambah Produk';
+                    if (idEl) idEl.value = '';
+                    if (currentImgCtn) currentImgCtn.classList.add('hidden');
+                    if (previewCtn) previewCtn.classList.add('hidden');
+                }
+                const m = document.getElementById('modal-product');
+                if (m) {
+                    m.classList.remove('hidden');
+                    setTimeout(() => { m.classList.remove('opacity-0'); document.getElementById('modal-product-inner').classList.remove('scale-95'); }, 10);
+                }
+            };
+
+            window.closeFormModal = function() {
+                const m = document.getElementById('modal-product');
+                if (m) {
+                    m.classList.add('opacity-0');
+                    const inner = document.getElementById('modal-product-inner');
+                    if (inner) inner.classList.add('scale-95');
+                    setTimeout(() => { m.classList.add('hidden'); }, 300);
+                }
+            };
+
+            window.editProduct = function(id) {
+                const p = cachedProducts.find(p => p.id === id);
+                if (p) openFormModal(p);
+            };
+
+            window.deleteProduct = async function(id, name) {
+                if (!confirm(`Hapus produk "${name}"?`)) return;
+                const result = await appUtils.deleteProduct(id);
+                if (result.success) {
+                    appUtils.showToast('Produk berhasil dihapus', 'success');
+                    await loadDashboard();
+                } else {
+                    appUtils.showToast(result.message, 'error');
+                }
+            };
+
+            // INIT EVERYTHING ON DOM READY
+            document.addEventListener('DOMContentLoaded', async () => {
+                if (!appUtils.requireAdmin()) return;
+
+                // Bind Form Submissions with e.preventDefault() and null-guards
+                const prodForm = document.getElementById('form-admin-product');
+                if (prodForm) {
+                    prodForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const btn = document.getElementById('btn-save-product');
+                        if (btn) { btn.disabled = true; btn.textContent = 'Menyimpan...'; }
+
+                        try {
+                            const editId = document.getElementById('form-id').value;
+                            const variantsRaw = document.getElementById('form-variants').value;
+                            const variants = variantsRaw ? JSON.stringify(variantsRaw.split(',').map(v => v.trim()).filter(v => v)) : null;
+
+                            const formData = new FormData();
+                            formData.append('name', document.getElementById('form-name').value);
+                            formData.append('category', document.getElementById('form-category').value);
+                            formData.append('price', document.getElementById('form-price').value);
+                            formData.append('discount', document.getElementById('form-discount').value || '0');
+                            formData.append('stock', document.getElementById('form-stock').value);
+                            formData.append('description', document.getElementById('form-desc').value);
+                            formData.append('variants', variants || '');
+
+                            const imageInp = document.getElementById('form-image');
+                            const imageFile = imageInp ? imageInp.files[0] : null;
+                            if (imageFile) formData.append('image', imageFile);
+
+                            let result = editId ? await appUtils.updateProduct(editId, formData) : await appUtils.createProduct(formData);
+
+                            if (result.success) {
+                                appUtils.showToast(editId ? '✅ Produk diperbarui!' : '✅ Produk ditambahkan!', 'success');
+                                closeFormModal();
+                                await loadDashboard();
+                            } else {
+                                appUtils.showToast('❌ ' + result.message, 'error');
+                            }
+                        } catch (err) {
+                            console.error('Save Product Error:', err);
+                            appUtils.showToast('Gagal menyimpan produk.', 'error');
+                        } finally {
+                            if (btn) { btn.disabled = false; btn.textContent = 'Simpan Produk'; }
+                        }
+                    });
+                }
+
+                const payForm = document.getElementById('form-payment-method');
+                if (payForm) {
+                    payForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const id = document.getElementById('pay-id').value;
+                        const data = {
+                            name: document.getElementById('pay-name').value,
+                            type: document.getElementById('pay-type').value,
+                            account_number: document.getElementById('pay-number').value,
+                            account_name: document.getElementById('pay-account-name').value,
+                            is_active: document.getElementById('pay-active').checked
+                        };
+                        try {
+                            const res = id ? await appUtils.updatePaymentMethod(id, data) : await appUtils.createPaymentMethod(data);
+                            if (res.success) { appUtils.showToast('✅ Berhasil disimpan', 'success'); closePaymentModal(); renderPaymentsTable(); }
+                        } catch (err) {
+                            console.error('Pay method error:', err);
+                            appUtils.showToast('Gagal menyimpan metode pembayaran.', 'error');
+                        }
+                    });
+                }
+
+                // Image Preview Guard
+                const imgInp = document.getElementById('form-image');
+                if (imgInp) {
+                    imgInp.addEventListener('change', function(e) {
+                        const container = document.getElementById('image-preview-container');
+                        const preview = document.getElementById('image-preview');
+                        const file = e.target.files[0];
+                        if (file && preview && container) {
+                            const reader = new FileReader();
+                            reader.onload = (ev) => { preview.src = ev.target.result; container.classList.remove('hidden'); };
+                            reader.readAsDataURL(file);
+                        } else if (container) {
+                            container.classList.add('hidden');
+                        }
+                    });
+                }
+
+                await loadDashboard();
+            });
+        })();
+    </script>
+</body>
+</html>
     </script>
 </body>
 </html>

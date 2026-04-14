@@ -94,8 +94,8 @@ apiRouter.use('/orders', order_routes_1.default);
 apiRouter.use('/settings', settings_routes_1.default);
 apiRouter.use('/tickets', ticket_routes_1.default);
 apiRouter.use('/reviews', review_routes_1.default);
-apiRouter.use('/payment-methods', payment_routes_1.default);
-apiRouter.use('/messages', message_routes_1.default);
+apiRouter.use('/payments', payment_routes_1.default);
+apiRouter.use('/chat', message_routes_1.default);
 // Register API router under /api
 app.use('/api', apiRouter);
 // ─── 404 HANDLER FOR API ROUTES ───────────────────────────────

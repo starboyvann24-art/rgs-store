@@ -67,8 +67,8 @@ apiRouter.use('/orders', orderRoutes);
 apiRouter.use('/settings', settingsRoutes);
 apiRouter.use('/tickets', ticketRoutes);
 apiRouter.use('/reviews', reviewRoutes);
-apiRouter.use('/payment-methods', paymentRoutes);
-apiRouter.use('/messages', messageRoutes);
+apiRouter.use('/payments', paymentRoutes);
+apiRouter.use('/chat', messageRoutes);
 
 // Register API router under /api
 app.use('/api', apiRouter);
