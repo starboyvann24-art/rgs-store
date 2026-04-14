@@ -37,7 +37,7 @@ const store = {
             const data = await res.json();
             if (res.status === 401) {
                 this.removeAuth();
-                const onPublic = ['/', '/index.html', '/login.html', '/register.html', '/tos.html'].some(p => window.location.pathname.endsWith(p));
+                const onPublic = ['/', '/index.html', '/login.html', '/register.html', '/tos.html', '/product.html'].some(p => window.location.pathname.endsWith(p));
                 if (!onPublic) window.location.href = '/login.html';
             }
             return data;
@@ -423,6 +423,11 @@ const store = {
             return false;
         }
         return true;
+    },
+
+    // Alias for backward compatibility with product.html
+    async configureNavbar() {
+        return this.updateNavbar();
     }
 };
 
