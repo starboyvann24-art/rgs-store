@@ -528,12 +528,13 @@
                     result = await appUtils.createProduct(formData);
                 }
 
+                console.log("Hasil simpan produk:", result);
                 if (result.success) {
-                    appUtils.showToast(editId ? 'Produk berhasil diperbarui!' : 'Produk berhasil ditambahkan!', 'success');
+                    appUtils.showToast(editId ? '✅ Produk berhasil diperbarui!' : '✅ Produk berhasil ditambahkan ke database!', 'success');
                     closeFormModal();
                     await loadDashboard();
                 } else {
-                    appUtils.showToast(result.message, 'error');
+                    appUtils.showToast('❌ ' + result.message, 'error');
                 }
             } catch (err) {
                 console.error('Save Product Error:', err);

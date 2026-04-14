@@ -118,8 +118,8 @@ const createProduct = async (req, res, next) => {
         const parseDiscount = parseInt(discount) || 0;
         const parseStock = parseInt(stock) || 0;
         const finalPrice = Math.round(parsePrice - (parsePrice * parseDiscount / 100));
-        await database_1.default.query(`INSERT INTO products (id, name, category, description, price, discount, final_price, stock, image_url, variants)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
+        await database_1.default.query(`INSERT INTO products (id, name, category, description, price, discount, final_price, stock, image_url, variants, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`, [
             id,
             name.trim(),
             category || 'Lainnya',

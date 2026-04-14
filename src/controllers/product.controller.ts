@@ -98,8 +98,8 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
     const finalPrice = Math.round(parsePrice - (parsePrice * parseDiscount / 100));
 
     await db.query(
-      `INSERT INTO products (id, name, category, description, price, discount, final_price, stock, image_url, variants)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO products (id, name, category, description, price, discount, final_price, stock, image_url, variants, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
       [
         id,
         name.trim(),
