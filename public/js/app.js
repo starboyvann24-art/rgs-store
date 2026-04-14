@@ -207,6 +207,29 @@ const store = {
         });
     },
 
+    // ─── CHAT MESSAGES ─────────────────────────────────────────
+    async sendMessage(message, target_user_id = null) {
+        return this.apiCall('/messages', {
+            method: 'POST',
+            body: JSON.stringify({ message, target_user_id })
+        });
+    },
+
+    async getMyMessages() {
+        const res = await this.apiCall('/messages');
+        return res.success ? res.data : [];
+    },
+
+    async getChatUsers() {
+        const res = await this.apiCall('/messages/users');
+        return res.success ? res.data : [];
+    },
+
+    async getUserMessages(userId) {
+        const res = await this.apiCall(`/messages/user/${userId}`);
+        return res.success ? res.data : [];
+    },
+
     // ─── REVIEWS ──────────────────────────────────────────────
     async createReview(order_id, rating, comment) {
         return this.apiCall('/reviews', {

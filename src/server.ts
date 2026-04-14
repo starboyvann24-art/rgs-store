@@ -14,6 +14,7 @@ import settingsRoutes from './routes/settings.routes';
 import ticketRoutes from './routes/ticket.routes';
 import reviewRoutes from './routes/review.routes';
 import paymentRoutes from './routes/payment.routes';
+import messageRoutes from './routes/message.routes';
 import { verifyToken, isAdmin } from './middleware/auth.middleware';
 import { errorHandler } from './middleware/error.middleware';
 import { sendResponse } from './utils/response';
@@ -67,6 +68,7 @@ apiRouter.use('/settings', settingsRoutes);
 apiRouter.use('/tickets', ticketRoutes);
 apiRouter.use('/reviews', reviewRoutes);
 apiRouter.use('/payment-methods', paymentRoutes);
+apiRouter.use('/messages', messageRoutes);
 
 // Register API router under /api
 app.use('/api', apiRouter);
@@ -106,9 +108,9 @@ async function startServer(): Promise<void> {
       console.log('╔══════════════════════════════════════════════╗');
       console.log('║         🛒  RGS STORE  v2.0.0  🛒          ║');
       console.log('╠══════════════════════════════════════════════╣');
-      console.log(`║  🌐  Server  : http://localhost:${PORT}         ║`);
-      console.log(`║  📡  API     : http://localhost:${PORT}/api/v1   ║`);
-      console.log('║  ✅  Status  : Running                       ║');
+      console.log(`║  🌐  Server  : Running on Port ${PORT}             ║`);
+      console.log(`║  📡  API     : /api                          ║`);
+      console.log('║  ✅  Status  : Ready for Production          ║');
       console.log('╚══════════════════════════════════════════════╝');
       console.log('');
     });

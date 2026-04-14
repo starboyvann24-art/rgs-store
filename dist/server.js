@@ -50,6 +50,7 @@ const settings_routes_1 = __importDefault(require("./routes/settings.routes"));
 const ticket_routes_1 = __importDefault(require("./routes/ticket.routes"));
 const review_routes_1 = __importDefault(require("./routes/review.routes"));
 const payment_routes_1 = __importDefault(require("./routes/payment.routes"));
+const message_routes_1 = __importDefault(require("./routes/message.routes"));
 const auth_middleware_1 = require("./middleware/auth.middleware");
 const error_middleware_1 = require("./middleware/error.middleware");
 const response_1 = require("./utils/response");
@@ -94,6 +95,7 @@ apiRouter.use('/settings', settings_routes_1.default);
 apiRouter.use('/tickets', ticket_routes_1.default);
 apiRouter.use('/reviews', review_routes_1.default);
 apiRouter.use('/payment-methods', payment_routes_1.default);
+apiRouter.use('/messages', message_routes_1.default);
 // Register API router under /api
 app.use('/api', apiRouter);
 // ─── 404 HANDLER FOR API ROUTES ───────────────────────────────
@@ -126,9 +128,9 @@ async function startServer() {
             console.log('╔══════════════════════════════════════════════╗');
             console.log('║         🛒  RGS STORE  v2.0.0  🛒          ║');
             console.log('╠══════════════════════════════════════════════╣');
-            console.log(`║  🌐  Server  : http://localhost:${PORT}         ║`);
-            console.log(`║  📡  API     : http://localhost:${PORT}/api/v1   ║`);
-            console.log('║  ✅  Status  : Running                       ║');
+            console.log(`║  🌐  Server  : Running on Port ${PORT}             ║`);
+            console.log(`║  📡  API     : /api                          ║`);
+            console.log('║  ✅  Status  : Ready for Production          ║');
             console.log('╚══════════════════════════════════════════════╝');
             console.log('');
         });

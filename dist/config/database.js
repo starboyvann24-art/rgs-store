@@ -203,6 +203,17 @@ const CREATE_SETTINGS_TABLE = `
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 `;
+const CREATE_MESSAGES_TABLE = `
+  CREATE TABLE IF NOT EXISTS messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    is_admin TINYINT(1) NOT NULL DEFAULT 0,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_messages_user (user_id),
+    CONSTRAINT fk_messages_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+`;
 // ─── DEFAULT SETTINGS ─────────────────────────────────────────
 const INSERT_DEFAULT_SETTINGS = `
   INSERT IGNORE INTO settings (setting_key, setting_value) VALUES
@@ -220,90 +231,6 @@ const INSERT_DEFAULT_PAYMENT_METHODS = `
     ('OVO', 'ewallet', '0882016259591', 'RGS STORE'),
     ('QRIS', 'qris', NULL, 'RGS STORE');
 `;
-// ─── REAL PRODUCT SEEDER ──────────────────────────────────────
-const PRODUCTS_SEED = [
-    {
-        name: 'Netflix Premium 4K (1 Bulan)',
-        category: 'Streaming',
-        description: 'Akun Netflix Premium 4K Ultra HD. Privat Profile. Garansi replace 1x24 jam.',
-        price: 35000,
-        discount: 0,
-        stock: 99,
-        image_url: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg'
-    },
-    {
-        name: 'Netflix Premium 4K (3 Bulan)',
-        category: 'Streaming',
-        description: 'Akun Netflix Premium 4K 3 Bulan. Hemat & Stabil. Garansi Full.',
-        price: 99000,
-        discount: 0,
-        stock: 50,
-        image_url: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg'
-    },
-    {
-        name: 'Spotify Premium (1 Bulan)',
-        category: 'Music',
-        description: 'Spotify Premium Individual. Akun baru/lama. Tanpa iklan.',
-        price: 20000,
-        discount: 0,
-        stock: 99,
-        image_url: 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg'
-    },
-    {
-        name: 'Spotify Premium (3 Bulan)',
-        category: 'Music',
-        description: 'Spotify Premium 3 Bulan. Lebih hemat & praktis.',
-        price: 55000,
-        discount: 0,
-        stock: 50,
-        image_url: 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg'
-    },
-    {
-        name: 'YouTube Premium (1 Bulan)',
-        category: 'Streaming',
-        description: 'YouTube Premium No Ads, Background Play. via Invite Family.',
-        price: 15000,
-        discount: 0,
-        stock: 99,
-        image_url: 'https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg'
-    },
-    {
-        name: 'YouTube Premium (3 Bulan)',
-        category: 'Streaming',
-        description: 'YouTube Premium 3 Bulan. Nonton makin nyaman tanpa gangguan.',
-        price: 40000,
-        discount: 0,
-        stock: 50,
-        image_url: 'https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg'
-    },
-    {
-        name: 'Discord Nitro Boost (1 Bulan)',
-        category: 'Discord',
-        description: 'Nitro Boost dengan 2 server boost, emoji custom, & avatar animasi.',
-        price: 60000,
-        discount: 0,
-        stock: 50,
-        image_url: 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0b5061df29d55a92d945_full_logo_blurple_RGB.svg'
-    },
-    {
-        name: 'Discord Nitro Basic (1 Bulan)',
-        category: 'Discord',
-        description: 'Nitro Basic dengan emoji custom & badge eksklusif.',
-        price: 30000,
-        discount: 0,
-        stock: 50,
-        image_url: 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0b5061df29d55a92d945_full_logo_blurple_RGB.svg'
-    },
-    {
-        name: 'Panel Pterodactyl 4GB RAM',
-        category: 'Hosting',
-        description: 'Panel Pterodactyl 4GB RAM, 2 CPU Core, 20GB SSD. Hosting Bot/Web.',
-        price: 25000,
-        discount: 0,
-        stock: 20,
-        image_url: 'https://pterodactyl.io/images/logo.png'
-    }
-];
 // ─── INITIALIZE DATABASE ──────────────────────────────────────
 async function initializeDatabase() {
     try {
@@ -322,26 +249,15 @@ async function initializeDatabase() {
         console.log('   ✓ Table "reviews" ready');
         await db.query(CREATE_SETTINGS_TABLE);
         console.log('   ✓ Table "settings" ready');
+        await db.query(CREATE_MESSAGES_TABLE);
+        console.log('   ✓ Table "messages" ready');
         // Insert default data
         await db.query(INSERT_DEFAULT_SETTINGS);
         console.log('   ✓ Default settings loaded');
         await db.query(INSERT_DEFAULT_PAYMENT_METHODS);
         console.log('   ✓ Default payment methods loaded (DANA, OVO, QRIS)');
-        // Seed real products if none exist
-        const [existingProducts] = await db.query('SELECT COUNT(*) as count FROM products');
-        if (existingProducts[0].count === 0) {
-            const bcrypt = require('bcrypt');
-            for (const p of PRODUCTS_SEED) {
-                const pid = generateUUID();
-                const finalPrice = Math.round(p.price * (1 - p.discount / 100));
-                await db.query(`INSERT INTO products (id, name, category, description, price, discount, final_price, stock, image_url, is_active)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`, [pid, p.name, p.category, p.description, p.price, p.discount, finalPrice, p.stock, p.image_url]);
-            }
-            console.log(`   ✓ ${PRODUCTS_SEED.length} produk real berhasil di-seed`);
-        }
-        else {
-            console.log('   ℹ️  Products already seeded, skipping.');
-        }
+        // AUTO-SEEDER DISABLED per User Request
+        console.log('   ℹ️  Auto-seeder disabled. Handle products manually via Admin.');
         // Check/create default admin
         const [adminRows] = await db.query('SELECT id FROM users WHERE role = ? LIMIT 1', ['admin']);
         if (adminRows.length === 0) {
