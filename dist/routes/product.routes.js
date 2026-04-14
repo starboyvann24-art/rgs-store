@@ -2,9 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const product_controller_1 = require("../controllers/product.controller");
-const validate_middleware_1 = require("../middleware/validate.middleware");
-const product_validation_1 = require("../validations/product.validation");
 const auth_middleware_1 = require("../middleware/auth.middleware");
+const upload_middleware_1 = require("../middleware/upload.middleware");
 // ============================================================
 // RGS STORE — Product Routes
 // IMPORTANT: Specific routes MUST come BEFORE parameterized /:id
@@ -23,9 +22,9 @@ router.get('/', product_controller_1.getProducts);
 router.get('/:id', product_controller_1.getProductById);
 // --- ADMIN ROUTES (auth + admin role) ---
 // POST /api/v1/products — Create new product
-router.post('/', auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, (0, validate_middleware_1.validate)(product_validation_1.createProductSchema), product_controller_1.createProduct);
+router.post('/', auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, upload_middleware_1.uploadProductLogo.single('image'), product_controller_1.createProduct);
 // PUT /api/v1/products/:id — Update product
-router.put('/:id', auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, (0, validate_middleware_1.validate)(product_validation_1.updateProductSchema), product_controller_1.updateProduct);
+router.put('/:id', auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, upload_middleware_1.uploadProductLogo.single('image'), product_controller_1.updateProduct);
 // DELETE /api/v1/products/:id — Delete product
 router.delete('/:id', auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, product_controller_1.deleteProduct);
 exports.default = router;

@@ -14,6 +14,7 @@ import settingsRoutes from './routes/settings.routes';
 import ticketRoutes from './routes/ticket.routes';
 import reviewRoutes from './routes/review.routes';
 import paymentRoutes from './routes/payment.routes';
+import { verifyToken, isAdmin } from './middleware/auth.middleware';
 import { errorHandler } from './middleware/error.middleware';
 import { sendResponse } from './utils/response';
 
@@ -28,6 +29,18 @@ const PORT = process.env.PORT || 3000;
 // ─── BODY PARSERS ─────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// ─── ADMIN PROTECTION (Before Static) ────────────────────────
+// Protect /admin.html from unauthorized access
+app.get(['/admin', '/admin.html'], verifyToken, isAdmin, (req, res, next) => {
+  next(); // Allow if admin
+});
+
+// Fallback for non-admin attempts (since static matches after)
+app.use(['/admin', '/admin.html'], (req, res, next) => {
+  // If we reach here without verifyToken/isAdmin passing, it's either unauth or non-admin
+  res.redirect('/index.html');
+});
 
 // ─── STATIC FILES (Frontend) ─────────────────────────────────
 // Serve all files from /public directory (HTML, CSS, JS, images)

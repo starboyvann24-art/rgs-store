@@ -25,8 +25,10 @@ const store = {
     // ─── CORE FETCH ────────────────────────────────────────────
     async apiCall(endpoint, options = {}) {
         const token = this.getToken();
+        const isFormData = options.body instanceof FormData;
+        
         const headers = {
-            'Content-Type': 'application/json',
+            ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
             ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
             ...options.headers
         };
@@ -89,12 +91,21 @@ const store = {
         return res.success ? res.data : [];
     },
 
-    async createProduct(data) {
-        return this.apiCall('/products', { method: 'POST', body: JSON.stringify(data) });
+    async createProduct(formData) {
+        // formData is expected to be a FormData object
+        return this.apiCall('/products', { 
+            method: 'POST', 
+            body: formData,
+            headers: {} // Let browser set Content-Type for FormData
+        });
     },
 
-    async updateProduct(id, data) {
-        return this.apiCall(`/products/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+    async updateProduct(id, formData) {
+        return this.apiCall(`/products/${id}`, { 
+            method: 'PUT', 
+            body: formData,
+            headers: {} 
+        });
     },
 
     async deleteProduct(id) {
@@ -391,6 +402,18 @@ const store = {
     requireLogin() {
         if (!this.isLoggedIn()) { window.location.href = '/login.html'; return false; }
         return true;
+    },
+
+    // ─── UTILS ────────────────────────────────────────────────
+    async copyToClipboard(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            this.showToast('📋 Berhasil disalin ke clipboard!', 'success');
+            return true;
+        } catch (err) {
+            console.error('Copy failed:', err);
+            return false;
+        }
     },
 
     requireAdmin() {

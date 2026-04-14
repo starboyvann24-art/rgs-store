@@ -54,130 +54,147 @@
             const urlParams = new URLSearchParams(window.location.search);
             const productId = urlParams.get('id');
 
-            // Fetch single product directly by ID
-            const product = await appUtils.getProductById(productId);
-
-            let selectedVariant = null;
-
-            if (!product) {
-                document.getElementById('product-container').innerHTML = `
-                    <div class="p-16 text-center">
-                        <svg class="w-20 h-20 text-gray-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                        <h2 class="text-2xl font-bold text-gray-600">Produk Tidak Ditemukan</h2>
-                        <a href="index.html" class="inline-block mt-4 text-primary-600 hover:underline font-semibold">Kembali ke Beranda</a>
-                    </div>`;
+            if (!productId) {
+                window.location.href = 'index.html';
                 return;
             }
 
-            const fp = parseInt(product.final_price);
-            const op = parseInt(product.price);
-            const disc = parseInt(product.discount);
-            const stock = parseInt(product.stock);
-            const oos = stock === 0;
-            const imgSrc = product.image_url || 'https://via.placeholder.com/600x400?text=No+Image';
+            try {
+                // Fetch single product directly by ID
+                const product = await appUtils.getProductById(productId);
 
-            // Parse variants (stored as JSON string or comma-separated)
-            let variants = [];
-            if (product.variants) {
-                try { variants = JSON.parse(product.variants); } catch (e) {
-                    variants = product.variants.split(',').map(v => v.trim()).filter(v => v);
-                }
-            }
+                let selectedVariant = null;
 
-            document.title = `${product.name} - RGS STORE`;
-
-            // Replace skeleton with real content
-            document.getElementById('product-container').innerHTML = `
-            <div class="flex flex-col md:flex-row">
-                <div class="w-full md:w-5/12 bg-gray-50 flex justify-center items-center border-b md:border-b-0 md:border-r border-gray-100 relative overflow-hidden">
-                    ${oos ? '<div class="absolute inset-0 bg-black/40 z-10 flex items-center justify-center"><span class="bg-gray-900/80 text-white px-6 py-2 rounded-full font-bold text-sm border border-gray-500">Stok Habis</span></div>' : ''}
-                    <img src="${imgSrc}" alt="${product.name}" class="w-full h-64 md:h-full object-cover">
-                </div>
-                <div class="w-full md:w-7/12 p-6 md:p-8 flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center gap-2 mb-3">
-                            <span class="px-3 py-1 bg-gray-100 text-gray-600 text-[10px] uppercase font-bold rounded-lg">${product.category}</span>
-                            <span class="px-3 py-1 text-[10px] uppercase font-bold rounded-lg ${oos ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">${oos ? 'Stok Habis' : 'Tersedia: ' + stock}</span>
-                        </div>
-                        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4 leading-tight">${product.name}</h1>
-
-                        <div class="mb-6">
-                            ${disc > 0 ? `
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span class="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-bold rounded">-${disc}%</span>
-                                    <span class="text-sm text-gray-400 line-through">${appUtils.formatRupiah(op)}</span>
-                                </div>
-                            ` : ''}
-                            <div class="text-3xl font-extrabold text-primary-600">${appUtils.formatRupiah(fp)}</div>
-                        </div>
-
-                        <div class="border-t border-gray-100 py-4">
-                            <h3 class="font-semibold text-gray-800 mb-2 text-sm uppercase tracking-wide">Deskripsi</h3>
-                            <p class="text-gray-600 text-sm leading-relaxed whitespace-pre-line">${product.description || 'Tidak ada deskripsi.'}</p>
-                        </div>
-
-                        <div id="variants-section" class="border-t border-gray-100 py-4">
-                            <h3 class="font-semibold text-gray-800 mb-3 text-sm uppercase tracking-wide">Pilih Varian</h3>
-                            <div class="flex flex-wrap gap-2" id="variants-container"></div>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="fixed md:static bottom-0 left-0 right-0 bg-white md:bg-transparent border-t md:border-t-0 p-4 md:p-0 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:shadow-none flex gap-3 mt-4">
-                        <button id="btn-buy-now" class="flex-1 border-2 border-primary-500 text-primary-600 hover:bg-primary-50 font-bold py-3.5 rounded-xl transition flex justify-center items-center disabled:opacity-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed">
-                            Beli Sekarang
-                        </button>
-                        <button id="btn-add-cart" class="flex-1 bg-primary-500 hover:bg-primary-600 text-white font-bold py-3.5 rounded-xl transition shadow-md flex justify-center items-center disabled:opacity-50 disabled:bg-gray-300 disabled:cursor-not-allowed">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                            Keranjang
-                        </button>
-                    </div>
-                </div>
-            </div>`;
-
-            // Variants
-            const varContainer = document.getElementById('variants-container');
-            if (variants.length > 0) {
-                selectedVariant = variants[0];
-                variants.forEach(vr => {
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = `variant-btn px-4 py-2 rounded-xl border-2 text-sm font-semibold transition ${vr === selectedVariant ? 'border-primary-500 bg-primary-50 text-primary-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`;
-                    btn.textContent = vr;
-                    btn.onclick = () => {
-                        selectedVariant = vr;
-                        document.querySelectorAll('.variant-btn').forEach(b => { b.className = 'variant-btn px-4 py-2 rounded-xl border-2 border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition'; });
-                        btn.className = 'variant-btn px-4 py-2 rounded-xl border-2 border-primary-500 bg-primary-50 text-sm font-semibold text-primary-600 transition';
-                    };
-                    varContainer.appendChild(btn);
-                });
-            } else {
-                document.getElementById('variants-section').style.display = 'none';
-            }
-
-            const btnAddCart = document.getElementById('btn-add-cart');
-            const btnBuyNow = document.getElementById('btn-buy-now');
-
-            if (oos) {
-                btnAddCart.disabled = true;
-                btnBuyNow.disabled = true;
-            }
-
-            // Add to Cart
-            btnAddCart.addEventListener('click', () => {
-                appUtils.addToCart(product, selectedVariant, 1);
-                appUtils.showToast('Ditambahkan ke keranjang!', 'success');
-            });
-
-            // Buy Now
-            btnBuyNow.addEventListener('click', () => {
-                if (!appUtils.isLoggedIn()) {
-                    appUtils.showToast('Silakan login terlebih dahulu', 'error');
-                    setTimeout(() => { window.location.href = 'login.html'; }, 1200);
+                if (!product) {
+                    document.getElementById('product-container').innerHTML = `
+                        <div class="p-16 text-center">
+                            <svg class="w-20 h-20 text-gray-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <h2 class="text-2xl font-bold text-gray-600">Produk Tidak Ditemukan</h2>
+                            <p class="text-gray-400 mt-2 mb-6">Maaf, link produk tidak valid atau produk sudah dihapus.</p>
+                            <a href="index.html" class="inline-block bg-primary-500 text-white px-6 py-2.5 rounded-xl font-bold shadow hover:bg-primary-600 transition">Kembali ke Beranda</a>
+                        </div>`;
                     return;
                 }
-                window.location.href = `checkout.html?id=${product.id}`;
-            });
+
+                const fp = parseInt(product.final_price);
+                const op = parseInt(product.price);
+                const disc = parseInt(product.discount);
+                const stock = parseInt(product.stock);
+                const oos = stock === 0;
+                const imgSrc = product.image_url || 'https://via.placeholder.com/600x400?text=No+Image';
+
+                // Parse variants (stored as JSON string or comma-separated)
+                let variants = [];
+                if (product.variants) {
+                    try { variants = JSON.parse(product.variants); } catch (e) {
+                        variants = product.variants.split(',').map(v => v.trim()).filter(v => v);
+                    }
+                }
+
+                document.title = `${product.name} - RGS STORE`;
+
+                // Replace skeleton with real content
+                document.getElementById('product-container').innerHTML = `
+                <div class="flex flex-col md:flex-row">
+                    <div class="w-full md:w-5/12 bg-gray-50 flex justify-center items-center border-b md:border-b-0 md:border-r border-gray-100 relative overflow-hidden">
+                        ${oos ? '<div class="absolute inset-0 bg-black/40 z-10 flex items-center justify-center"><span class="bg-gray-900/80 text-white px-6 py-2 rounded-full font-bold text-sm border border-gray-500">Stok Habis</span></div>' : ''}
+                        <img src="${imgSrc}" alt="${product.name}" class="w-full h-64 md:h-full object-cover">
+                    </div>
+                    <div class="w-full md:w-7/12 p-6 md:p-8 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="px-3 py-1 bg-gray-100 text-gray-600 text-[10px] uppercase font-bold rounded-lg">${product.category}</span>
+                                <span class="px-3 py-1 text-[10px] uppercase font-bold rounded-lg ${oos ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">${oos ? 'Stok Habis' : 'Tersedia: ' + stock}</span>
+                            </div>
+                            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4 leading-tight">${product.name}</h1>
+
+                            <div class="mb-6">
+                                ${disc > 0 ? `
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-bold rounded">-${disc}%</span>
+                                        <span class="text-sm text-gray-400 line-through">${appUtils.formatRupiah(op)}</span>
+                                    </div>
+                                ` : ''}
+                                <div class="text-3xl font-extrabold text-primary-600">${appUtils.formatRupiah(fp)}</div>
+                            </div>
+
+                            <div class="border-t border-gray-100 py-4">
+                                <h3 class="font-semibold text-gray-800 mb-2 text-sm uppercase tracking-wide">Deskripsi</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed whitespace-pre-line">${product.description || 'Tidak ada deskripsi.'}</p>
+                            </div>
+
+                            <div id="variants-section" class="border-t border-gray-100 py-4">
+                                <h3 class="font-semibold text-gray-800 mb-3 text-sm uppercase tracking-wide">Pilih Varian</h3>
+                                <div class="flex flex-wrap gap-2" id="variants-container"></div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="fixed md:static bottom-0 left-0 right-0 bg-white md:bg-transparent border-t md:border-t-0 p-4 md:p-0 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:shadow-none flex gap-3 mt-4">
+                            <button id="btn-buy-now" class="flex-1 border-2 border-primary-500 text-primary-600 hover:bg-primary-50 font-bold py-3.5 rounded-xl transition flex justify-center items-center disabled:opacity-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed">
+                                Beli Sekarang
+                            </button>
+                            <button id="btn-add-cart" class="flex-1 bg-primary-500 hover:bg-primary-600 text-white font-bold py-3.5 rounded-xl transition shadow-md flex justify-center items-center disabled:opacity-50 disabled:bg-gray-300 disabled:cursor-not-allowed">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                Keranjang
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+
+                // Variants
+                const varContainer = document.getElementById('variants-container');
+                if (variants.length > 0) {
+                    selectedVariant = variants[0];
+                    variants.forEach(vr => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = `variant-btn px-4 py-2 rounded-xl border-2 text-sm font-semibold transition ${vr === selectedVariant ? 'border-primary-500 bg-primary-50 text-primary-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`;
+                        btn.textContent = vr;
+                        btn.onclick = () => {
+                            selectedVariant = vr;
+                            document.querySelectorAll('.variant-btn').forEach(b => { b.className = 'variant-btn px-4 py-2 rounded-xl border-2 border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition'; });
+                            btn.className = 'variant-btn px-4 py-2 rounded-xl border-2 border-primary-500 bg-primary-50 text-sm font-semibold text-primary-600 transition';
+                        };
+                        varContainer.appendChild(btn);
+                    });
+                } else {
+                    document.getElementById('variants-section').style.display = 'none';
+                }
+
+                const btnAddCart = document.getElementById('btn-add-cart');
+                const btnBuyNow = document.getElementById('btn-buy-now');
+
+                if (oos) {
+                    btnAddCart.disabled = true;
+                    btnBuyNow.disabled = true;
+                }
+
+                // Add to Cart
+                btnAddCart.addEventListener('click', () => {
+                    appUtils.addToCart(product, selectedVariant, 1);
+                    appUtils.showToast('Ditambahkan ke keranjang!', 'success');
+                });
+
+                // Buy Now
+                btnBuyNow.addEventListener('click', () => {
+                    if (!appUtils.isLoggedIn()) {
+                        appUtils.showToast('Silakan login terlebih dahulu', 'error');
+                        setTimeout(() => { window.location.href = 'login.html'; }, 1200);
+                        return;
+                    }
+                    window.location.href = `checkout.html?id=${product.id}&variant=${selectedVariant || ''}`;
+                });
+            } catch (err) {
+                console.error('Product load error:', err);
+                document.getElementById('product-container').innerHTML = `
+                    <div class="p-16 text-center">
+                        <svg class="w-20 h-20 text-red-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <h2 class="text-2xl font-bold text-gray-600">Gagal Memuat Produk</h2>
+                        <p class="text-gray-400 mt-2">Terjadi kesalahan teknis saat mengambil data produk.</p>
+                        <a href="index.html" class="inline-block mt-4 text-primary-600 hover:underline font-semibold">Coba Lagi</a>
+                    </div>`;
+            }
     </main>
 
     <!-- Footer -->

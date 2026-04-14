@@ -107,21 +107,28 @@ exports.getProductById = getProductById;
  */
 const createProduct = async (req, res, next) => {
     try {
-        const { name, category, description, price, discount, stock, image_url, variants } = req.body;
+        const { name, category, description, price, discount, stock, variants } = req.body;
+        let image_url = req.body.image_url || '';
+        // If file is uploaded, use local path
+        if (req.file) {
+            image_url = `/logos/${req.file.filename}`;
+        }
         const id = (0, database_1.generateUUID)();
-        const discountAmount = discount || 0;
-        const finalPrice = Math.round(price - (price * discountAmount / 100));
+        const parsePrice = parseInt(price) || 0;
+        const parseDiscount = parseInt(discount) || 0;
+        const parseStock = parseInt(stock) || 0;
+        const finalPrice = Math.round(parsePrice - (parsePrice * parseDiscount / 100));
         await database_1.default.query(`INSERT INTO products (id, name, category, description, price, discount, final_price, stock, image_url, variants)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
             id,
             name.trim(),
             category || 'Lainnya',
             description || null,
-            price,
-            discountAmount,
+            parsePrice,
+            parseDiscount,
             finalPrice,
-            stock,
-            image_url || '',
+            parseStock,
+            image_url,
             variants || null
         ]);
         // Fetch the newly created product
@@ -141,7 +148,11 @@ exports.createProduct = createProduct;
 const updateProduct = async (req, res, next) => {
     try {
         const id = req.params.id;
-        const updates = req.body;
+        const updates = { ...req.body };
+        // Handle file upload
+        if (req.file) {
+            updates.image_url = `/logos/${req.file.filename}`;
+        }
         // Check if product exists
         const [existingRows] = await database_1.default.query('SELECT * FROM products WHERE id = ? LIMIT 1', [id]);
         if (existingRows.length === 0) {
@@ -150,8 +161,8 @@ const updateProduct = async (req, res, next) => {
         }
         const existing = existingRows[0];
         // Recalculate final_price if price or discount changes
-        const newPrice = updates.price !== undefined ? updates.price : existing.price;
-        const newDiscount = updates.discount !== undefined ? updates.discount : existing.discount;
+        const newPrice = updates.price !== undefined ? parseInt(updates.price) : existing.price;
+        const newDiscount = updates.discount !== undefined ? parseInt(updates.discount) : existing.discount;
         updates.final_price = Math.round(newPrice - (newPrice * newDiscount / 100));
         // Build dynamic UPDATE query from provided fields
         const allowedFields = ['name', 'category', 'description', 'price', 'discount', 'final_price', 'stock', 'image_url', 'variants', 'is_active'];
@@ -160,7 +171,11 @@ const updateProduct = async (req, res, next) => {
         for (const field of allowedFields) {
             if (updates[field] !== undefined) {
                 setClauses.push(`${field} = ?`);
-                values.push(updates[field]);
+                let val = updates[field];
+                if (['price', 'discount', 'final_price', 'stock', 'is_active'].includes(field)) {
+                    val = parseInt(val);
+                }
+                values.push(val);
             }
         }
         if (setClauses.length === 0) {

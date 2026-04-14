@@ -50,6 +50,7 @@ const settings_routes_1 = __importDefault(require("./routes/settings.routes"));
 const ticket_routes_1 = __importDefault(require("./routes/ticket.routes"));
 const review_routes_1 = __importDefault(require("./routes/review.routes"));
 const payment_routes_1 = __importDefault(require("./routes/payment.routes"));
+const auth_middleware_1 = require("./middleware/auth.middleware");
 const error_middleware_1 = require("./middleware/error.middleware");
 const response_1 = require("./utils/response");
 // ============================================================
@@ -61,6 +62,16 @@ const PORT = process.env.PORT || 3000;
 // ─── BODY PARSERS ─────────────────────────────────────────────
 app.use(express_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
+// ─── ADMIN PROTECTION (Before Static) ────────────────────────
+// Protect /admin.html from unauthorized access
+app.get(['/admin', '/admin.html'], auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, (req, res, next) => {
+    next(); // Allow if admin
+});
+// Fallback for non-admin attempts (since static matches after)
+app.use(['/admin', '/admin.html'], (req, res, next) => {
+    // If we reach here without verifyToken/isAdmin passing, it's either unauth or non-admin
+    res.redirect('/index.html');
+});
 // ─── STATIC FILES (Frontend) ─────────────────────────────────
 // Serve all files from /public directory (HTML, CSS, JS, images)
 app.use(express_1.default.static(path_1.default.join(__dirname, '..', 'public')));
