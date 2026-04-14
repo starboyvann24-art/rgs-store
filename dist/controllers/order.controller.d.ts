@@ -26,6 +26,11 @@ export declare const getOrderById: (req: AuthRequest, res: Response, next: NextF
  */
 export declare const updateOrderStatus: (req: AuthRequest, res: Response, next: NextFunction) => Promise<void>;
 /**
+ * PUT /api/v1/orders/:id/deliver
+ * Set order status to 'shipped' and store credentials (admin only)
+ */
+export declare const deliverOrder: (req: AuthRequest, res: Response, next: NextFunction) => Promise<void>;
+/**
  * GET /api/v1/orders/stats/summary
  * Get order statistics (admin only)
  */

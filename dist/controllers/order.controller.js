@@ -33,12 +33,14 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getOrderStats = exports.updateOrderStatus = exports.getOrderById = exports.getAllOrders = exports.getMyOrders = exports.createOrder = void 0;
+exports.getOrderStats = exports.deliverOrder = exports.updateOrderStatus = exports.getOrderById = exports.getAllOrders = exports.getMyOrders = exports.createOrder = void 0;
 const database_1 = __importStar(require("../config/database"));
 const response_1 = require("../utils/response");
+const discord_webhook_1 = require("../utils/discord.webhook");
 // ============================================================
-// RGS STORE — Order Controller
-// Handles order creation, retrieval, and status updates
+// RGS STORE — Order Controller v3.1
+// Handles order creation, retrieval, status updates, and
+// credential delivery. Triggers Discord notifications.
 // ============================================================
 /**
  * POST /api/v1/orders
@@ -114,6 +116,16 @@ const createOrder = async (req, res, next) => {
             `Mohon konfirmasi pesanan ini. Terima kasih! 🙏`
         ].join('\n');
         const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(waMessage)}`;
+        // Send Discord notification (fire and forget — non-blocking)
+        (0, discord_webhook_1.sendDiscordWebhook)((0, discord_webhook_1.buildOrderEmbed)({
+            order_number: orderNumber,
+            product_name: product.name,
+            qty,
+            total_price: totalPrice,
+            payment_method,
+            user_name: userName,
+            user_email: userEmail
+        })).catch(() => { }); // Already handles errors internally
         (0, response_1.sendResponse)(res, 201, true, 'Order berhasil dibuat!', {
             order: newOrder,
             whatsapp_url: waUrl
@@ -164,7 +176,6 @@ const getOrderById = async (req, res, next) => {
         const userRole = req.user.role;
         let query = 'SELECT * FROM orders WHERE id = ? LIMIT 1';
         const params = [orderId];
-        // Non-admin can only see their own orders
         if (userRole !== 'admin') {
             query = 'SELECT * FROM orders WHERE id = ? AND user_id = ? LIMIT 1';
             params.push(userId);
@@ -190,7 +201,6 @@ const updateOrderStatus = async (req, res, next) => {
     try {
         const orderId = req.params.id;
         const { status } = req.body;
-        // Check if order exists
         const [existingRows] = await database_1.default.query('SELECT * FROM orders WHERE id = ? LIMIT 1', [orderId]);
         const existingOrder = existingRows[0];
         if (!existingOrder) {
@@ -201,18 +211,42 @@ const updateOrderStatus = async (req, res, next) => {
         if ((status === 'cancelled' || status === 'failed') && existingOrder.status === 'pending') {
             await database_1.default.query('UPDATE products SET stock = stock + ? WHERE id = ?', [existingOrder.qty, existingOrder.product_id]);
         }
-        // Update status
         await database_1.default.query('UPDATE orders SET status = ? WHERE id = ?', [status, orderId]);
-        // Fetch updated order
         const [updatedRows] = await database_1.default.query('SELECT * FROM orders WHERE id = ? LIMIT 1', [orderId]);
-        const updatedOrder = updatedRows[0];
-        (0, response_1.sendResponse)(res, 200, true, `Status order diperbarui menjadi "${status}".`, updatedOrder);
+        (0, response_1.sendResponse)(res, 200, true, `Status order diperbarui menjadi "${status}".`, updatedRows[0]);
     }
     catch (error) {
         next(error);
     }
 };
 exports.updateOrderStatus = updateOrderStatus;
+/**
+ * PUT /api/v1/orders/:id/deliver
+ * Set order status to 'shipped' and store credentials (admin only)
+ */
+const deliverOrder = async (req, res, next) => {
+    try {
+        const orderId = req.params.id;
+        const { credentials } = req.body;
+        if (!credentials || String(credentials).trim() === '') {
+            (0, response_1.sendResponse)(res, 400, false, 'Kredensial/link produk wajib diisi.');
+            return;
+        }
+        const [existingRows] = await database_1.default.query('SELECT * FROM orders WHERE id = ? LIMIT 1', [orderId]);
+        const order = existingRows[0];
+        if (!order) {
+            (0, response_1.sendResponse)(res, 404, false, 'Order tidak ditemukan.');
+            return;
+        }
+        await database_1.default.query('UPDATE orders SET status = ?, credentials = ?, shipped_at = NOW() WHERE id = ?', ['shipped', credentials, orderId]);
+        const [updatedRows] = await database_1.default.query('SELECT * FROM orders WHERE id = ? LIMIT 1', [orderId]);
+        (0, response_1.sendResponse)(res, 200, true, 'Pesanan telah dikirim dan kredensial disimpan.', updatedRows[0]);
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.deliverOrder = deliverOrder;
 /**
  * GET /api/v1/orders/stats/summary
  * Get order statistics (admin only)
@@ -221,8 +255,8 @@ const getOrderStats = async (_req, res, next) => {
     try {
         const [totalRows] = await database_1.default.query('SELECT COUNT(*) as total FROM orders');
         const [pendingRows] = await database_1.default.query('SELECT COUNT(*) as total FROM orders WHERE status = "pending"');
-        const [successRows] = await database_1.default.query('SELECT COUNT(*) as total FROM orders WHERE status = "success"');
-        const [revenueRows] = await database_1.default.query('SELECT COALESCE(SUM(total_price), 0) as revenue FROM orders WHERE status = "success"');
+        const [successRows] = await database_1.default.query('SELECT COUNT(*) as total FROM orders WHERE status IN ("success", "shipped")');
+        const [revenueRows] = await database_1.default.query('SELECT COALESCE(SUM(total_price), 0) as revenue FROM orders WHERE status IN ("success", "shipped")');
         (0, response_1.sendResponse)(res, 200, true, 'Statistik order berhasil dimuat.', {
             total_orders: totalRows[0].total,
             pending_orders: pendingRows[0].total,

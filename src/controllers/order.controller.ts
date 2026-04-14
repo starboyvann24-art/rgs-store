@@ -2,10 +2,12 @@ import { Response, NextFunction } from 'express';
 import db, { generateUUID, generateOrderNumber } from '../config/database';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { sendResponse } from '../utils/response';
+import { sendDiscordWebhook, buildOrderEmbed } from '../utils/discord.webhook';
 
 // ============================================================
-// RGS STORE — Order Controller
-// Handles order creation, retrieval, and status updates
+// RGS STORE — Order Controller v3.1
+// Handles order creation, retrieval, status updates, and
+// credential delivery. Triggers Discord notifications.
 // ============================================================
 
 /**
@@ -109,6 +111,17 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
 
     const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(waMessage)}`;
 
+    // Send Discord notification (fire and forget — non-blocking)
+    sendDiscordWebhook(buildOrderEmbed({
+      order_number: orderNumber,
+      product_name: product.name,
+      qty,
+      total_price: totalPrice,
+      payment_method,
+      user_name: userName,
+      user_email: userEmail
+    })).catch(() => {}); // Already handles errors internally
+
     sendResponse(res, 201, true, 'Order berhasil dibuat!', {
       order: newOrder,
       whatsapp_url: waUrl
@@ -166,7 +179,6 @@ export const getOrderById = async (req: AuthRequest, res: Response, next: NextFu
     let query = 'SELECT * FROM orders WHERE id = ? LIMIT 1';
     const params: any[] = [orderId];
 
-    // Non-admin can only see their own orders
     if (userRole !== 'admin') {
       query = 'SELECT * FROM orders WHERE id = ? AND user_id = ? LIMIT 1';
       params.push(userId);
@@ -195,7 +207,6 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response, next: N
     const orderId = req.params.id;
     const { status } = req.body;
 
-    // Check if order exists
     const [existingRows] = await db.query<any>(
       'SELECT * FROM orders WHERE id = ? LIMIT 1',
       [orderId]
@@ -215,20 +226,58 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response, next: N
       );
     }
 
-    // Update status
     await db.query(
       'UPDATE orders SET status = ? WHERE id = ?',
       [status, orderId]
     );
 
-    // Fetch updated order
     const [updatedRows] = await db.query<any>(
       'SELECT * FROM orders WHERE id = ? LIMIT 1',
       [orderId]
     );
-    const updatedOrder = updatedRows[0];
 
-    sendResponse(res, 200, true, `Status order diperbarui menjadi "${status}".`, updatedOrder);
+    sendResponse(res, 200, true, `Status order diperbarui menjadi "${status}".`, updatedRows[0]);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * PUT /api/v1/orders/:id/deliver
+ * Set order status to 'shipped' and store credentials (admin only)
+ */
+export const deliverOrder = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const orderId = req.params.id;
+    const { credentials } = req.body;
+
+    if (!credentials || String(credentials).trim() === '') {
+      sendResponse(res, 400, false, 'Kredensial/link produk wajib diisi.');
+      return;
+    }
+
+    const [existingRows] = await db.query<any>(
+      'SELECT * FROM orders WHERE id = ? LIMIT 1',
+      [orderId]
+    );
+
+    const order = existingRows[0];
+    if (!order) {
+      sendResponse(res, 404, false, 'Order tidak ditemukan.');
+      return;
+    }
+
+    await db.query(
+      'UPDATE orders SET status = ?, credentials = ?, shipped_at = NOW() WHERE id = ?',
+      ['shipped', credentials, orderId]
+    );
+
+    const [updatedRows] = await db.query<any>(
+      'SELECT * FROM orders WHERE id = ? LIMIT 1',
+      [orderId]
+    );
+
+    sendResponse(res, 200, true, 'Pesanan telah dikirim dan kredensial disimpan.', updatedRows[0]);
   } catch (error) {
     next(error);
   }
@@ -242,8 +291,8 @@ export const getOrderStats = async (_req: AuthRequest, res: Response, next: Next
   try {
     const [totalRows] = await db.query<any>('SELECT COUNT(*) as total FROM orders');
     const [pendingRows] = await db.query<any>('SELECT COUNT(*) as total FROM orders WHERE status = "pending"');
-    const [successRows] = await db.query<any>('SELECT COUNT(*) as total FROM orders WHERE status = "success"');
-    const [revenueRows] = await db.query<any>('SELECT COALESCE(SUM(total_price), 0) as revenue FROM orders WHERE status = "success"');
+    const [successRows] = await db.query<any>('SELECT COUNT(*) as total FROM orders WHERE status IN ("success", "shipped")');
+    const [revenueRows] = await db.query<any>('SELECT COALESCE(SUM(total_price), 0) as revenue FROM orders WHERE status IN ("success", "shipped")');
 
     sendResponse(res, 200, true, 'Statistik order berhasil dimuat.', {
       total_orders: totalRows[0].total,

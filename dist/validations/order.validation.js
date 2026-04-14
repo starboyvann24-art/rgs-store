@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateOrderStatusSchema = exports.createOrderSchema = void 0;
+exports.deliverOrderSchema = exports.updateOrderStatusSchema = exports.createOrderSchema = void 0;
 const zod_1 = require("zod");
 // ============================================================
-// RGS STORE — Order Validation Schemas
+// RGS STORE — Order Validation Schemas v3.1
 // ============================================================
 exports.createOrderSchema = zod_1.z.object({
     body: zod_1.z.object({
@@ -18,9 +18,15 @@ exports.createOrderSchema = zod_1.z.object({
 });
 exports.updateOrderStatusSchema = zod_1.z.object({
     body: zod_1.z.object({
-        status: zod_1.z.enum(['pending', 'processing', 'success', 'failed', 'cancelled'], {
-            message: 'Status harus salah satu dari: pending, processing, success, failed, cancelled'
+        status: zod_1.z.enum(['pending', 'processing', 'shipped', 'success', 'failed', 'cancelled'], {
+            message: 'Status harus salah satu dari: pending, processing, shipped, success, failed, cancelled'
         })
+    })
+});
+exports.deliverOrderSchema = zod_1.z.object({
+    body: zod_1.z.object({
+        credentials: zod_1.z.string({ message: 'Kredensial wajib diisi' })
+            .min(1, 'Kredensial tidak boleh kosong')
     })
 });
 //# sourceMappingURL=order.validation.js.map

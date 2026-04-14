@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // ============================================================
-// RGS STORE — Order Validation Schemas
+// RGS STORE — Order Validation Schemas v3.1
 // ============================================================
 
 export const createOrderSchema = z.object({
@@ -18,8 +18,15 @@ export const createOrderSchema = z.object({
 
 export const updateOrderStatusSchema = z.object({
   body: z.object({
-    status: z.enum(['pending', 'processing', 'success', 'failed', 'cancelled'], {
-      message: 'Status harus salah satu dari: pending, processing, success, failed, cancelled'
+    status: z.enum(['pending', 'processing', 'shipped', 'success', 'failed', 'cancelled'], {
+      message: 'Status harus salah satu dari: pending, processing, shipped, success, failed, cancelled'
     })
+  })
+});
+
+export const deliverOrderSchema = z.object({
+  body: z.object({
+    credentials: z.string({ message: 'Kredensial wajib diisi' })
+      .min(1, 'Kredensial tidak boleh kosong')
   })
 });

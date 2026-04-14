@@ -11,6 +11,9 @@ import authRoutes from './routes/auth.routes';
 import productRoutes from './routes/product.routes';
 import orderRoutes from './routes/order.routes';
 import settingsRoutes from './routes/settings.routes';
+import ticketRoutes from './routes/ticket.routes';
+import reviewRoutes from './routes/review.routes';
+import paymentRoutes from './routes/payment.routes';
 import { errorHandler } from './middleware/error.middleware';
 import { sendResponse } from './utils/response';
 
@@ -48,6 +51,9 @@ apiRouter.use('/auth', authRoutes);
 apiRouter.use('/products', productRoutes);
 apiRouter.use('/orders', orderRoutes);
 apiRouter.use('/settings', settingsRoutes);
+apiRouter.use('/tickets', ticketRoutes);
+apiRouter.use('/reviews', reviewRoutes);
+apiRouter.use('/payment-methods', paymentRoutes);
 
 // Register API router under /api/v1
 app.use('/api/v1', apiRouter);

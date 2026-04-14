@@ -47,6 +47,9 @@ const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const product_routes_1 = __importDefault(require("./routes/product.routes"));
 const order_routes_1 = __importDefault(require("./routes/order.routes"));
 const settings_routes_1 = __importDefault(require("./routes/settings.routes"));
+const ticket_routes_1 = __importDefault(require("./routes/ticket.routes"));
+const review_routes_1 = __importDefault(require("./routes/review.routes"));
+const payment_routes_1 = __importDefault(require("./routes/payment.routes"));
 const error_middleware_1 = require("./middleware/error.middleware");
 const response_1 = require("./utils/response");
 // ============================================================
@@ -77,6 +80,9 @@ apiRouter.use('/auth', auth_routes_1.default);
 apiRouter.use('/products', product_routes_1.default);
 apiRouter.use('/orders', order_routes_1.default);
 apiRouter.use('/settings', settings_routes_1.default);
+apiRouter.use('/tickets', ticket_routes_1.default);
+apiRouter.use('/reviews', review_routes_1.default);
+apiRouter.use('/payment-methods', payment_routes_1.default);
 // Register API router under /api/v1
 app.use('/api/v1', apiRouter);
 // ─── 404 HANDLER FOR API ROUTES ───────────────────────────────

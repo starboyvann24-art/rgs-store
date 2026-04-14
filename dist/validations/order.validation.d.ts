@@ -14,8 +14,14 @@ export declare const updateOrderStatusSchema: z.ZodObject<{
             pending: "pending";
             cancelled: "cancelled";
             failed: "failed";
+            shipped: "shipped";
             processing: "processing";
         }>;
+    }, z.core.$strip>;
+}, z.core.$strip>;
+export declare const deliverOrderSchema: z.ZodObject<{
+    body: z.ZodObject<{
+        credentials: z.ZodString;
     }, z.core.$strip>;
 }, z.core.$strip>;
 //# sourceMappingURL=order.validation.d.ts.map

@@ -6,7 +6,7 @@ const validate_middleware_1 = require("../middleware/validate.middleware");
 const order_validation_1 = require("../validations/order.validation");
 const auth_middleware_1 = require("../middleware/auth.middleware");
 // ============================================================
-// RGS STORE — Order Routes
+// RGS STORE — Order Routes v3.1
 // ============================================================
 const router = (0, express_1.Router)();
 // USER ROUTES (requires auth)
@@ -23,5 +23,7 @@ router.get('/', auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, order_
 router.get('/:id', auth_middleware_1.verifyToken, order_controller_1.getOrderById);
 // PUT /api/v1/orders/:id/status — Update order status (admin)
 router.put('/:id/status', auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, (0, validate_middleware_1.validate)(order_validation_1.updateOrderStatusSchema), order_controller_1.updateOrderStatus);
+// PUT /api/v1/orders/:id/deliver — Ship order + set credentials (admin)
+router.put('/:id/deliver', auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, (0, validate_middleware_1.validate)(order_validation_1.deliverOrderSchema), order_controller_1.deliverOrder);
 exports.default = router;
 //# sourceMappingURL=order.routes.js.map

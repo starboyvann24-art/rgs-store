@@ -5,14 +5,15 @@ import {
   getAllOrders,
   getOrderById,
   updateOrderStatus,
-  getOrderStats
+  getOrderStats,
+  deliverOrder
 } from '../controllers/order.controller';
 import { validate } from '../middleware/validate.middleware';
-import { createOrderSchema, updateOrderStatusSchema } from '../validations/order.validation';
+import { createOrderSchema, updateOrderStatusSchema, deliverOrderSchema } from '../validations/order.validation';
 import { verifyToken, isAdmin } from '../middleware/auth.middleware';
 
 // ============================================================
-// RGS STORE — Order Routes
+// RGS STORE — Order Routes v3.1
 // ============================================================
 
 const router: Router = Router();
@@ -36,5 +37,8 @@ router.get('/:id', verifyToken, getOrderById);
 
 // PUT /api/v1/orders/:id/status — Update order status (admin)
 router.put('/:id/status', verifyToken, isAdmin, validate(updateOrderStatusSchema), updateOrderStatus);
+
+// PUT /api/v1/orders/:id/deliver — Ship order + set credentials (admin)
+router.put('/:id/deliver', verifyToken, isAdmin, validate(deliverOrderSchema), deliverOrder);
 
 export default router;
