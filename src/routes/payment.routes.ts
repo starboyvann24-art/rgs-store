@@ -7,6 +7,7 @@ import {
   deletePaymentMethod
 } from '../controllers/payment.controller';
 import { verifyToken, isAdmin } from '../middleware/auth.middleware';
+import { uploadQris } from '../middleware/upload.middleware';
 
 // ============================================================
 // RGS STORE — Payment Method Routes
@@ -21,10 +22,10 @@ router.get('/', getPaymentMethods);
 router.get('/all', verifyToken, isAdmin, getAllPaymentMethods);
 
 // POST /api/payment-methods — Create method (admin)
-router.post('/', verifyToken, isAdmin, createPaymentMethod);
+router.post('/', verifyToken, isAdmin, uploadQris.single('qris_image'), createPaymentMethod);
 
 // PUT /api/payment-methods/:id — Update method (admin)
-router.put('/:id', verifyToken, isAdmin, updatePaymentMethod);
+router.put('/:id', verifyToken, isAdmin, uploadQris.single('qris_image'), updatePaymentMethod);
 
 // DELETE /api/payment-methods/:id — Delete method (admin)
 router.delete('/:id', verifyToken, isAdmin, deletePaymentMethod);

@@ -171,11 +171,19 @@ const store = {
     },
 
     async createPaymentMethod(data) {
-        return this.apiCall('/payments', { method: 'POST', body: JSON.stringify(data) });
+        const isFormData = data instanceof FormData;
+        return this.apiCall('/payments', { 
+            method: 'POST', 
+            body: isFormData ? data : JSON.stringify(data) 
+        });
     },
 
     async updatePaymentMethod(id, data) {
-        return this.apiCall(`/payments/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+        const isFormData = data instanceof FormData;
+        return this.apiCall(`/payments/${id}`, { 
+            method: 'PUT', 
+            body: isFormData ? data : JSON.stringify(data) 
+        });
     },
 
     async deletePaymentMethod(id) {

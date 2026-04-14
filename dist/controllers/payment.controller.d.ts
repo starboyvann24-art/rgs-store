@@ -11,12 +11,12 @@ export declare const getPaymentMethods: (_req: AuthRequest, res: Response, next:
  */
 export declare const getAllPaymentMethods: (_req: AuthRequest, res: Response, next: NextFunction) => Promise<void>;
 /**
- * POST /api/v1/payment-methods
+ * POST /api/payment-methods
  * Create a new payment method (admin)
  */
 export declare const createPaymentMethod: (req: AuthRequest, res: Response, next: NextFunction) => Promise<void>;
 /**
- * PUT /api/v1/payment-methods/:id
+ * PUT /api/payment-methods/:id
  * Update a payment method (admin)
  */
 export declare const updatePaymentMethod: (req: AuthRequest, res: Response, next: NextFunction) => Promise<void>;

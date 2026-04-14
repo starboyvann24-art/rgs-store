@@ -41,12 +41,17 @@ export const getAllPaymentMethods = async (_req: AuthRequest, res: Response, nex
 };
 
 /**
- * POST /api/v1/payment-methods
+ * POST /api/payment-methods
  * Create a new payment method (admin)
  */
 export const createPaymentMethod = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { name, type, account_number, account_name, logo_url } = req.body;
+    let qris_image_url = null;
+
+    if (req.file) {
+      qris_image_url = `/qris/${req.file.filename}`;
+    }
 
     if (!name || !type) {
       sendResponse(res, 400, false, 'Nama dan tipe metode pembayaran wajib diisi.');
@@ -54,9 +59,9 @@ export const createPaymentMethod = async (req: AuthRequest, res: Response, next:
     }
 
     const [result] = await db.query<any>(
-      `INSERT INTO payment_methods (name, type, account_number, account_name, logo_url)
-       VALUES (?, ?, ?, ?, ?)`,
-      [name, type, account_number || null, account_name || null, logo_url || null]
+      `INSERT INTO payment_methods (name, type, account_number, account_name, logo_url, qris_image_url)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [name, type, account_number || null, account_name || null, logo_url || null, qris_image_url]
     );
 
     const [rows] = await db.query<any>(
@@ -71,16 +76,22 @@ export const createPaymentMethod = async (req: AuthRequest, res: Response, next:
 };
 
 /**
- * PUT /api/v1/payment-methods/:id
+ * PUT /api/payment-methods/:id
  * Update a payment method (admin)
  */
 export const updatePaymentMethod = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const methodId = req.params.id;
     const { name, type, account_number, account_name, logo_url, is_active } = req.body;
+    
+    // Handle QRIS Image Upload
+    let qris_image_url = req.body.qris_image_url || null;
+    if (req.file) {
+      qris_image_url = `/qris/${req.file.filename}`;
+    }
 
     const [existing] = await db.query<any>(
-      'SELECT id FROM payment_methods WHERE id = ? LIMIT 1',
+      'SELECT id, qris_image_url FROM payment_methods WHERE id = ? LIMIT 1',
       [methodId]
     );
 
@@ -89,9 +100,16 @@ export const updatePaymentMethod = async (req: AuthRequest, res: Response, next:
       return;
     }
 
+    // Use existing image if no new one provided
+    if (!qris_image_url && existing[0].qris_image_url) {
+      qris_image_url = existing[0].qris_image_url;
+    }
+
+    const activeVal = (is_active === 'true' || is_active === '1' || is_active === 1) ? 1 : 0;
+
     await db.query(
-      `UPDATE payment_methods SET name = ?, type = ?, account_number = ?, account_name = ?, logo_url = ?, is_active = ? WHERE id = ?`,
-      [name, type, account_number || null, account_name || null, logo_url || null, is_active ? 1 : 0, methodId]
+      `UPDATE payment_methods SET name = ?, type = ?, account_number = ?, account_name = ?, logo_url = ?, qris_image_url = ?, is_active = ? WHERE id = ?`,
+      [name, type, account_number || null, account_name || null, logo_url || null, qris_image_url, activeVal, methodId]
     );
 
     const [rows] = await db.query<any>(

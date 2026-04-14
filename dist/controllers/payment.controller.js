@@ -39,18 +39,22 @@ const getAllPaymentMethods = async (_req, res, next) => {
 };
 exports.getAllPaymentMethods = getAllPaymentMethods;
 /**
- * POST /api/v1/payment-methods
+ * POST /api/payment-methods
  * Create a new payment method (admin)
  */
 const createPaymentMethod = async (req, res, next) => {
     try {
         const { name, type, account_number, account_name, logo_url } = req.body;
+        let qris_image_url = null;
+        if (req.file) {
+            qris_image_url = `/qris/${req.file.filename}`;
+        }
         if (!name || !type) {
             (0, response_1.sendResponse)(res, 400, false, 'Nama dan tipe metode pembayaran wajib diisi.');
             return;
         }
-        const [result] = await database_1.default.query(`INSERT INTO payment_methods (name, type, account_number, account_name, logo_url)
-       VALUES (?, ?, ?, ?, ?)`, [name, type, account_number || null, account_name || null, logo_url || null]);
+        const [result] = await database_1.default.query(`INSERT INTO payment_methods (name, type, account_number, account_name, logo_url, qris_image_url)
+       VALUES (?, ?, ?, ?, ?, ?)`, [name, type, account_number || null, account_name || null, logo_url || null, qris_image_url]);
         const [rows] = await database_1.default.query('SELECT * FROM payment_methods WHERE id = ? LIMIT 1', [result.insertId]);
         (0, response_1.sendResponse)(res, 201, true, 'Metode pembayaran berhasil ditambahkan.', rows[0]);
     }
@@ -60,19 +64,29 @@ const createPaymentMethod = async (req, res, next) => {
 };
 exports.createPaymentMethod = createPaymentMethod;
 /**
- * PUT /api/v1/payment-methods/:id
+ * PUT /api/payment-methods/:id
  * Update a payment method (admin)
  */
 const updatePaymentMethod = async (req, res, next) => {
     try {
         const methodId = req.params.id;
         const { name, type, account_number, account_name, logo_url, is_active } = req.body;
-        const [existing] = await database_1.default.query('SELECT id FROM payment_methods WHERE id = ? LIMIT 1', [methodId]);
+        // Handle QRIS Image Upload
+        let qris_image_url = req.body.qris_image_url || null;
+        if (req.file) {
+            qris_image_url = `/qris/${req.file.filename}`;
+        }
+        const [existing] = await database_1.default.query('SELECT id, qris_image_url FROM payment_methods WHERE id = ? LIMIT 1', [methodId]);
         if (!existing[0]) {
             (0, response_1.sendResponse)(res, 404, false, 'Metode pembayaran tidak ditemukan.');
             return;
         }
-        await database_1.default.query(`UPDATE payment_methods SET name = ?, type = ?, account_number = ?, account_name = ?, logo_url = ?, is_active = ? WHERE id = ?`, [name, type, account_number || null, account_name || null, logo_url || null, is_active ? 1 : 0, methodId]);
+        // Use existing image if no new one provided
+        if (!qris_image_url && existing[0].qris_image_url) {
+            qris_image_url = existing[0].qris_image_url;
+        }
+        const activeVal = (is_active === 'true' || is_active === '1' || is_active === 1) ? 1 : 0;
+        await database_1.default.query(`UPDATE payment_methods SET name = ?, type = ?, account_number = ?, account_name = ?, logo_url = ?, qris_image_url = ?, is_active = ? WHERE id = ?`, [name, type, account_number || null, account_name || null, logo_url || null, qris_image_url, activeVal, methodId]);
         const [rows] = await database_1.default.query('SELECT * FROM payment_methods WHERE id = ? LIMIT 1', [methodId]);
         (0, response_1.sendResponse)(res, 200, true, 'Metode pembayaran diperbarui.', rows[0]);
     }
