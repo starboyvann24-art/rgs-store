@@ -120,132 +120,140 @@
         </button>
     </div>
 
-    <!-- Review Modal Logic -->
+    <!-- Core Logic -->
+    <script src="js/app.js"></script>
     <script>
         (function() {
             // TAB Logic
             window.switchTab = function(tabId) {
                 try {
-                    document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+                    const contents = document.querySelectorAll('.tab-content');
+                    if (contents) contents.forEach(t => t.classList.add('hidden'));
+                    
                     const targetTab = document.getElementById('tab-' + tabId);
                     if (targetTab) targetTab.classList.remove('hidden');
 
-                    document.querySelectorAll('.dash-tab').forEach(btn => {
-                        btn.classList.remove('text-primary-600', 'bg-primary-50');
-                        btn.classList.add('text-gray-600');
-                    });
+                    const tabs = document.querySelectorAll('.dash-tab');
+                    if (tabs) {
+                        tabs.forEach(btn => {
+                            btn.classList.remove('text-primary-600', 'bg-primary-50');
+                            btn.classList.add('text-gray-600');
+                        });
+                    }
                     const activeBtn = document.getElementById('btn-tab-' + tabId);
                     if (activeBtn) {
                         activeBtn.classList.add('text-primary-600', 'bg-primary-50');
                         activeBtn.classList.remove('text-gray-600');
                     }
 
-                    if (tabId === 'chat') loadMessages();
+                    if (tabId === 'chat') ChatModule.load();
                 } catch (e) {
                     console.error('Switch tab error:', e);
                 }
             };
 
-            async function loadOrders() {
-                const ctn = document.getElementById('orders-container');
-                const empty = document.getElementById('orders-empty');
-                if (!ctn || !empty) return;
+            const OrderModule = {
+                async load() {
+                    const ctn = document.getElementById('orders-container');
+                    const empty = document.getElementById('orders-empty');
+                    if (!ctn || !empty) return;
 
-                try {
-                    const orders = await appUtils.getMyOrders();
-                    ctn.innerHTML = '';
-                    if (!orders || !orders.length) { 
-                        empty.classList.remove('hidden'); 
-                        return; 
-                    }
-                    empty.classList.add('hidden');
-                    
-                    orders.forEach(o => {
-                        const badge = appUtils.getStatusBadge(o.status);
-                        const date = appUtils.formatDate(o.created_at);
-                        const isDone = o.status === 'success' || o.status === 'shipped';
+                    try {
+                        const orders = await appUtils.getMyOrders();
+                        ctn.innerHTML = '';
+                        if (!orders || !orders.length) { 
+                            empty.classList.remove('hidden'); 
+                            return; 
+                        }
+                        empty.classList.add('hidden');
+                        
+                        orders.forEach(o => {
+                            const badge = appUtils.getStatusBadge(o.status);
+                            const date = appUtils.formatDate(o.created_at);
+                            const isDone = o.status === 'success' || o.status === 'shipped';
 
-                        ctn.insertAdjacentHTML('beforeend', `
-                            <div class="border border-gray-200 rounded-xl p-5 hover:border-gray-300 transition bg-white shadow-sm">
-                                <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3 border-b pb-4 mb-4">
-                                    <div><span class="font-bold text-gray-800">#${o.order_number}</span><p class="text-xs text-gray-500 mt-0.5">${date}</p></div>
-                                    ${badge}
-                                </div>
-                                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                                    <div><p class="font-semibold text-gray-800">${o.product_name}</p><p class="text-xs text-gray-500 mt-0.5">Jumlah: ${o.qty} · Metode: ${o.payment_method}</p></div>
-                                    <div class="text-right">
-                                        <p class="font-extrabold text-primary-600 text-lg">${appUtils.formatRupiah(parseInt(o.total_price))}</p>
-                                        ${isDone ? `<button onclick="openReviewModal('${o.id}', '${o.product_id}', '${o.product_name.replace(/'/g,"\\\\'")}')" class="text-[10px] font-bold text-orange-500 hover:underline mt-1">⭐️ Tulis Ulasan</button>` : ''}
+                            ctn.insertAdjacentHTML('beforeend', `
+                                <div class="border border-gray-200 rounded-xl p-5 hover:border-gray-300 transition bg-white shadow-sm">
+                                    <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3 border-b pb-4 mb-4">
+                                        <div><span class="font-bold text-gray-800">#${o.order_number}</span><p class="text-xs text-gray-500 mt-0.5">${date}</p></div>
+                                        ${badge}
                                     </div>
-                                </div>
-                                ${o.credentials ? `
-                                <div class="mt-4 p-3 bg-gray-900 rounded-lg border border-primary-500/30 flex items-center justify-between gap-3">
-                                    <div class="overflow-hidden">
-                                        <label class="block text-[10px] uppercase font-black text-primary-500 mb-1 tracking-widest">Akses / Kredensial Produk:</label>
-                                        <div class="font-mono text-xs text-green-400 truncate">${o.credentials}</div>
+                                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                        <div><p class="font-semibold text-gray-800">${o.product_name}</p><p class="text-xs text-gray-500 mt-0.5">Jumlah: ${o.qty} · Metode: ${o.payment_method}</p></div>
+                                        <div class="text-right">
+                                            <p class="font-extrabold text-primary-600 text-lg">${appUtils.formatRupiah(parseInt(o.total_price))}</p>
+                                            ${isDone ? `<button onclick="openReviewModal('${o.id}', '${o.product_id}', '${o.product_name.replace(/'/g,"\\\\'")}')" class="text-[10px] font-bold text-orange-500 hover:underline mt-1">⭐️ Tulis Ulasan</button>` : ''}
+                                        </div>
                                     </div>
-                                    <button onclick="store.copyToClipboard('${o.credentials.replace(/'/g, "\\'")}')" class="flex-shrink-0 bg-primary-500 hover:bg-primary-600 text-black px-3 py-1.5 rounded-lg text-[10px] font-bold transition">SALIN</button>
-                                </div>` : ''}
-                            </div>`);
-                    });
-                } catch (err) { 
-                    console.error('Load Orders Error:', err); 
-                }
-            }
-
-            window.loadMessages = async function() {
-                const box = document.getElementById('chat-messages');
-                if (!box) return;
-                try {
-                    const msgs = await appUtils.getMyMessages();
-                    const firstChild = box.firstElementChild; // Keep the tips
-                    box.innerHTML = '';
-                    if (firstChild && firstChild.classList.contains('italic')) {
-                        box.appendChild(firstChild);
-                    } else {
-                        box.innerHTML = '<div class="bg-blue-50 text-blue-700 p-3 rounded-lg text-xs italic">Silakan kirim pesan mengenai kendala pesanan Anda. Admin akan membalas di sini.</div>';
+                                    ${o.credentials ? `
+                                    <div class="mt-4 p-3 bg-gray-900 rounded-lg border border-primary-500/30 flex items-center justify-between gap-3">
+                                        <div class="overflow-hidden">
+                                            <label class="block text-[10px] uppercase font-black text-primary-500 mb-1 tracking-widest">Akses / Kredensial Produk:</label>
+                                            <div class="font-mono text-xs text-green-400 truncate">${o.credentials}</div>
+                                        </div>
+                                        <button onclick="appUtils.copyToClipboard('${o.credentials.replace(/'/g, "\\'")}')" class="flex-shrink-0 bg-primary-500 hover:bg-primary-600 text-black px-3 py-1.5 rounded-lg text-[10px] font-bold transition">SALIN</button>
+                                    </div>` : ''}
+                                </div>`);
+                        });
+                    } catch (err) { 
+                        console.error('Load Orders Error:', err); 
                     }
-
-                    msgs.forEach(m => {
-                        const isMe = m.is_admin === 0;
-                        box.innerHTML += `
-                        <div class="flex ${isMe ? 'justify-end' : 'justify-start'} animate-fade-in">
-                            <div class="max-w-[85%] rounded-2xl px-4 py-2 text-sm shadow-sm ${isMe ? 'bg-primary-600 text-white rounded-tr-none' : 'bg-white border text-gray-800 rounded-tl-none'}">
-                                ${m.message}
-                                <div class="text-[10px] mt-1 opacity-60 text-right">${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
-                            </div>
-                        </div>`;
-                    });
-                    box.scrollTop = box.scrollHeight;
-                } catch (e) {
-                    console.error('Load messages error:', e);
                 }
             };
 
-            window.sendMessage = async function() {
-                const input = document.getElementById('chat-input');
-                if (!input) return;
-                const msg = input.value.trim();
-                if (!msg) return;
-                try {
-                    const res = await appUtils.sendMessage(msg);
-                    if (res.success) { 
-                        input.value = ''; 
-                        loadMessages(); 
-                    } else {
-                        appUtils.showToast(res.message, 'error');
+            const ChatModule = {
+                async load() {
+                    const box = document.getElementById('chat-messages');
+                    if (!box) return;
+                    try {
+                        const msgs = await appUtils.getMyMessages();
+                        // Filter out old messages but keep the tip if needed
+                        const tip = '<div class="bg-blue-50 text-blue-700 p-3 rounded-lg text-xs italic">Silakan kirim pesan mengenai kendala pesanan Anda. Admin akan membalas di sini.</div>';
+                        box.innerHTML = tip;
+
+                        msgs.forEach(m => {
+                            const isMe = m.is_admin === 0;
+                            box.innerHTML += `
+                            <div class="flex ${isMe ? 'justify-end' : 'justify-start'} animate-fade-in">
+                                <div class="max-w-[85%] rounded-2xl px-4 py-2 text-sm shadow-sm ${isMe ? 'bg-primary-600 text-white rounded-tr-none' : 'bg-white border text-gray-800 rounded-tl-none'}">
+                                    ${m.message}
+                                    <div class="text-[10px] mt-1 opacity-60 text-right">${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+                                </div>
+                            </div>`;
+                        });
+                        box.scrollTop = box.scrollHeight;
+                    } catch (e) {
+                        console.error('Load messages error:', e);
                     }
-                } catch (e) {
-                    console.error('Send message error:', e);
+                },
+                async send() {
+                    const input = document.getElementById('chat-input');
+                    if (!input) return;
+                    const msg = input.value.trim();
+                    if (!msg) return;
+                    try {
+                        const res = await appUtils.sendMessage(msg);
+                        if (res.success) { 
+                            input.value = ''; 
+                            this.load(); 
+                        } else {
+                            appUtils.showToast(res.message, 'error');
+                        }
+                    } catch (e) {
+                        console.error('Send message error:', e);
+                    }
                 }
             };
 
+            // Global aliases
+            window.sendMessage = () => ChatModule.send();
+            window.loadMessages = () => ChatModule.load();
             window.openReviewModal = function(orderId, productId, productName) {
                 const rating = prompt(`Berikan rating untuk "${productName}" (1-5):`, "5");
                 if (!rating || isNaN(rating) || rating < 1 || rating > 5) return;
                 const comment = prompt(`Tulis ulasan singkat Anda:`, "Mantap, proses cepat!");
                 if (!comment) return;
-                store.createReview(orderId, rating, comment).then(res => {
+                appUtils.createReview(orderId, rating, comment).then(res => {
                     if (res.success) appUtils.showToast('✅ Ulasan berhasil dikirim!', 'success');
                     else appUtils.showToast(res.message, 'error');
                 }).catch(e => console.error('Review error:', e));
@@ -267,13 +275,13 @@
                 if (emailEl) emailEl.textContent = user.email;
                 if (avatarEl) avatarEl.textContent = user.name.charAt(0).toUpperCase();
 
-                loadOrders();
+                OrderModule.load();
 
                 // Auto refresh chat if active
                 setInterval(() => { 
                     const chatTab = document.getElementById('tab-chat');
                     if (chatTab && !chatTab.classList.contains('hidden')) {
-                        loadMessages(); 
+                        ChatModule.load(); 
                     }
                 }, 15000);
             });
