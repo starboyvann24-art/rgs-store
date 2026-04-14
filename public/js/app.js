@@ -4,7 +4,7 @@
  * Exposes both `store` AND `appUtils` (alias) for full compatibility.
  */
 
-const API_BASE = '/api/v1';
+const API_BASE = '/api';
 
 const store = {
     // ─── AUTH ──────────────────────────────────────────────────

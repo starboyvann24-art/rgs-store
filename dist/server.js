@@ -94,10 +94,12 @@ apiRouter.use('/settings', settings_routes_1.default);
 apiRouter.use('/tickets', ticket_routes_1.default);
 apiRouter.use('/reviews', review_routes_1.default);
 apiRouter.use('/payment-methods', payment_routes_1.default);
-// Register API router under /api/v1
-app.use('/api/v1', apiRouter);
+// Register API router under /api
+app.use('/api', apiRouter);
 // ─── 404 HANDLER FOR API ROUTES ───────────────────────────────
+// Only triggered if /api/* doesn't match anything in apiRouter
 app.use('/api', (req, res) => {
+    console.log(`⚠️  Rute nyasar (API 404): ${req.method} ${req.originalUrl}`);
     (0, response_1.sendResponse)(res, 404, false, `API endpoint not found: ${req.method} ${req.originalUrl}`);
 });
 // ─── SPA FALLBACK ─────────────────────────────────────────────

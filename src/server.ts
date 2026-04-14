@@ -68,11 +68,13 @@ apiRouter.use('/tickets', ticketRoutes);
 apiRouter.use('/reviews', reviewRoutes);
 apiRouter.use('/payment-methods', paymentRoutes);
 
-// Register API router under /api/v1
-app.use('/api/v1', apiRouter);
+// Register API router under /api
+app.use('/api', apiRouter);
 
 // ─── 404 HANDLER FOR API ROUTES ───────────────────────────────
+// Only triggered if /api/* doesn't match anything in apiRouter
 app.use('/api', (req: Request, res: Response) => {
+  console.log(`⚠️  Rute nyasar (API 404): ${req.method} ${req.originalUrl}`);
   sendResponse(res, 404, false, `API endpoint not found: ${req.method} ${req.originalUrl}`);
 });
 
