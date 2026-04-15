@@ -124,51 +124,80 @@
             const user = appUtils.getSavedUser();
             const urlParams = new URLSearchParams(window.location.search);
             const productId = urlParams.get('id');
-
-            if (!productId) {
-                window.location.href = 'index.html';
-                return;
-            }
+            
+            let checkoutItems = [];
+            let totalPrice = 0;
 
             try {
-                // Load product from API
-                const product = await appUtils.getProductById(productId);
-
-                if (!product) {
-                    document.getElementById('checkout-loading').innerHTML = '<p class="text-red-500 font-semibold">Produk tidak ditemukan.</p><a href="index.html" class="text-primary-600 hover:underline text-sm mt-2 inline-block">Kembali</a>';
-                    return;
+                if (productId) {
+                    // DIRECT BUY MODE
+                    const product = await appUtils.getProductById(productId);
+                    if (!product) throw new Error('Produk tidak ditemukan');
+                    
+                    const price = parseInt(product.final_price || product.price);
+                    const variant = urlParams.get('variant') || null;
+                    
+                    checkoutItems.push({
+                        product_id: product.id,
+                        name: product.name,
+                        price: price,
+                        qty: 1,
+                        variant: variant
+                    });
+                    totalPrice = price;
+                } else {
+                    // CART MODE
+                    const cart = appUtils.getCart();
+                    if (cart.length === 0) {
+                        window.location.href = 'cart.html';
+                        return;
+                    }
+                    checkoutItems = cart.map(item => ({
+                        product_id: item.id,
+                        name: item.name,
+                        price: parseInt(item.price),
+                        qty: parseInt(item.qty),
+                        variant: item.variant || null
+                    }));
+                    totalPrice = checkoutItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
                 }
-                
-                // ... fill UI ...
-                const price = parseInt(product.final_price);
-                const imgSrc = product.image_url || 'https://via.placeholder.com/100x100?text=No+Image';
 
                 // Fill form with user data
                 document.getElementById('co-name').value = user.name;
                 document.getElementById('co-email').value = user.email;
 
-                // Fill product detail
-                document.getElementById('checkout-product-detail').innerHTML = `
-                    <img src="${imgSrc}" class="w-16 h-16 rounded-xl object-cover border border-gray-100 shadow-sm" alt="${product.name}">
-                    <div class="flex-grow">
-                        <p class="font-semibold text-gray-800">${product.name}</p>
-                        <p class="text-xs text-gray-500">${product.category}</p>
-                    </div>
-                    <p class="font-bold text-primary-600 text-lg">${appUtils.formatRupiah(price)}</p>
-                `;
+                // Fill product detail UI
+                const detailContainer = document.getElementById('checkout-product-detail');
+                detailContainer.innerHTML = '';
+                
+                checkoutItems.forEach(item => {
+                    detailContainer.insertAdjacentHTML('beforeend', `
+                        <div class="flex items-center gap-4 py-3 border-b border-gray-50 last:border-0 w-full">
+                            <div class="flex-grow">
+                                <p class="font-semibold text-gray-800 text-sm">${item.name}</p>
+                                <p class="text-[10px] text-gray-400">Qty: ${item.qty} ${item.variant ? `• Varian: ${item.variant}` : ''}</p>
+                            </div>
+                            <p class="font-bold text-gray-700 text-sm whitespace-nowrap">${appUtils.formatRupiah(item.price * item.qty)}</p>
+                        </div>
+                    `);
+                });
 
                 // Fill totals
-                document.getElementById('co-subtotal').textContent = appUtils.formatRupiah(price);
-                document.getElementById('co-total').textContent = appUtils.formatRupiah(price);
+                document.getElementById('co-subtotal').textContent = appUtils.formatRupiah(totalPrice);
+                document.getElementById('co-total').textContent = appUtils.formatRupiah(totalPrice);
 
                 // Show content, hide loading
                 document.getElementById('checkout-loading').classList.add('hidden');
                 document.getElementById('checkout-content').classList.remove('hidden');
+                
             } catch (err) {
                 console.error('Checkout Load Error:', err);
                 document.getElementById('checkout-loading').innerHTML = `
-                    <p class="text-red-500 font-semibold">Gagal memuat data checkout.</p>
-                    <button onclick="location.reload()" class="btn-orange text-xs mt-4">Muat Ulang 🔄</button>`;
+                    <div class="p-6 bg-red-50 border border-red-100 rounded-2xl">
+                        <p class="text-red-500 font-bold">Terjadi Kesalahan</p>
+                        <p class="text-red-400 text-xs mt-1">${err.message || 'Gagal memuat data.'}</p>
+                        <button onclick="location.reload()" class="btn-orange text-xs mt-4">Coba Lagi 🔄</button>
+                    </div>`;
                 return;
             }
 
@@ -185,30 +214,52 @@
             document.getElementById('form-checkout').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const btn = document.getElementById('btn-pay');
-                const method = document.querySelector('input[name="payment"]:checked').value;
+                const selectedMethod = document.querySelector('input[name="payment"]:checked')?.value;
+
+                if (!selectedMethod) {
+                    appUtils.showToast('Silakan pilih metode pembayaran.', 'error');
+                    return;
+                }
+
+                // VALIDASI PAYLOAD SEBELUM KIRIM
+                if (checkoutItems.length === 0 || isNaN(totalPrice) || totalPrice <= 0) {
+                    appUtils.showToast('Gagal memproses data belanja. Silakan coba lagi.', 'error');
+                    return;
+                }
 
                 try {
                     appUtils.setLoading(btn, true, 'Memproses...');
 
-                    const result = await appUtils.createOrder({
-                        product_id: productId,
-                        payment_method: method
-                    });
+                    const payload = {
+                        customer_name: user.name,
+                        customer_email: user.email,
+                        items: checkoutItems,
+                        total_price: totalPrice,
+                        payment_method: selectedMethod
+                    };
+
+                    const result = await appUtils.createOrder(payload);
 
                     if (result.success) {
-                        appUtils.showToast('Pesanan berhasil! Menuju WhatsApp...', 'success');
-                        const waUrl = result.data.whatsapp_url;
+                        appUtils.showToast('Pesanan berhasil dibuat! 🔥', 'success');
+                        
+                        // Clear cart if it was a cart checkout
+                        if (!productId) appUtils.saveCart([]);
+                        
                         setTimeout(() => { 
-                            appUtils.setLoading(btn, false);
-                            window.location.href = waUrl; 
+                            if (result.data?.whatsapp_url) {
+                                window.location.href = result.data.whatsapp_url;
+                            } else {
+                                window.location.href = 'dashboard.html';
+                            }
                         }, 1200);
                     } else {
-                        appUtils.showToast(result.message, 'error');
+                        appUtils.showToast(result.message || 'Gagal membuat pesanan.', 'error');
                         appUtils.setLoading(btn, false);
                     }
                 } catch (err) {
                     console.error('Order Error:', err);
-                    appUtils.showToast('Terjadi kesalahan saat membuat pesanan.', 'error');
+                    appUtils.showToast('Koneksi terputap. Coba lagi.', 'error');
                     appUtils.setLoading(btn, false);
                 }
             });

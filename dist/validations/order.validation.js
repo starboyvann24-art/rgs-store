@@ -7,10 +7,16 @@ const zod_1 = require("zod");
 // ============================================================
 exports.createOrderSchema = zod_1.z.object({
     body: zod_1.z.object({
-        product_id: zod_1.z.string({ message: 'Product ID wajib diisi' }),
-        qty: zod_1.z.number({ message: 'Jumlah wajib diisi' })
-            .int('Jumlah harus bilangan bulat')
-            .min(1, 'Jumlah minimal 1'),
+        customer_name: zod_1.z.string().optional(),
+        customer_email: zod_1.z.string().email('Format email tidak valid').optional(),
+        items: zod_1.z.array(zod_1.z.object({
+            product_id: zod_1.z.string({ message: 'Product ID wajib ada di item' }),
+            qty: zod_1.z.number().min(1, 'Jumlah minimal 1'),
+            variant: zod_1.z.string().nullable().optional(),
+            name: zod_1.z.string().optional(),
+            price: zod_1.z.number().optional()
+        })).min(1, 'Keranjang belanja kosong'),
+        total_price: zod_1.z.number().min(0, 'Total harga tidak valid'),
         payment_method: zod_1.z.string({ message: 'Metode pembayaran wajib diisi' })
             .min(1, 'Metode pembayaran tidak boleh kosong'),
         notes: zod_1.z.string().optional()

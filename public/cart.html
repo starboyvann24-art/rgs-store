@@ -93,8 +93,12 @@
                 btnCheckout.classList.remove('cursor-not-allowed','opacity-50','pointer-events-none');
 
                 cart.forEach((item, i) => {
-                    totalQty += item.qty;
-                    totalPrice += item.price * item.qty;
+                    const itemQty = parseInt(item.qty) || 0;
+                    const itemPrice = parseInt(item.price) || 0;
+                    
+                    totalQty += itemQty;
+                    totalPrice += (itemPrice * itemQty);
+                    
                     const imgSrc = item.image_url || 'https://via.placeholder.com/64x64?text=N';
                     cartList.insertAdjacentHTML('beforeend', `
                         <div class="px-6 py-5 flex items-center gap-4 hover:bg-gray-50 transition">
@@ -103,8 +107,8 @@
                             </div>
                             <div class="flex-grow min-w-0">
                                 <h4 class="font-semibold text-gray-800 text-sm truncate">${item.name}</h4>
-                                ${item.variant ? `<p class="text-xs text-gray-500 mt-0.5">Varian: ${item.variant}</p>` : ''}
-                                <p class="font-bold text-primary-600 mt-1 text-sm">${appUtils.formatRupiah(item.price)}</p>
+                                ${item.variant ? `<p class="text-[10px] inline-block px-2 py-0.5 bg-gray-100 text-gray-500 rounded font-medium mt-0.5 uppercase tracking-wider border">Varian: ${item.variant}</p>` : ''}
+                                <p class="font-bold text-primary-600 mt-1 text-sm">${appUtils.formatRupiah(itemPrice)}</p>
                             </div>
                             <div class="flex flex-col items-end gap-2 flex-shrink-0">
                                 <button onclick="removeItem(${i})" class="text-gray-400 hover:text-red-500 transition">
@@ -112,7 +116,7 @@
                                 </button>
                                 <div class="flex items-center border rounded-xl overflow-hidden shadow-sm">
                                     <button onclick="updateQty(${i},-1)" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100">-</button>
-                                    <input type="text" readonly class="w-8 h-8 text-center text-sm font-medium bg-transparent outline-none" value="${item.qty}">
+                                    <input type="text" readonly class="w-8 h-8 text-center text-sm font-medium bg-transparent outline-none" value="${itemQty}">
                                     <button onclick="updateQty(${i},1)" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100">+</button>
                                 </div>
                             </div>
@@ -130,7 +134,8 @@
 
         function updateQty(index, change) {
             const cart = appUtils.getCart();
-            const newQty = cart[index].qty + change;
+            const currentQty = parseInt(cart[index].qty) || 1;
+            const newQty = currentQty + change;
 
             if (newQty < 1) return;
 

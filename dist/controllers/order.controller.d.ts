@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 /**
  * POST /api/v1/orders
- * Create a new order (requires auth)
+ * Create a new order (multi-item support)
  */
 export declare const createOrder: (req: AuthRequest, res: Response, next: NextFunction) => Promise<void>;
 /**

@@ -12,49 +12,69 @@ import { sendDiscordWebhook, buildOrderEmbed } from '../utils/discord.webhook';
 
 /**
  * POST /api/v1/orders
- * Create a new order (requires auth)
+ * Create a new order (multi-item support)
  */
 export const createOrder = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const userName = req.user!.name;
-    const userEmail = req.user!.email;
-    const { product_id, qty, payment_method, notes } = req.body;
+    const { items, payment_method, notes, total_price: clientTotalPrice } = req.body;
 
-    // Fetch user's whatsapp
-    const [userRows] = await db.query<any>(
-      'SELECT whatsapp FROM users WHERE id = ? LIMIT 1',
-      [userId]
-    );
-    const userWhatsapp = userRows[0]?.whatsapp || null;
-
-    // Fetch product
-    const [productRows] = await db.query<any>(
-      'SELECT * FROM products WHERE id = ? AND is_active = 1 LIMIT 1',
-      [product_id]
-    );
-
-    const product = productRows[0];
-    if (!product) {
-      sendResponse(res, 404, false, 'Produk tidak ditemukan atau sudah tidak aktif.');
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      sendResponse(res, 400, false, 'Keranjang belanja kosong.');
       return;
     }
 
-    // Check stock
-    if (product.stock < qty) {
-      sendResponse(res, 400, false, `Stok tidak mencukupi. Tersisa ${product.stock} item.`);
+    // Fetch user info
+    const [userRows] = await db.query<any>('SELECT name, email, whatsapp FROM users WHERE id = ? LIMIT 1', [userId]);
+    const user = userRows[0];
+    if (!user) {
+      sendResponse(res, 404, false, 'User tidak ditemukan.');
       return;
     }
 
-    // Calculate price
-    const unitPrice = product.final_price;
-    const totalPrice = unitPrice * qty;
+    let calculatedTotalPrice = 0;
+    const processedItems: any[] = [];
 
-    // Generate IDs
+    // 1. VALIDASI STOK & HARGA UNTUK SEMUA ITEM
+    for (const item of items) {
+      const [productRows] = await db.query<any>(
+        'SELECT * FROM products WHERE id = ? AND is_active = 1 LIMIT 1',
+        [item.product_id]
+      );
+      const product = productRows[0];
+
+      if (!product) {
+        sendResponse(res, 404, false, `Produk "${item.name || item.product_id}" tidak ditemukan.`);
+        return;
+      }
+
+      if (product.stock < item.qty) {
+        sendResponse(res, 400, false, `Stok "${product.name}" tidak mencukupi (Tersisa ${product.stock}).`);
+        return;
+      }
+
+      const itemTotal = product.final_price * item.qty;
+      calculatedTotalPrice += itemTotal;
+      
+      processedItems.push({
+        ...item,
+        name: product.name,
+        unit_price: product.final_price,
+        total: itemTotal
+      });
+    }
+
+    // 2. GENERATE ID & SUMMARY
     const orderId = generateUUID();
     const orderNumber = generateOrderNumber();
+    
+    // Summary name for the table (e.g. "Product A (+2 items)")
+    const primaryItem = processedItems[0];
+    const summaryName = processedItems.length > 1 
+      ? `${primaryItem.name} dan ${processedItems.length - 1} item lainnya`
+      : primaryItem.name;
 
-    // Insert order
+    // 3. INSERT ORDER
     await db.query(
       `INSERT INTO orders (id, order_number, user_id, user_name, user_email, user_whatsapp, product_id, product_name, qty, unit_price, total_price, payment_method, status, notes)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -62,65 +82,59 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
         orderId,
         orderNumber,
         userId,
-        userName,
-        userEmail,
-        userWhatsapp,
-        product_id,
-        product.name,
-        qty,
-        unitPrice,
-        totalPrice,
+        user.name,
+        user.email,
+        user.whatsapp,
+        primaryItem.product_id,
+        summaryName,
+        items.reduce((acc: number, cur: any) => acc + cur.qty, 0),
+        primaryItem.unit_price,
+        calculatedTotalPrice,
         payment_method,
         'pending',
-        notes || null
+        JSON.stringify({ items: processedItems, user_notes: notes || null }) // Save full detail in notes JSON
       ]
     );
 
-    // Reduce stock
-    await db.query(
-      'UPDATE products SET stock = stock - ? WHERE id = ?',
-      [qty, product_id]
-    );
+    // 4. REDUCE STOCK FOR ALL
+    for (const item of items) {
+      await db.query('UPDATE products SET stock = stock - ? WHERE id = ?', [item.qty, item.product_id]);
+    }
 
-    // Fetch the created order
-    const [orderRows] = await db.query<any>(
-      'SELECT * FROM orders WHERE id = ? LIMIT 1',
-      [orderId]
-    );
+    // 5. FETCH CREATED ORDER
+    const [orderRows] = await db.query<any>('SELECT * FROM orders WHERE id = ? LIMIT 1', [orderId]);
     const newOrder = orderRows[0];
 
-    // Build WhatsApp auto-redirect data
+    // 6. WHATSAPP NOTIFICATION DATA
     const waNumber = process.env.WA_ADMIN || '62882016259591';
     const waMessage = [
       `🛒 *ORDER BARU — RGS STORE*`,
       ``,
       `📋 *Detail Pesanan:*`,
-      `▸ Order ID: #${orderNumber}`,
-      `▸ Produk: ${product.name}`,
-      `▸ Jumlah: ${qty}`,
-      `▸ Harga Satuan: Rp ${unitPrice.toLocaleString('id-ID')}`,
-      `▸ Total: *Rp ${totalPrice.toLocaleString('id-ID')}*`,
-      `▸ Pembayaran: ${payment_method}`,
+      `▸ Invoice: #${orderNumber}`,
+      ...processedItems.map(it => `▸ ${it.name} x${it.qty} (Rp ${it.total.toLocaleString('id-ID')})`),
       ``,
-      `👤 *Data Pembeli:*`,
-      `▸ Nama: ${userName}`,
-      `▸ Email: ${userEmail}`,
+      `💰 *Total Bayar: Rp ${calculatedTotalPrice.toLocaleString('id-ID')}*`,
+      `💳 *Metode: ${payment_method}*`,
       ``,
-      `Mohon konfirmasi pesanan ini. Terima kasih! 🙏`
+      `👤 *Pembeli: ${user.name}*`,
+      `📧 *Email: ${user.email}*`,
+      ``,
+      `Mohon segera diproses. Terima kasih! 🙏`
     ].join('\n');
 
     const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(waMessage)}`;
 
-    // Send Discord notification (fire and forget — non-blocking)
+    // Discord notification
     sendDiscordWebhook(buildOrderEmbed({
       order_number: orderNumber,
-      product_name: product.name,
-      qty,
-      total_price: totalPrice,
+      product_name: summaryName,
+      qty: items.length,
+      total_price: calculatedTotalPrice,
       payment_method,
-      user_name: userName,
-      user_email: userEmail
-    })).catch(() => {}); // Already handles errors internally
+      user_name: user.name,
+      user_email: user.email
+    })).catch(() => {});
 
     sendResponse(res, 201, true, 'Order berhasil dibuat!', {
       order: newOrder,

@@ -314,30 +314,52 @@ const store = {
 
     saveCart(cart) { localStorage.setItem('rgs_cart', JSON.stringify(cart)); },
 
-    addToCart(product, qty = 1) {
+    addToCart(product, variant = null, qty = 1) {
         const cart = this.getCart();
-        const idx = cart.findIndex(i => i.id === product.id);
-        if (idx >= 0) { cart[idx].qty = (cart[idx].qty || 1) + qty; }
-        else { cart.push({ ...product, qty }); }
+        const pQty = parseInt(qty) || 1;
+        const pPrice = parseInt(product.final_price || product.price) || 0;
+        
+        // Match by ID AND Variant to differentiate items in cart
+        const idx = cart.findIndex(i => i.id === product.id && i.variant === variant);
+        
+        if (idx >= 0) { 
+            cart[idx].qty = parseInt(cart[idx].qty || 0) + pQty; 
+        } else { 
+            cart.push({ 
+                id: product.id,
+                name: product.name,
+                price: pPrice,
+                image_url: product.image_url,
+                variant: variant,
+                qty: pQty 
+            }); 
+        }
+        
         this.saveCart(cart);
         this.updateCartBadge();
-        this.showToast(`🛒 ${product.name} ditambahkan!`, 'success');
+        this.showToast(`🛒 ${product.name} ${variant ? `(${variant})` : ''} ditambahkan!`, 'success');
     },
 
-    getCartCount() { return this.getCart().reduce((s, i) => s + (i.qty || 1), 0); },
+    getCartCount() { 
+        return this.getCart().reduce((acc, item) => acc + (parseInt(item.qty) || 0), 0); 
+    },
 
     updateCartBadge() {
         const badge = document.getElementById('cart-count');
-        if (badge) badge.textContent = this.getCartCount();
+        if (badge) {
+            const count = this.getCartCount();
+            badge.textContent = count > 0 ? count : '0';
+        }
     },
 
     // ─── FORMATTING ────────────────────────────────────────────
     formatRupiah(num) {
+        const val = parseInt(num) || 0;
         return new Intl.NumberFormat('id-ID', {
             style: 'currency',
             currency: 'IDR',
             minimumFractionDigits: 0
-        }).format(num || 0);
+        }).format(val);
     },
 
     formatDate(dt) {
@@ -410,23 +432,46 @@ const store = {
 
     // ─── TOAST ────────────────────────────────────────────────
     showToast(msg, type = 'success') {
-        let container = document.getElementById('toast-area');
+        let container = document.getElementById('toast-container');
         if (!container) {
             container = document.createElement('div');
-            container.id = 'toast-area';
+            container.id = 'toast-container';
+            container.style.cssText = 'position:fixed; top:20px; right:20px; z-index:99999; display:flex; flex-direction:column; gap:10px; align-items:flex-end; pointer-events:none;';
             document.body.appendChild(container);
         }
-        const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+
         const toast = document.createElement('div');
-        toast.className = `toast-msg ${type}`;
+        toast.style.cssText = `
+            background: ${type === 'error' ? '#ef4444' : (type === 'success' ? '#10b981' : '#3b82f6')};
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(120%);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: auto;
+            max-width: 300px;
+        `;
+
+        const icons = { success: '✅', error: '❌', info: 'ℹ️' };
         toast.innerHTML = `<span>${icons[type] || '💬'}</span><span>${msg}</span>`;
+        
         container.appendChild(toast);
+        
+        // Trigger entrance animation
+        setTimeout(() => toast.style.transform = 'translateX(0)', 10);
+
+        // Auto remove
         setTimeout(() => {
             toast.style.opacity = '0';
-            toast.style.transform = 'translateX(100%)';
-            toast.style.transition = '0.4s';
+            toast.style.transform = 'translateX(120%)';
             setTimeout(() => toast.remove(), 400);
-        }, 3200);
+        }, 3000);
     },
 
     // ─── MODAL ────────────────────────────────────────────────
