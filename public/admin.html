@@ -103,20 +103,22 @@
                     <button data-action="open-product-modal" class="bg-primary-500 hover:bg-primary-600 text-white font-bold py-2.5 px-5 rounded-lg shadow transition">+ Tambah Produk Baru</button>
                 </div>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
-                    <table class="w-full text-left min-w-[800px]">
-                        <thead class="bg-gray-50 border-b">
-                            <tr>
-                                <th class="p-4 font-semibold text-gray-600 w-16 text-center">No</th>
-                                <th class="p-4 font-semibold text-gray-600">Info Produk</th>
-                                <th class="p-4 font-semibold text-gray-600">Harga Jual</th>
-                                <th class="p-4 font-semibold text-gray-600">Diskon</th>
-                                <th class="p-4 font-semibold text-gray-600">Stok</th>
-                                <th class="p-4 font-semibold text-gray-600 text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-table-products" class="divide-y divide-gray-100"></tbody>
-                    </table>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left min-w-[800px]">
+                            <thead class="bg-gray-50 border-b">
+                                <tr>
+                                    <th class="p-4 font-semibold text-gray-600 w-16 text-center">No</th>
+                                    <th class="p-4 font-semibold text-gray-600">Info Produk</th>
+                                    <th class="p-4 font-semibold text-gray-600">Harga Jual</th>
+                                    <th class="p-4 font-semibold text-gray-600">Diskon</th>
+                                    <th class="p-4 font-semibold text-gray-600">Stok</th>
+                                    <th class="p-4 font-semibold text-gray-600 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-table-products" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -124,39 +126,43 @@
             <div id="tab-orders" class="tab-content">
                 <h2 class="text-2xl font-bold mb-6">Daftar Pesanan Masuk</h2>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
-                    <table class="w-full text-left min-w-[1000px]">
-                        <thead class="bg-gray-50 border-b">
-                            <tr>
-                                <th class="p-4 font-semibold text-gray-600">Order / Waktu</th>
-                                <th class="p-4 font-semibold text-gray-600">Pelanggan</th>
-                                <th class="p-4 font-semibold text-gray-600">Item</th>
-                                <th class="p-4 font-semibold text-gray-600">Total</th>
-                                <th class="p-4 font-semibold text-gray-600">Kredensial / Akun</th>
-                                <th class="p-4 font-semibold text-gray-600 text-center">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-table-orders" class="divide-y divide-gray-100"></tbody>
-                    </table>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left min-w-[1000px]">
+                            <thead class="bg-gray-50 border-b">
+                                <tr>
+                                    <th class="p-4 font-semibold text-gray-600">Order / Waktu</th>
+                                    <th class="p-4 font-semibold text-gray-600">Pelanggan</th>
+                                    <th class="p-4 font-semibold text-gray-600">Item</th>
+                                    <th class="p-4 font-semibold text-gray-600">Total</th>
+                                    <th class="p-4 font-semibold text-gray-600">Kredensial / Akun</th>
+                                    <th class="p-4 font-semibold text-gray-600 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-table-orders" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
             <!-- TAB: Tiket -->
             <div id="tab-tickets" class="tab-content">
                 <h2 class="text-2xl font-bold mb-6">Pusat Bantuan (Tiket Support)</h2>
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
-                    <table class="w-full text-left min-w-[900px]">
-                        <thead class="bg-gray-50 border-b">
-                            <tr>
-                                <th class="p-4 font-semibold text-gray-600">Tiket #</th>
-                                <th class="p-4 font-semibold text-gray-600">User</th>
-                                <th class="p-4 font-semibold text-gray-600">Subject / Masalah</th>
-                                <th class="p-4 font-semibold text-gray-600">Status</th>
-                                <th class="p-4 font-semibold text-gray-600 text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-table-tickets" class="divide-y divide-gray-100"></tbody>
-                    </table>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left min-w-[900px]">
+                            <thead class="bg-gray-50 border-b">
+                                <tr>
+                                    <th class="p-4 font-semibold text-gray-600">Tiket #</th>
+                                    <th class="p-4 font-semibold text-gray-600">User</th>
+                                    <th class="p-4 font-semibold text-gray-600">Subject / Masalah</th>
+                                    <th class="p-4 font-semibold text-gray-600">Status</th>
+                                    <th class="p-4 font-semibold text-gray-600 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-table-tickets" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -166,20 +172,22 @@
                     <h2 class="text-2xl font-bold">Info Metode Pembayaran</h2>
                     <button data-action="open-payment-modal" class="bg-primary-500 hover:bg-primary-600 text-white font-bold py-2 px-4 rounded-lg shadow">+ Tambah Metode</button>
                 </div>
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="bg-gray-50 border-b">
-                            <tr>
-                                <th class="p-4 font-semibold text-gray-600">Metode</th>
-                                <th class="p-4 font-semibold text-gray-600">Tipe</th>
-                                <th class="p-4 font-semibold text-gray-600">Nomor / Link</th>
-                                <th class="p-4 font-semibold text-gray-600">Nama Akun</th>
-                                <th class="p-4 font-semibold text-gray-600">Status</th>
-                                <th class="p-4 font-semibold text-gray-600 text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-table-payments" class="divide-y divide-gray-100"></tbody>
-                    </table>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left min-w-[800px]">
+                            <thead class="bg-gray-50 border-b">
+                                <tr>
+                                    <th class="p-4 font-semibold text-gray-600">Metode</th>
+                                    <th class="p-4 font-semibold text-gray-600">Tipe</th>
+                                    <th class="p-4 font-semibold text-gray-600">Nomor / Link</th>
+                                    <th class="p-4 font-semibold text-gray-600">Nama Akun</th>
+                                    <th class="p-4 font-semibold text-gray-600">Status</th>
+                                    <th class="p-4 font-semibold text-gray-600 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-table-payments" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 

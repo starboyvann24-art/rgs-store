@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import db from '../config/database';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { sendResponse } from '../utils/response';
+import { sanitizeHTML } from '../utils/sanitize';
 
 // ============================================================
 // RGS STORE — Message Controller
@@ -39,7 +40,7 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
 
     await db.query(
       'INSERT INTO messages (user_id, is_admin, message, file_url) VALUES (?, ?, ?, ?)',
-      [chatUserId, isAdmin, message || '', file_url]
+      [chatUserId, isAdmin, message ? sanitizeHTML(message) : '', file_url]
     );
 
     sendResponse(res, 201, true, 'Pesan terkirim.');

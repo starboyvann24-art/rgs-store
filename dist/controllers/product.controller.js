@@ -36,6 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getCategories = exports.deleteProduct = exports.updateProduct = exports.createProduct = exports.getProductById = exports.getAllProducts = exports.getProducts = void 0;
 const database_1 = __importStar(require("../config/database"));
 const response_1 = require("../utils/response");
+const sanitize_1 = require("../utils/sanitize");
 // ============================================================
 // RGS STORE — Product Controller
 // Handles CRUD operations for digital products
@@ -123,7 +124,7 @@ const createProduct = async (req, res, next) => {
             id,
             name.trim(),
             category || 'Lainnya',
-            description || null,
+            (0, sanitize_1.sanitizeHTML)(description) || null,
             parsePrice,
             parseDiscount,
             finalPrice,
@@ -172,6 +173,8 @@ const updateProduct = async (req, res, next) => {
             if (updates[field] !== undefined) {
                 setClauses.push(`${field} = ?`);
                 let val = updates[field];
+                if (field === 'description')
+                    val = (0, sanitize_1.sanitizeHTML)(val);
                 if (['price', 'discount', 'final_price', 'stock', 'is_active'].includes(field)) {
                     val = parseInt(val);
                 }

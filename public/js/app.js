@@ -72,6 +72,34 @@ const store = {
         }
     },
 
+    /**
+     * Set button loading state
+     * @param {string|HTMLButtonElement} btnId Element ID or handle
+     * @param {boolean} isLoading 
+     * @param {string} loadingText 
+     */
+    setLoading(btn, isLoading, loadingText = 'Loading...') {
+        const el = typeof btn === 'string' ? document.getElementById(btn) : btn;
+        if (!el) return;
+
+        if (isLoading) {
+            el.dataset.oldText = el.innerHTML;
+            el.innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:center;gap:8px">
+                    <svg class="spinner-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle></svg>
+                    <span>${loadingText}</span>
+                </div>`;
+            el.disabled = true;
+            el.style.opacity = '0.7';
+            el.style.cursor = 'not-allowed';
+        } else {
+            el.innerHTML = el.dataset.oldText || 'Submit';
+            el.disabled = false;
+            el.style.opacity = '1';
+            el.style.cursor = 'pointer';
+        }
+    },
+
     // ─── AUTH METHODS ──────────────────────────────────────────
     async login(email, password) {
         const res = await this.apiCall('/auth/login', {

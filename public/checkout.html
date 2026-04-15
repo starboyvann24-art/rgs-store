@@ -188,8 +188,7 @@
                 const method = document.querySelector('input[name="payment"]:checked').value;
 
                 try {
-                    btn.disabled = true;
-                    btn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Memproses...';
+                    appUtils.setLoading(btn, true, 'Memproses...');
 
                     const result = await appUtils.createOrder({
                         product_id: productId,
@@ -199,16 +198,18 @@
                     if (result.success) {
                         appUtils.showToast('Pesanan berhasil! Menuju WhatsApp...', 'success');
                         const waUrl = result.data.whatsapp_url;
-                        setTimeout(() => { window.location.href = waUrl; }, 1200);
+                        setTimeout(() => { 
+                            appUtils.setLoading(btn, false);
+                            window.location.href = waUrl; 
+                        }, 1200);
                     } else {
                         appUtils.showToast(result.message, 'error');
+                        appUtils.setLoading(btn, false);
                     }
                 } catch (err) {
                     console.error('Order Error:', err);
                     appUtils.showToast('Terjadi kesalahan saat membuat pesanan.', 'error');
-                } finally {
-                    btn.disabled = false;
-                    btn.innerHTML = 'Bayar Sekarang <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>';
+                    appUtils.setLoading(btn, false);
                 }
             });
         });

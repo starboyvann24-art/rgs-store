@@ -286,9 +286,9 @@ document.addEventListener('click', async (e) => {
             formData.append('target_user_id', adminState.currentChatUserId);
             if (fileInp.files[0]) formData.append('chat_file', fileInp.files[0]);
 
-            btn.disabled = true;
+            appUtils.setLoading(btn, true, 'Kirim...');
             await appUtils.sendMessage(formData);
-            btn.disabled = false;
+            appUtils.setLoading(btn, false);
             
             inp.value = '';
             fileInp.value = '';
@@ -324,8 +324,7 @@ async function handleFormSubmit(e) {
     const formId = form.id;
     const btn = form.querySelector('button[type="submit"]') || document.getElementById('btn-save-product') || document.getElementById('btn-save-payment');
     
-    if (btn) btn.disabled = true;
-
+    appUtils.setLoading(btn, true, 'Menyimpan...');
     try {
         const formData = new FormData(form);
         const id = form.querySelector('[id$="-id"]').value; // Handles form-id or pay-id
@@ -350,7 +349,7 @@ async function handleFormSubmit(e) {
             }
         }
     } catch (err) { alert("ERROR: " + err.message); }
-    finally { if (btn) btn.disabled = false; }
+    finally { appUtils.setLoading(btn, false); }
 }
 
 // --- TAB & MODAL HELPERS ---

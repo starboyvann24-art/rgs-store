@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import db, { generateUUID } from '../config/database';
 import { sendResponse } from '../utils/response';
+import { sanitizeHTML } from '../utils/sanitize';
 
 // ============================================================
 // RGS STORE — Product Controller
@@ -104,7 +105,7 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
         id,
         name.trim(),
         category || 'Lainnya',
-        description || null,
+        sanitizeHTML(description) || null,
         parsePrice,
         parseDiscount,
         finalPrice,
@@ -165,6 +166,7 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
       if (updates[field] !== undefined) {
         setClauses.push(`${field} = ?`);
         let val = updates[field];
+        if (field === 'description') val = sanitizeHTML(val);
         if (['price', 'discount', 'final_price', 'stock', 'is_active'].includes(field)) {
           val = parseInt(val);
         }

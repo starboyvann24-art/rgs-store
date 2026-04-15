@@ -108,9 +108,8 @@
         document.getElementById('form-login').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
-            const orig = btn.innerText;
-            btn.disabled = true;
-            btn.innerText = 'Tunggu sebentar...';
+
+            appUtils.setLoading(btn, true, 'Masuk...');
 
             const result = await appUtils.login(
                 document.getElementById('login-email').value,
@@ -125,8 +124,7 @@
                 }, 800);
             } else {
                 appUtils.showToast(result.message || 'Login gagal', 'error');
-                btn.disabled = false;
-                btn.innerText = orig;
+                appUtils.setLoading(btn, false);
             }
         });
 
@@ -134,9 +132,8 @@
         document.getElementById('form-register').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
-            const orig = btn.innerText;
-            btn.disabled = true;
-            btn.innerText = 'Tunggu sebentar...';
+
+            appUtils.setLoading(btn, true, 'Daftar...');
 
             const result = await appUtils.register(
                 document.getElementById('reg-name').value,
@@ -149,8 +146,7 @@
                 setTimeout(() => { window.location.href = 'index.html'; }, 800);
             } else {
                 appUtils.showToast(result.message || 'Registrasi gagal', 'error');
-                btn.disabled = false;
-                btn.innerText = orig;
+                appUtils.setLoading(btn, false);
             }
         });
     </script>

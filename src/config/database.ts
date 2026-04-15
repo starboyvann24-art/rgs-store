@@ -235,6 +235,16 @@ export async function initializeDatabase(): Promise<void> {
     await db.query(CREATE_MESSAGES_TABLE);
     console.log('   ✓ Table "messages" ready');
 
+    // ─── ADD INDEXES (For Existing Tables) ─────────────────────
+    try {
+      await db.query('CREATE INDEX IF NOT EXISTS idx_products_category ON products(category)');
+      await db.query('CREATE INDEX IF NOT EXISTS idx_products_active ON products(is_active)');
+      await db.query('CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id)');
+      console.log('   ✓ Production indices verified/added');
+    } catch (e) {
+      // Index already exists, skip
+    }
+
     // Insert default data
     await db.query(INSERT_DEFAULT_SETTINGS);
     console.log('   ✓ Default settings loaded');
@@ -286,12 +296,9 @@ export function generateUUID(): string {
 
 // ─── ORDER NUMBER GENERATOR ───────────────────────────────────
 export function generateOrderNumber(): string {
-  const now = new Date();
-  const y = now.getFullYear().toString().slice(-2);
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
+  const ts = Date.now().toString().slice(-6);
   const rand = Math.floor(1000 + Math.random() * 9000);
-  return `RGS${y}${m}${d}${rand}`;
+  return `INV-RGS-${ts}-${rand}`;
 }
 
 // ─── TICKET NUMBER GENERATOR ──────────────────────────────────

@@ -145,9 +145,9 @@ document.addEventListener('click', async (e) => {
         formData.append('message', msg);
         if (fileInp.files[0]) formData.append('chat_file', fileInp.files[0]);
 
-        btn.disabled = true;
+        appUtils.setLoading(btn, true, 'Kirim...');
         const res = await appUtils.sendMessage(formData);
-        btn.disabled = false;
+        appUtils.setLoading(btn, false);
 
         if (res.success) {
             input.value = '';

@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserMessages = exports.getChatUsers = exports.getMyMessages = exports.sendMessage = void 0;
 const database_1 = __importDefault(require("../config/database"));
 const response_1 = require("../utils/response");
+const sanitize_1 = require("../utils/sanitize");
 // ============================================================
 // RGS STORE — Message Controller
 // Handles in-app chat between Users and Admin
@@ -34,7 +35,7 @@ const sendMessage = async (req, res, next) => {
             chatUserId = target_user_id;
         }
         const isAdmin = userRole === 'admin' ? 1 : 0;
-        await database_1.default.query('INSERT INTO messages (user_id, is_admin, message, file_url) VALUES (?, ?, ?, ?)', [chatUserId, isAdmin, message || '', file_url]);
+        await database_1.default.query('INSERT INTO messages (user_id, is_admin, message, file_url) VALUES (?, ?, ?, ?)', [chatUserId, isAdmin, message ? (0, sanitize_1.sanitizeHTML)(message) : '', file_url]);
         (0, response_1.sendResponse)(res, 201, true, 'Pesan terkirim.');
     }
     catch (error) {
