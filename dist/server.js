@@ -38,7 +38,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
 const dotenv = __importStar(require("dotenv"));
+const helmet_1 = __importDefault(require("helmet"));
+const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 // Load .env with absolute path — wajib agar terbaca di cPanel/Phusion Passenger
 // __dirname di dist/server.js → naik 1 level → root project
 dotenv.config({ path: path_1.default.resolve(__dirname, '..', '.env') });
@@ -59,7 +62,22 @@ const response_1 = require("./utils/response");
 // ============================================================
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
-// ─── BODY PARSERS ─────────────────────────────────────────────
+// ─── SECURITY & PARSERS ───────────────────────────────────────
+// Gunakan helmet tanpa memecah resource lokal
+app.use((0, helmet_1.default)({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false
+}));
+const limiter = (0, express_rate_limit_1.default)({
+    windowMs: 15 * 60 * 1000, // 15 menit
+    max: 300, // Max 300 request per IP (agak longgar untuk aset statis)
+    message: { success: false, message: 'Terlalu banyak permintaan, coba lagi nanti.' }
+});
+const apiLimiter = (0, express_rate_limit_1.default)({
+    windowMs: 5 * 60 * 1000,
+    max: 50, // Max 50 request API per IP tiap 5 menit
+    message: { success: false, message: 'Too many API requests, please try again later.' }
+});
 app.use(express_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
 // ─── ADMIN PROTECTION (Before Static) ────────────────────────
@@ -87,9 +105,9 @@ apiRouter.get('/health', (_req, res) => {
     });
 });
 // Mount route modules
-apiRouter.use('/auth', auth_routes_1.default);
+apiRouter.use('/auth', apiLimiter, auth_routes_1.default);
 apiRouter.use('/products', product_routes_1.default);
-apiRouter.use('/orders', order_routes_1.default);
+apiRouter.use('/orders', apiLimiter, order_routes_1.default);
 apiRouter.use('/settings', settings_routes_1.default);
 apiRouter.use('/tickets', ticket_routes_1.default);
 apiRouter.use('/reviews', review_routes_1.default);
@@ -122,6 +140,15 @@ async function startServer() {
             console.error('❌ Failed to connect to database. Check your .env configuration.');
             process.exit(1);
         }
+        // Auto-create necessary folders
+        const dirs = ['uploads', 'qris', 'proofs', 'chat_files', 'avatars'];
+        dirs.forEach(dir => {
+            const p = path_1.default.join(__dirname, '..', 'public', dir);
+            if (!fs_1.default.existsSync(p)) {
+                fs_1.default.mkdirSync(p, { recursive: true });
+                console.log(`   📂 Created directory: public/${dir}`);
+            }
+        });
         // Initialize database tables
         await (0, database_1.initializeDatabase)();
         // Start listening

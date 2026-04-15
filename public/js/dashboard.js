@@ -32,7 +32,10 @@ const Render = {
                         <div><p class="font-semibold text-gray-800">${o.product_name}</p><p class="text-xs text-gray-500 mt-0.5">Jumlah: ${o.qty} · Metode: ${o.payment_method}</p></div>
                         <div class="text-right">
                             <p class="font-extrabold text-primary-600 text-lg">${appUtils.formatRupiah(o.total_price)}</p>
-                            ${isDone ? `<button data-action="open-review" data-id="${o.id}" data-pid="${o.product_id}" data-pname="${o.product_name.replace(/'/g,"\\'").replace(/"/g, '&quot;')}" class="text-[10px] font-bold text-orange-500 hover:underline mt-1">⭐️ Tulis Ulasan</button>` : ''}
+                            <div class="flex gap-3 justify-end mt-2">
+                                <a href="invoice.html?id=${o.id}" target="_blank" class="text-[10px] font-bold text-gray-500 hover:text-gray-800 transition"><i class="fa-solid fa-print"></i> Cetak Invoice</a>
+                                ${isDone ? `<button data-action="open-review" data-id="${o.id}" data-pid="${o.product_id}" data-pname="${o.product_name.replace(/'/g,"\\'").replace(/"/g, '&quot;')}" class="text-[10px] font-bold text-orange-500 hover:underline">⭐️ Tulis Ulasan</button>` : ''}
+                            </div>
                         </div>
                     </div>
                     ${o.credentials ? `
@@ -214,4 +217,81 @@ document.addEventListener('DOMContentLoaded', () => {
             Actions.loadChat();
         }
     }, 10000);
+
+    // Profile Tab setup
+    const avatarImg = user.avatar || 'https://placehold.co/150x150/1e293b/22c55e?text=User';
+    document.getElementById('profile-name').value = user.name;
+    document.getElementById('profile-wa').value = user.whatsapp || '';
+    document.getElementById('profile-email').value = user.email;
+    document.getElementById('profile-avatar-preview').src = avatarImg;
+    
+    // Update Sidebar Avatar
+    const avatarPlaceholderText = user.name.charAt(0).toUpperCase();
+    if (user.avatar) {
+        document.getElementById('user-avatar').innerHTML = `<img src="${user.avatar}" alt="Avatar" class="w-full h-full object-cover rounded-full">`;
+    } else {
+        document.getElementById('user-avatar').textContent = avatarPlaceholderText;
+    }
+
+    // Avatar visual preview on selection
+    const avatarInp = document.getElementById('profile-avatar');
+    if (avatarInp) {
+        avatarInp.addEventListener('change', function() {
+            if (this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profile-avatar-preview').src = e.target.result;
+                }
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    }
+
+    // Profile Form Submit
+    const profileForm = document.getElementById('profile-form');
+    if (profileForm) {
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = profileForm.querySelector('button[type="submit"]');
+            
+            const formData = new FormData();
+            formData.append('name', document.getElementById('profile-name').value);
+            formData.append('whatsapp', document.getElementById('profile-wa').value);
+            
+            const file = document.getElementById('profile-avatar').files[0];
+            if (file) formData.append('avatar', file);
+
+            appUtils.setLoading(btn, true, 'Menyimpan...');
+            
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch('/api/auth/profile', {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+                const data = await res.json();
+                
+                appUtils.setLoading(btn, false);
+                
+                if (data.success) {
+                    appUtils.showToast('Profil berhasil diperbarui!', 'success');
+                    // Update fresh user data to local storage
+                    const fullDataRes = await fetch('/api/auth/me', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const meData = await fullDataRes.json();
+                    if (meData.success) {
+                        localStorage.setItem('user', JSON.stringify(meData.data));
+                        setTimeout(() => location.reload(), 1000);
+                    }
+                } else {
+                    appUtils.showToast(data.message, 'error');
+                }
+            } catch (err) {
+                appUtils.setLoading(btn, false);
+                appUtils.showToast('Gagal terhubung ke server.', 'error');
+            }
+        });
+    }
 });

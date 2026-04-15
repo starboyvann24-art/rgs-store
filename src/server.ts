@@ -1,6 +1,9 @@
 import express, { Express, Request, Response, NextFunction } from 'express';
 import path from 'path';
+import fs from 'fs';
 import * as dotenv from 'dotenv';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 // Load .env with absolute path — wajib agar terbaca di cPanel/Phusion Passenger
 // __dirname di dist/server.js → naik 1 level → root project
@@ -27,7 +30,25 @@ import { sendResponse } from './utils/response';
 const app: Express = express();
 const PORT = process.env.PORT || 3000;
 
-// ─── BODY PARSERS ─────────────────────────────────────────────
+// ─── SECURITY & PARSERS ───────────────────────────────────────
+// Gunakan helmet tanpa memecah resource lokal
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false
+}));
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 menit
+  max: 300, // Max 300 request per IP (agak longgar untuk aset statis)
+  message: { success: false, message: 'Terlalu banyak permintaan, coba lagi nanti.' }
+});
+
+const apiLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 50, // Max 50 request API per IP tiap 5 menit
+  message: { success: false, message: 'Too many API requests, please try again later.' }
+});
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -61,9 +82,9 @@ apiRouter.get('/health', (_req: Request, res: Response) => {
 });
 
 // Mount route modules
-apiRouter.use('/auth', authRoutes);
+apiRouter.use('/auth', apiLimiter, authRoutes);
 apiRouter.use('/products', productRoutes);
-apiRouter.use('/orders', orderRoutes);
+apiRouter.use('/orders', apiLimiter, orderRoutes);
 apiRouter.use('/settings', settingsRoutes);
 apiRouter.use('/tickets', ticketRoutes);
 apiRouter.use('/reviews', reviewRoutes);
@@ -101,6 +122,16 @@ async function startServer(): Promise<void> {
       console.error('❌ Failed to connect to database. Check your .env configuration.');
       process.exit(1);
     }
+
+    // Auto-create necessary folders
+    const dirs = ['uploads', 'qris', 'proofs', 'chat_files', 'avatars'];
+    dirs.forEach(dir => {
+      const p = path.join(__dirname, '..', 'public', dir);
+      if (!fs.existsSync(p)) {
+        fs.mkdirSync(p, { recursive: true });
+        console.log(`   📂 Created directory: public/${dir}`);
+      }
+    });
 
     // Initialize database tables
     await initializeDatabase();

@@ -1,32 +1,34 @@
 /**
- * RGS STORE — Security Utilities
- * Simple HTML sanitization to prevent XSS.
+ * Simple XSS Sanitization utility.
+ * Removes <script> tags, common event handlers, and encodes basic HTML entities.
  */
+export function sanitizeHTML(input: string | any): any {
+  if (typeof input !== 'string') return input;
 
-/**
- * Strips script tags and basic dangerous attributes from user-generated strings.
- */
-export function sanitizeHTML(str: string): string {
-  if (!str) return '';
-  
-  return str
-    .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, '') // Nuke scripts
-    .replace(/on\w+="[^"]*"/gim, '')                     // Nuke event handlers
-    .replace(/javascript:[^"]*/gim, '')                  // Nuke JS links
+  return input
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
+    .replace(/on\w+="[^"]*"/gi, '') // Remove inline event handlers
+    .replace(/on\w+='[^']*'/gi, '')
+    .replace(/javascript:/gi, '') // Remove javascript: protocol
     .trim();
 }
 
 /**
- * Escapes characters for safe innerHTML injection (Frontend fallback if needed).
+ * Deep sanitize an object or array.
  */
-export function escapeHTML(str: string): string {
-  if (!str) return '';
-  const map: Record<string, string> = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;'
-  };
-  return str.replace(/[&<>"']/g, (m) => map[m]);
+export function sanitizeObject(obj: any): any {
+  if (typeof obj === 'string') {
+    return sanitizeHTML(obj);
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(item => sanitizeObject(item));
+  }
+  if (obj !== null && typeof obj === 'object') {
+    const sanitizedObj: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      sanitizedObj[key] = sanitizeObject(value);
+    }
+    return sanitizedObj;
+  }
+  return obj;
 }

@@ -5,6 +5,7 @@ const auth_controller_1 = require("../controllers/auth.controller");
 const validate_middleware_1 = require("../middleware/validate.middleware");
 const auth_validation_1 = require("../validations/auth.validation");
 const auth_middleware_1 = require("../middleware/auth.middleware");
+const upload_middleware_1 = require("../middleware/upload.middleware");
 // ============================================================
 // RGS STORE — Auth Routes
 // ============================================================
@@ -19,5 +20,7 @@ router.get('/me', auth_middleware_1.verifyToken, auth_controller_1.getMe);
 router.post('/forgot-password', auth_controller_1.forgotPassword);
 // POST /api/auth/reset-password — Reset password with token
 router.post('/reset-password', auth_controller_1.resetPassword);
+// PUT /api/auth/profile — Update user profile
+router.put('/profile', auth_middleware_1.verifyToken, upload_middleware_1.upload.single('avatar'), auth_controller_1.updateProfile);
 exports.default = router;
 //# sourceMappingURL=auth.routes.js.map

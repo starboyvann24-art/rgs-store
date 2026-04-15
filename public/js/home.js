@@ -102,4 +102,63 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     loadProducts('', currentCat);
+
+    // ─── CAROUSEL LOGIC ─────────────────────────────────────────
+    const slides = document.querySelectorAll('.carousel-slide');
+    const dots = document.querySelectorAll('.carousel-dot');
+    let currentSlide = 0;
+    
+    function showSlide(index) {
+        slides.forEach((s, idx) => {
+            s.classList.toggle('active', idx === index);
+            if (dots[idx]) dots[idx].classList.toggle('active', idx === index);
+        });
+    }
+
+    function nextSlide() {
+        currentSlide = (currentSlide + 1) % slides.length;
+        showSlide(currentSlide);
+    }
+    
+    // Auto-play
+    let slideTimer = setInterval(nextSlide, 5000);
+    
+    dots.forEach((dot, idx) => {
+        dot.addEventListener('click', () => {
+            clearInterval(slideTimer);
+            currentSlide = idx;
+            showSlide(currentSlide);
+            slideTimer = setInterval(nextSlide, 5000);
+        });
+    });
+
+    // ─── MOBILE HAMBURGER & SEARCH LOGIC ───────────────────────
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const closeBtn = document.getElementById('close-sidebar-btn');
+    const sidebar = document.getElementById('mobile-sidebar');
+    const overlay = document.getElementById('mobile-sidebar-overlay');
+    const mobileSearch = document.getElementById('mobile-search');
+
+    if (mobileBtn && sidebar) {
+        const toggleMenu = () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        };
+        mobileBtn.addEventListener('click', toggleMenu);
+        closeBtn.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+    }
+
+    if (mobileSearch) {
+        mobileSearch.addEventListener('input', e => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                loadProducts(e.target.value, currentCat);
+                if (sidebar) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('open');
+                }
+            }, 500);
+        });
+    }
 });

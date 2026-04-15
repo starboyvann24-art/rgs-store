@@ -24,4 +24,9 @@ export declare const forgotPassword: (req: Request, res: Response, next: NextFun
  * Reset password using token
  */
 export declare const resetPassword: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+/**
+ * PUT /api/v1/auth/profile
+ * Update user profile (name, whatsapp, avatar)
+ */
+export declare const updateProfile: (req: any, res: Response, next: NextFunction) => Promise<void>;
 //# sourceMappingURL=auth.controller.d.ts.map

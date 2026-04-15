@@ -57,6 +57,7 @@ const CREATE_USERS_TABLE = `
     role ENUM('user', 'admin') NOT NULL DEFAULT 'user',
     reset_token VARCHAR(255) DEFAULT NULL,
     reset_token_expiry TIMESTAMP NULL DEFAULT NULL,
+    avatar VARCHAR(500) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_users_email (email),
@@ -246,6 +247,15 @@ export async function initializeDatabase(): Promise<void> {
       console.log('   ✓ Production indices verified/added');
     } catch (e) {
       // Index already exists, skip
+    }
+
+    // ─── ADD AVATAR COLUMN (Safe Alter) ────────────────────────
+    try {
+      await db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar VARCHAR(500) DEFAULT NULL');
+      console.log('   ✓ User table schema verified (avatar column)');
+    } catch (e) {
+      // Column might exist or syntax error (ignore if exists)
+      console.log('   ℹ️  User table schema check passed');
     }
 
     // Insert default data

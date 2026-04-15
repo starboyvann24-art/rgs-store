@@ -210,3 +210,42 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
     next(error);
   }
 };
+
+/**
+ * PUT /api/v1/auth/profile
+ * Update user profile (name, whatsapp, avatar)
+ */
+export const updateProfile = async (req: any, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const userId = req.user.id;
+    const { name, whatsapp } = req.body;
+    
+    // Check if file is uploaded
+    const avatarUrl = req.file ? `/avatars/${req.file.filename}` : undefined;
+
+    // Get current user data
+    const [rows] = await db.query<any>('SELECT * FROM users WHERE id = ? LIMIT 1', [userId]);
+    const user = rows[0];
+    if (!user) {
+      sendResponse(res, 404, false, 'User tidak ditemukan.');
+      return;
+    }
+
+    const newName = name ? name.trim() : user.name;
+    const newWhatsapp = whatsapp ? whatsapp.trim() : user.whatsapp;
+    const newAvatar = avatarUrl || user.avatar;
+
+    await db.query(
+      'UPDATE users SET name = ?, whatsapp = ?, avatar = ? WHERE id = ?',
+      [newName, newWhatsapp, newAvatar, userId]
+    );
+
+    const [updatedRows] = await db.query<any>('SELECT id, name, email, role, whatsapp, avatar FROM users WHERE id = ? LIMIT 1', [userId]);
+
+    sendResponse(res, 200, true, 'Profil berhasil diperbarui.', {
+      user: updatedRows[0]
+    });
+  } catch (error) {
+    next(error);
+  }
+};

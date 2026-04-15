@@ -1,13 +1,10 @@
 /**
- * RGS STORE — Security Utilities
- * Simple HTML sanitization to prevent XSS.
+ * Simple XSS Sanitization utility.
+ * Removes <script> tags, common event handlers, and encodes basic HTML entities.
  */
+export declare function sanitizeHTML(input: string | any): any;
 /**
- * Strips script tags and basic dangerous attributes from user-generated strings.
+ * Deep sanitize an object or array.
  */
-export declare function sanitizeHTML(str: string): string;
-/**
- * Escapes characters for safe innerHTML injection (Frontend fallback if needed).
- */
-export declare function escapeHTML(str: string): string;
+export declare function sanitizeObject(obj: any): any;
 //# sourceMappingURL=sanitize.d.ts.map

@@ -1,36 +1,38 @@
 "use strict";
-/**
- * RGS STORE — Security Utilities
- * Simple HTML sanitization to prevent XSS.
- */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sanitizeHTML = sanitizeHTML;
-exports.escapeHTML = escapeHTML;
+exports.sanitizeObject = sanitizeObject;
 /**
- * Strips script tags and basic dangerous attributes from user-generated strings.
+ * Simple XSS Sanitization utility.
+ * Removes <script> tags, common event handlers, and encodes basic HTML entities.
  */
-function sanitizeHTML(str) {
-    if (!str)
-        return '';
-    return str
-        .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, '') // Nuke scripts
-        .replace(/on\w+="[^"]*"/gim, '') // Nuke event handlers
-        .replace(/javascript:[^"]*/gim, '') // Nuke JS links
+function sanitizeHTML(input) {
+    if (typeof input !== 'string')
+        return input;
+    return input
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
+        .replace(/on\w+="[^"]*"/gi, '') // Remove inline event handlers
+        .replace(/on\w+='[^']*'/gi, '')
+        .replace(/javascript:/gi, '') // Remove javascript: protocol
         .trim();
 }
 /**
- * Escapes characters for safe innerHTML injection (Frontend fallback if needed).
+ * Deep sanitize an object or array.
  */
-function escapeHTML(str) {
-    if (!str)
-        return '';
-    const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-    };
-    return str.replace(/[&<>"']/g, (m) => map[m]);
+function sanitizeObject(obj) {
+    if (typeof obj === 'string') {
+        return sanitizeHTML(obj);
+    }
+    if (Array.isArray(obj)) {
+        return obj.map(item => sanitizeObject(item));
+    }
+    if (obj !== null && typeof obj === 'object') {
+        const sanitizedObj = {};
+        for (const [key, value] of Object.entries(obj)) {
+            sanitizedObj[key] = sanitizeObject(value);
+        }
+        return sanitizedObj;
+    }
+    return obj;
 }
 //# sourceMappingURL=sanitize.js.map

@@ -36,7 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetPassword = exports.forgotPassword = exports.getMe = exports.login = exports.register = void 0;
+exports.updateProfile = exports.resetPassword = exports.forgotPassword = exports.getMe = exports.login = exports.register = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const database_1 = __importStar(require("../config/database"));
 const jwt_1 = require("../utils/jwt");
@@ -206,4 +206,35 @@ const resetPassword = async (req, res, next) => {
     }
 };
 exports.resetPassword = resetPassword;
+/**
+ * PUT /api/v1/auth/profile
+ * Update user profile (name, whatsapp, avatar)
+ */
+const updateProfile = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { name, whatsapp } = req.body;
+        // Check if file is uploaded
+        const avatarUrl = req.file ? `/avatars/${req.file.filename}` : undefined;
+        // Get current user data
+        const [rows] = await database_1.default.query('SELECT * FROM users WHERE id = ? LIMIT 1', [userId]);
+        const user = rows[0];
+        if (!user) {
+            (0, response_1.sendResponse)(res, 404, false, 'User tidak ditemukan.');
+            return;
+        }
+        const newName = name ? name.trim() : user.name;
+        const newWhatsapp = whatsapp ? whatsapp.trim() : user.whatsapp;
+        const newAvatar = avatarUrl || user.avatar;
+        await database_1.default.query('UPDATE users SET name = ?, whatsapp = ?, avatar = ? WHERE id = ?', [newName, newWhatsapp, newAvatar, userId]);
+        const [updatedRows] = await database_1.default.query('SELECT id, name, email, role, whatsapp, avatar FROM users WHERE id = ? LIMIT 1', [userId]);
+        (0, response_1.sendResponse)(res, 200, true, 'Profil berhasil diperbarui.', {
+            user: updatedRows[0]
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.updateProfile = updateProfile;
 //# sourceMappingURL=auth.controller.js.map
