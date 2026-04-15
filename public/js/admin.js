@@ -218,8 +218,13 @@ document.addEventListener('click', async (e) => {
         const tabId = btn.dataset.tab;
         switchTab(tabId);
     }
+    if (action === 'logout') {
+        appUtils.logout();
+    }
     if (action === 'open-product-modal') openProductModal();
+    if (action === 'close-product-modal') closeFormModal();
     if (action === 'open-payment-modal') openPaymentModal();
+    if (action === 'close-payment-modal') closePaymentModal();
 
     // --- PRODUCT ACTIONS ---
     if (action === 'edit-product') {

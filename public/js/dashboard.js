@@ -96,6 +96,18 @@ document.addEventListener('click', async (e) => {
         switchTab(tabId);
     }
 
+    if (action === 'logout') {
+        appUtils.logout();
+    }
+
+    if (action === 'open-ticket-modal') {
+        if (typeof store !== 'undefined' && store.openTicketModal) {
+            store.openTicketModal();
+        } else {
+            alert('Fitur tiket sedang dimuat, silakan coba sesaat lagi.');
+        }
+    }
+
     if (action === 'copy-text') {
         appUtils.copyToClipboard(btn.dataset.text);
     }

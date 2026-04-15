@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - RGS STORE</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = { theme: { extend: { colors: { primary: { 50: '#f0fdf4', 100: '#dcfce7', 500: '#22c55e', 600: '#16a34a', 700: '#15803d'  } }, fontFamily: { sans: ['Inter', 'sans-serif'] } } } };
-    </script>
+    <script src="js/tailwind-config.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         .tab-content { display: none; }
@@ -22,34 +20,34 @@
             <h1 class="text-2xl font-extrabold tracking-tighter text-primary-500">RGS <span class="text-white">ADMIN</span></h1>
         </div>
         <nav class="flex-grow p-4 space-y-2 pb-24 overflow-y-auto">
-            <button onclick="switchTab('dashboard')" id="btn-tab-dashboard" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-primary-600 text-white font-medium transition">
+            <button data-action="switch-tab" data-tab="dashboard" id="btn-tab-dashboard" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-primary-600 text-white font-medium transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                 Dashboard
             </button>
-            <button onclick="switchTab('products')" id="btn-tab-products" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 text-gray-300 transition">
+            <button data-action="switch-tab" data-tab="products" id="btn-tab-products" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 text-gray-300 transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                 Manajemen Produk
             </button>
-            <button onclick="switchTab('orders')" id="btn-tab-orders" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 text-gray-300 transition">
+            <button data-action="switch-tab" data-tab="orders" id="btn-tab-orders" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 text-gray-300 transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
                 Pesanan Masuk
             </button>
-            <button onclick="switchTab('payments')" id="btn-tab-payments" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 text-gray-300 transition">
+            <button data-action="switch-tab" data-tab="payments" id="btn-tab-payments" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 text-gray-300 transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
                 Info Pembayaran
             </button>
-            <button onclick="switchTab('chat')" id="btn-tab-chat" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 text-gray-300 transition">
+            <button data-action="switch-tab" data-tab="chat" id="btn-tab-chat" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 text-gray-300 transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
                 Chat Pelanggan
             </button>
-            <button onclick="switchTab('tickets')" id="btn-tab-tickets" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 text-gray-300 transition">
+            <button data-action="switch-tab" data-tab="tickets" id="btn-tab-tickets" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 text-gray-300 transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                 Tiket Support
             </button>
         </nav>
         <div class="p-4 border-t border-gray-800 mt-auto">
              <a href="index.html" class="block w-full text-center px-4 py-2 text-gray-400 hover:text-white rounded-lg transition font-medium text-xs mb-2">← Kembali ke Toko</a>
-             <button onclick="appUtils.logout()" class="w-full text-center px-4 py-2 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition font-medium">Logout Admin</button>
+             <button data-action="logout" class="w-full text-center px-4 py-2 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition font-medium">Logout Admin</button>
         </div>
     </aside>
 
@@ -59,14 +57,14 @@
         <!-- Mobile Topbar -->
         <header class="bg-gray-900 text-white p-4 flex justify-between items-center md:hidden h-16 sticky top-0 z-40">
             <h1 class="text-xl font-extrabold tracking-tighter text-primary-500">RGS <span class="text-white">ADMIN</span></h1>
-            <button onclick="appUtils.logout()" class="text-xs border px-2 py-1 rounded">Logout</button>
+            <button data-action="logout" class="text-xs border px-2 py-1 rounded">Logout</button>
         </header>
         
         <!-- Mobile Nav Tabs -->
         <div class="flex overflow-x-auto bg-white border-b shadow-sm md:hidden p-2 space-x-2 sticky top-16 z-30">
-            <button onclick="switchTab('dashboard')" class="admin-tab-mob px-4 py-2 rounded bg-primary-100 text-primary-700 font-bold text-xs" id="mob-tab-dashboard">Dashboard</button>
-            <button onclick="switchTab('products')" class="admin-tab-mob px-4 py-2 rounded bg-gray-100 text-gray-600 font-bold text-xs" id="mob-tab-products">Produk</button>
-            <button onclick="switchTab('orders')" class="admin-tab-mob px-4 py-2 rounded bg-gray-100 text-gray-600 font-bold text-xs" id="mob-tab-orders">Pesanan</button>
+            <button data-action="switch-tab" data-tab="dashboard" class="admin-tab-mob px-4 py-2 rounded bg-primary-100 text-primary-700 font-bold text-xs" id="mob-tab-dashboard">Dashboard</button>
+            <button data-action="switch-tab" data-tab="products" class="admin-tab-mob px-4 py-2 rounded bg-gray-100 text-gray-600 font-bold text-xs" id="mob-tab-products">Produk</button>
+            <button data-action="switch-tab" data-tab="orders" class="admin-tab-mob px-4 py-2 rounded bg-gray-100 text-gray-600 font-bold text-xs" id="mob-tab-orders">Pesanan</button>
         </div>
 
         <div class="p-4 md:p-8 overflow-y-auto flex-grow relative pb-24">
@@ -102,7 +100,7 @@
             <div id="tab-products" class="tab-content">
                 <div class="flex flex-col md:flex-row justify-between mb-6">
                     <h2 class="text-2xl font-bold mb-4 md:mb-0">Manajemen Produk</h2>
-                    <button onclick="openFormModal()" class="bg-primary-500 hover:bg-primary-600 text-white font-bold py-2.5 px-5 rounded-lg shadow transition">+ Tambah Produk Baru</button>
+                    <button data-action="open-product-modal" class="bg-primary-500 hover:bg-primary-600 text-white font-bold py-2.5 px-5 rounded-lg shadow transition">+ Tambah Produk Baru</button>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
@@ -166,7 +164,7 @@
             <div id="tab-payments" class="tab-content">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold">Info Metode Pembayaran</h2>
-                    <button onclick="openPaymentModal()" class="bg-primary-500 hover:bg-primary-600 text-white font-bold py-2 px-4 rounded-lg shadow">+ Tambah Metode</button>
+                    <button data-action="open-payment-modal" class="bg-primary-500 hover:bg-primary-600 text-white font-bold py-2 px-4 rounded-lg shadow">+ Tambah Metode</button>
                 </div>
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
                     <table class="w-full text-left">
@@ -192,9 +190,7 @@
                     <!-- User List -->
                     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
                         <div class="p-4 border-b bg-gray-50 font-bold text-gray-600">Daftar Chat</div>
-                        <div id="chat-user-list" class="flex-grow overflow-y-auto divide-y divide-gray-50">
-                            <!-- User items here -->
-                        </div>
+                        <div id="chat-user-list" class="flex-grow overflow-y-auto divide-y divide-gray-50"></div>
                     </div>
                     <!-- Chat Window -->
                     <div class="md:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col relative">
@@ -207,7 +203,7 @@
                         </div>
                         <div class="p-4 border-t flex gap-2">
                             <input type="text" id="admin-chat-input" placeholder="Tulis balasan..." class="flex-grow border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-primary-500">
-                            <button onclick="sendAdminChat()" class="bg-primary-500 text-white px-6 py-2 rounded-lg font-bold hover:bg-primary-600">Kirim</button>
+                            <button data-action="send-chat" class="bg-primary-500 text-white px-6 py-2 rounded-lg font-bold hover:bg-primary-600">Kirim</button>
                         </div>
                     </div>
                 </div>
@@ -216,14 +212,12 @@
         </div>
     </main>
 
-    </div>
-
-    <!-- Modal Form Produk (RESTORED & FIXED) -->
+    <!-- Modal Form Produk -->
     <div id="modal-product" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 hidden opacity-0 transition-opacity">
-        <div id="modal-product-inner" class="bg-white rounded-2xl shadow-xl w-full max-w-2xl transform scale-95 transition-transform overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl transform scale-95 transition-transform overflow-hidden">
             <div class="p-5 border-b flex justify-between items-center bg-gray-50">
                 <h3 class="font-bold text-gray-800 text-lg" id="modal-product-title">Tambah Produk</h3>
-                <button onclick="closeFormModal()" class="text-gray-400 hover:text-red-500"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                <button data-action="close-product-modal" class="text-gray-400 hover:text-red-500"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
             <div class="p-6 max-h-[70vh] overflow-y-auto">
                 <form id="formTambahProduk" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -256,7 +250,7 @@
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-xs font-semibold text-gray-600 mb-1">Varian (Pisahkan dengan koma)</label>
-                        <input type="text" name="variants_input" id="form-variants" placeholder="5 Diamond, 10 Diamond, dst" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                        <input type="text" id="form-variants" placeholder="5 Diamond, 10 Diamond, dst" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-xs font-semibold text-gray-600 mb-1">Deskripsi</label>
@@ -273,8 +267,8 @@
                 </form>
             </div>
             <div class="p-4 border-t bg-gray-50 flex justify-end gap-2">
-                <button type="button" onclick="closeFormModal()" class="px-4 py-2 font-medium bg-white border rounded-lg text-gray-600 hover:bg-gray-100 transition">Batal</button>
-                <button type="button" onclick="window.submitProdukBaru(event)" id="btn-save-product" class="px-6 py-2 font-bold bg-primary-500 text-white rounded-lg shadow hover:bg-primary-600 transition">Simpan Produk</button>
+                <button type="button" data-action="close-product-modal" class="px-4 py-2 font-medium bg-white border rounded-lg text-gray-600 hover:bg-gray-100 transition">Batal</button>
+                <button type="submit" form="formTambahProduk" id="btn-save-product" class="px-6 py-2 font-bold bg-primary-500 text-white rounded-lg shadow hover:bg-primary-600 transition">Simpan Produk</button>
             </div>
         </div>
     </div>
@@ -284,7 +278,7 @@
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg transform scale-95 transition-transform">
             <div class="p-5 border-b flex justify-between items-center bg-gray-50 rounded-t-2xl">
                 <h3 class="font-bold text-gray-800 text-lg">Metode Pembayaran</h3>
-                <button onclick="closePaymentModal()" class="text-gray-400 hover:text-red-500"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                <button data-action="close-payment-modal" class="text-gray-400 hover:text-red-500"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
             <div class="p-6">
                 <form id="form-payment-method" class="space-y-4">
@@ -307,7 +301,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1">Upload QRIS (Opsional)</label>
-                        <input type="file" id="pay-qris-file" accept="image/*" class="w-full px-3 py-1.5 border rounded-lg text-xs bg-white">
+                        <input type="file" id="pay-qris-file" name="qris" accept="image/*" class="w-full px-3 py-1.5 border rounded-lg text-xs bg-white">
                         <div id="current-qris-container" class="mt-2 hidden">
                             <p class="text-[10px] text-gray-400 mb-1">QRIS Terpasang:</p>
                             <img id="current-qris-img" src="" class="h-20 rounded border">
@@ -324,7 +318,7 @@
                 </form>
             </div>
             <div class="p-4 border-t bg-gray-50 rounded-b-2xl flex justify-end gap-2">
-                <button onclick="closePaymentModal()" class="px-4 py-2 font-medium bg-white border rounded-lg text-gray-600 hover:bg-gray-100 transition">Batal</button>
+                <button type="button" data-action="close-payment-modal" class="px-4 py-2 font-medium bg-white border rounded-lg text-gray-600 hover:bg-gray-100 transition">Batal</button>
                 <button type="submit" form="form-payment-method" id="btn-save-payment" class="px-4 py-2 font-bold bg-primary-500 text-white rounded-lg shadow hover:bg-primary-600 transition">Simpan</button>
             </div>
         </div>
