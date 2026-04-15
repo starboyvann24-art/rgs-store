@@ -58,7 +58,7 @@ const store = {
                 this.removeAuth();
                 const onPublic = ['/', '/index.html', '/login.html', '/register.html', '/tos.html', '/product.html'].some(p => window.location.pathname.includes(p));
                 if (!onPublic) {
-                    alert('Sesi Anda berakhir. Silakan login kembali.');
+                    Swal.fire('Info', 'Sesi Anda berakhir. Silakan login kembali.', 'info');
                     window.location.href = '/login.html';
                 }
                 return { success: false, message: 'Unauthorized / Forbidden' };
@@ -602,6 +602,9 @@ window.appUtils = store; // Legacy pages use appUtils
 store.configureNavbar = function() {
     return this.updateNavbar();
 };
+
+// saveToken alias (used by Google OAuth redirect handler)
+store.saveToken = function(token) { this.setToken(token); };
 
 // Auto-run on every page
 document.addEventListener('DOMContentLoaded', () => {

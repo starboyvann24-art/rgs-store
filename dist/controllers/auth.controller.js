@@ -36,11 +36,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateProfile = exports.resetPassword = exports.forgotPassword = exports.getMe = exports.login = exports.register = void 0;
+exports.googleCallback = exports.updateProfile = exports.resetPassword = exports.forgotPassword = exports.getMe = exports.login = exports.register = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const database_1 = __importStar(require("../config/database"));
 const jwt_1 = require("../utils/jwt");
 const response_1 = require("../utils/response");
+const mailer_1 = require("../utils/mailer");
 // ============================================================
 // RGS STORE — Auth Controller
 // Handles user registration, login, and profile retrieval
@@ -166,13 +167,15 @@ const forgotPassword = async (req, res, next) => {
         const resetToken = require('crypto').randomBytes(32).toString('hex');
         const expiry = new Date(Date.now() + 3600000); // 1 hour
         await database_1.default.query('UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE id = ?', [resetToken, expiry, user.id]);
-        // Simulation log
+        // Send real email via Nodemailer
         const resetUrl = `${req.protocol}://${req.get('host')}/reset-password.html?token=${resetToken}`;
-        console.log('-------------------------------------------');
-        console.log('📧 PASSWORD RESET REQUEST');
-        console.log(`To: ${email}`);
-        console.log(`Link: ${resetUrl}`);
-        console.log('-------------------------------------------');
+        try {
+            await (0, mailer_1.sendResetPasswordEmail)(email.toLowerCase().trim(), user.name, resetUrl);
+            console.log(`📧 Reset password email sent to: ${email}`);
+        }
+        catch (mailErr) {
+            console.error('⚠️  Email send failed (non-blocking):', mailErr);
+        }
         (0, response_1.sendResponse)(res, 200, true, 'Instruksi reset password telah dikirim ke email Anda.');
     }
     catch (error) {
@@ -237,4 +240,46 @@ const updateProfile = async (req, res, next) => {
     }
 };
 exports.updateProfile = updateProfile;
+/**
+ * GET /api/auth/google/callback
+ * Google OAuth callback - links/creates user and issues JWT
+ */
+const googleCallback = async (req, res, _next) => {
+    try {
+        const profile = req.user; // populated by passport
+        if (!profile) {
+            res.redirect('/login.html?error=google_failed');
+            return;
+        }
+        const email = (profile.emails?.[0]?.value || '').toLowerCase().trim();
+        const name = profile.displayName || 'Google User';
+        const googleId = profile.id;
+        if (!email) {
+            res.redirect('/login.html?error=no_email');
+            return;
+        }
+        // Check if user exists
+        let [rows] = await database_1.default.query('SELECT * FROM users WHERE email = ? OR google_id = ? LIMIT 1', [email, googleId]);
+        let user = rows[0];
+        if (!user) {
+            // Create new Google user (no password)
+            const newId = (0, database_1.generateUUID)();
+            await database_1.default.query('INSERT INTO users (id, name, email, password, google_id, role) VALUES (?, ?, ?, NULL, ?, ?)', [newId, name, email, googleId, 'user']);
+            [rows] = await database_1.default.query('SELECT * FROM users WHERE id = ? LIMIT 1', [newId]);
+            user = rows[0];
+        }
+        else if (!user.google_id) {
+            // Link Google ID to existing account
+            await database_1.default.query('UPDATE users SET google_id = ? WHERE id = ?', [googleId, user.id]);
+        }
+        const token = (0, jwt_1.generateToken)({ id: user.id, role: user.role, email: user.email, name: user.name });
+        // Redirect to frontend with token (SPA-style with hash)
+        res.redirect(`/index.html?google_token=${token}&role=${user.role}`);
+    }
+    catch (error) {
+        console.error('Google Callback Error:', error);
+        res.redirect('/login.html?error=server_error');
+    }
+};
+exports.googleCallback = googleCallback;
 //# sourceMappingURL=auth.controller.js.map

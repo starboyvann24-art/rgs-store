@@ -42,8 +42,9 @@ const fs_1 = __importDefault(require("fs"));
 const dotenv = __importStar(require("dotenv"));
 const helmet_1 = __importDefault(require("helmet"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
+const express_session_1 = __importDefault(require("express-session"));
+const passport_1 = __importDefault(require("passport"));
 // Load .env with absolute path — wajib agar terbaca di cPanel/Phusion Passenger
-// __dirname di dist/server.js → naik 1 level → root project
 dotenv.config({ path: path_1.default.resolve(__dirname, '..', '.env') });
 const database_1 = require("./config/database");
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
@@ -80,6 +81,15 @@ const apiLimiter = (0, express_rate_limit_1.default)({
 });
 app.use(express_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
+// ─── SESSION & PASSPORT (for Google OAuth) ───────────────────
+app.use((0, express_session_1.default)({
+    secret: process.env.SESSION_SECRET || 'rgs_store_session_secret_2026',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 1 day
+}));
+app.use(passport_1.default.initialize());
+app.use(passport_1.default.session());
 // ─── ADMIN PROTECTION (Before Static) ────────────────────────
 // Protect /admin.html from unauthorized access
 app.get(['/admin', '/admin.html'], auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, (req, res, next) => {

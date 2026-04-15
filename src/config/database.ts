@@ -254,8 +254,23 @@ export async function initializeDatabase(): Promise<void> {
       await db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar VARCHAR(500) DEFAULT NULL');
       console.log('   ✓ User table schema verified (avatar column)');
     } catch (e) {
-      // Column might exist or syntax error (ignore if exists)
       console.log('   ℹ️  User table schema check passed');
+    }
+
+    // ─── ADD GOOGLE_ID COLUMN (Google Auth) ────────────────────
+    try {
+      await db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) DEFAULT NULL');
+      console.log('   ✓ User table schema verified (google_id column)');
+    } catch (e) {
+      console.log('   ℹ️  google_id column check passed');
+    }
+
+    // ─── MAKE PASSWORD NULLABLE (Google users have no password) ─
+    try {
+      await db.query('ALTER TABLE users MODIFY COLUMN password VARCHAR(255) NULL DEFAULT NULL');
+      console.log('   ✓ User password column set to NULLABLE');
+    } catch (e) {
+      console.log('   ℹ️  Password nullable check passed');
     }
 
     // Insert default data

@@ -50,4 +50,46 @@ router.put('/:id/status', verifyToken, isAdmin, validate(updateOrderStatusSchema
 // PUT /api/orders/:id/deliver — Ship order + set credentials (admin)
 router.put('/:id/deliver', verifyToken, isAdmin, validate(deliverOrderSchema), deliverOrder);
 
+// GET /api/orders/:id/invoice — Download PDF Invoice
+router.get('/:id/invoice', verifyToken, async (req: any, res: any) => {
+  try {
+    const orderId = req.params.id;
+    const userId = req.user.id;
+    const role = req.user.role;
+    const db2 = require('../config/database').default;
+
+    const query = role === 'admin'
+      ? 'SELECT * FROM orders WHERE id = ? LIMIT 1'
+      : 'SELECT * FROM orders WHERE id = ? AND user_id = ? LIMIT 1';
+    const params: any[] = role === 'admin' ? [orderId] : [orderId, userId];
+    const [rows] = await db2.query(query, params);
+    const order = rows[0];
+
+    if (!order) { res.status(404).json({ success: false, message: 'Order not found' }); return; }
+
+    const { generateInvoicePDF } = require('../utils/pdf');
+    const pdfBuffer = await generateInvoicePDF({
+      order_number: order.order_number,
+      customer_name: order.user_name,
+      customer_email: order.user_email,
+      product_name: order.product_name,
+      qty: order.qty,
+      unit_price: order.unit_price,
+      total_price: order.total_price,
+      payment_method: order.payment_method,
+      status: order.status,
+      created_at: order.created_at
+    });
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="Invoice-${order.order_number}.pdf"`,
+      'Content-Length': pdfBuffer.length
+    });
+    res.send(pdfBuffer);
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 export default router;

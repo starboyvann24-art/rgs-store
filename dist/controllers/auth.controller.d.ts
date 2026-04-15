@@ -29,4 +29,9 @@ export declare const resetPassword: (req: Request, res: Response, next: NextFunc
  * Update user profile (name, whatsapp, avatar)
  */
 export declare const updateProfile: (req: any, res: Response, next: NextFunction) => Promise<void>;
+/**
+ * GET /api/auth/google/callback
+ * Google OAuth callback - links/creates user and issues JWT
+ */
+export declare const googleCallback: (req: any, res: Response, _next: NextFunction) => Promise<void>;
 //# sourceMappingURL=auth.controller.d.ts.map

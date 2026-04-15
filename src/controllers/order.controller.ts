@@ -3,6 +3,8 @@ import db, { generateUUID, generateOrderNumber } from '../config/database';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { sendResponse } from '../utils/response';
 import { sendDiscordWebhook, buildOrderEmbed } from '../utils/discord.webhook';
+import { sendOrderCreatedEmail, sendOrderPaidEmail } from '../utils/mailer';
+import { generateInvoicePDF } from '../utils/pdf';
 
 // ============================================================
 // RGS STORE — Order Controller v3.1
@@ -135,6 +137,14 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
       user_name: user.name,
       user_email: user.email
     })).catch(() => {});
+
+    // Email notification to customer (non-blocking)
+    sendOrderCreatedEmail(user.email, user.name, {
+      order_number: orderNumber,
+      product_name: summaryName,
+      total_price: calculatedTotalPrice,
+      payment_method
+    }).catch(err => console.error('⚠️  Order email failed:', err));
 
     sendResponse(res, 201, true, 'Order berhasil dibuat!', {
       order: newOrder,
@@ -338,11 +348,23 @@ export const deliverOrder = async (req: AuthRequest, res: Response, next: NextFu
     );
 
     const [updatedRows] = await db.query<any>(
-      'SELECT * FROM orders WHERE id = ? LIMIT 1',
+      'SELECT o.*, u.email as user_email_addr, u.name as user_name_real FROM orders o JOIN users u ON o.user_id = u.id WHERE o.id = ? LIMIT 1',
       [orderId]
     );
 
-    sendResponse(res, 200, true, 'Pesanan telah dikirim dan kredensial disimpan.', updatedRows[0]);
+    const deliveredOrder = updatedRows[0];
+
+    // Send email to customer (non-blocking)
+    if (deliveredOrder) {
+      sendOrderPaidEmail(deliveredOrder.user_email_addr || deliveredOrder.user_email, deliveredOrder.user_name_real || deliveredOrder.user_name, {
+        order_number: deliveredOrder.order_number,
+        product_name: deliveredOrder.product_name,
+        total_price: deliveredOrder.total_price,
+        credentials
+      }).catch(err => console.error('⚠️  Paid email failed:', err));
+    }
+
+    sendResponse(res, 200, true, 'Pesanan telah dikirim dan kredensial disimpan.', deliveredOrder);
   } catch (error) {
     next(error);
   }

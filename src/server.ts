@@ -4,9 +4,10 @@ import fs from 'fs';
 import * as dotenv from 'dotenv';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import session from 'express-session';
+import passport from 'passport';
 
 // Load .env with absolute path — wajib agar terbaca di cPanel/Phusion Passenger
-// __dirname di dist/server.js → naik 1 level → root project
 dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 
 import { testConnection, initializeDatabase } from './config/database';
@@ -51,6 +52,16 @@ const apiLimiter = rateLimit({
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// ─── SESSION & PASSPORT (for Google OAuth) ───────────────────
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'rgs_store_session_secret_2026',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 1 day
+}));
+app.use(passport.initialize());
+app.use(passport.session());
 
 // ─── ADMIN PROTECTION (Before Static) ────────────────────────
 // Protect /admin.html from unauthorized access

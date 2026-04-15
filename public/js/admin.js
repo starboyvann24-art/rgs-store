@@ -399,7 +399,7 @@ async function handleFormSubmit(e) {
                 closePaymentModal(); Actions.loadAll();
             }
         }
-    } catch (err) { alert("ERROR: " + err.message); }
+    } catch (err) { Swal.fire("Error", "ERROR: " + err.message, "error"); }
     finally { appUtils.setLoading(btn, false); }
 }
 

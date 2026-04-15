@@ -37,6 +37,7 @@ exports.getWaitingOrders = exports.getOrderStats = exports.deliverOrder = export
 const database_1 = __importStar(require("../config/database"));
 const response_1 = require("../utils/response");
 const discord_webhook_1 = require("../utils/discord.webhook");
+const mailer_1 = require("../utils/mailer");
 // ============================================================
 // RGS STORE — Order Controller v3.1
 // Handles order creation, retrieval, status updates, and
@@ -145,6 +146,13 @@ const createOrder = async (req, res, next) => {
             user_name: user.name,
             user_email: user.email
         })).catch(() => { });
+        // Email notification to customer (non-blocking)
+        (0, mailer_1.sendOrderCreatedEmail)(user.email, user.name, {
+            order_number: orderNumber,
+            product_name: summaryName,
+            total_price: calculatedTotalPrice,
+            payment_method
+        }).catch(err => console.error('⚠️  Order email failed:', err));
         (0, response_1.sendResponse)(res, 201, true, 'Order berhasil dibuat!', {
             order: newOrder,
             whatsapp_url: waUrl
@@ -296,8 +304,18 @@ const deliverOrder = async (req, res, next) => {
             return;
         }
         await database_1.default.query('UPDATE orders SET status = ?, credentials = ?, shipped_at = NOW() WHERE id = ?', ['shipped', credentials, orderId]);
-        const [updatedRows] = await database_1.default.query('SELECT * FROM orders WHERE id = ? LIMIT 1', [orderId]);
-        (0, response_1.sendResponse)(res, 200, true, 'Pesanan telah dikirim dan kredensial disimpan.', updatedRows[0]);
+        const [updatedRows] = await database_1.default.query('SELECT o.*, u.email as user_email_addr, u.name as user_name_real FROM orders o JOIN users u ON o.user_id = u.id WHERE o.id = ? LIMIT 1', [orderId]);
+        const deliveredOrder = updatedRows[0];
+        // Send email to customer (non-blocking)
+        if (deliveredOrder) {
+            (0, mailer_1.sendOrderPaidEmail)(deliveredOrder.user_email_addr || deliveredOrder.user_email, deliveredOrder.user_name_real || deliveredOrder.user_name, {
+                order_number: deliveredOrder.order_number,
+                product_name: deliveredOrder.product_name,
+                total_price: deliveredOrder.total_price,
+                credentials
+            }).catch(err => console.error('⚠️  Paid email failed:', err));
+        }
+        (0, response_1.sendResponse)(res, 200, true, 'Pesanan telah dikirim dan kredensial disimpan.', deliveredOrder);
     }
     catch (error) {
         next(error);

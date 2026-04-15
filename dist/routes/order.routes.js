@@ -30,5 +30,46 @@ router.get('/:id', auth_middleware_1.verifyToken, order_controller_1.getOrderByI
 router.put('/:id/status', auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, (0, validate_middleware_1.validate)(order_validation_1.updateOrderStatusSchema), order_controller_1.updateOrderStatus);
 // PUT /api/orders/:id/deliver — Ship order + set credentials (admin)
 router.put('/:id/deliver', auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, (0, validate_middleware_1.validate)(order_validation_1.deliverOrderSchema), order_controller_1.deliverOrder);
+// GET /api/orders/:id/invoice — Download PDF Invoice
+router.get('/:id/invoice', auth_middleware_1.verifyToken, async (req, res) => {
+    try {
+        const orderId = req.params.id;
+        const userId = req.user.id;
+        const role = req.user.role;
+        const db2 = require('../config/database').default;
+        const query = role === 'admin'
+            ? 'SELECT * FROM orders WHERE id = ? LIMIT 1'
+            : 'SELECT * FROM orders WHERE id = ? AND user_id = ? LIMIT 1';
+        const params = role === 'admin' ? [orderId] : [orderId, userId];
+        const [rows] = await db2.query(query, params);
+        const order = rows[0];
+        if (!order) {
+            res.status(404).json({ success: false, message: 'Order not found' });
+            return;
+        }
+        const { generateInvoicePDF } = require('../utils/pdf');
+        const pdfBuffer = await generateInvoicePDF({
+            order_number: order.order_number,
+            customer_name: order.user_name,
+            customer_email: order.user_email,
+            product_name: order.product_name,
+            qty: order.qty,
+            unit_price: order.unit_price,
+            total_price: order.total_price,
+            payment_method: order.payment_method,
+            status: order.status,
+            created_at: order.created_at
+        });
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `attachment; filename="Invoice-${order.order_number}.pdf"`,
+            'Content-Length': pdfBuffer.length
+        });
+        res.send(pdfBuffer);
+    }
+    catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
 exports.default = router;
 //# sourceMappingURL=order.routes.js.map

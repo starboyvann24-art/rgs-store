@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import db, { generateUUID } from '../config/database';
 import { generateToken } from '../utils/jwt';
 import { sendResponse } from '../utils/response';
+import { sendResetPasswordEmail, sendOrderCreatedEmail } from '../utils/mailer';
 
 // ============================================================
 // RGS STORE — Auth Controller
@@ -160,13 +161,14 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
       [resetToken, expiry, user.id]
     );
 
-    // Simulation log
+    // Send real email via Nodemailer
     const resetUrl = `${req.protocol}://${req.get('host')}/reset-password.html?token=${resetToken}`;
-    console.log('-------------------------------------------');
-    console.log('📧 PASSWORD RESET REQUEST');
-    console.log(`To: ${email}`);
-    console.log(`Link: ${resetUrl}`);
-    console.log('-------------------------------------------');
+    try {
+      await sendResetPasswordEmail(email.toLowerCase().trim(), user.name, resetUrl);
+      console.log(`📧 Reset password email sent to: ${email}`);
+    } catch (mailErr) {
+      console.error('⚠️  Email send failed (non-blocking):', mailErr);
+    }
 
     sendResponse(res, 200, true, 'Instruksi reset password telah dikirim ke email Anda.');
   } catch (error) {
@@ -247,5 +249,54 @@ export const updateProfile = async (req: any, res: Response, next: NextFunction)
     });
   } catch (error) {
     next(error);
+  }
+};
+
+/**
+ * GET /api/auth/google/callback
+ * Google OAuth callback - links/creates user and issues JWT
+ */
+export const googleCallback = async (req: any, res: Response, _next: NextFunction): Promise<void> => {
+  try {
+    const profile = req.user; // populated by passport
+    if (!profile) {
+      res.redirect('/login.html?error=google_failed');
+      return;
+    }
+
+    const email = (profile.emails?.[0]?.value || '').toLowerCase().trim();
+    const name = profile.displayName || 'Google User';
+    const googleId = profile.id;
+
+    if (!email) {
+      res.redirect('/login.html?error=no_email');
+      return;
+    }
+
+    // Check if user exists
+    let [rows] = await db.query<any>('SELECT * FROM users WHERE email = ? OR google_id = ? LIMIT 1', [email, googleId]);
+    let user = rows[0];
+
+    if (!user) {
+      // Create new Google user (no password)
+      const newId = generateUUID();
+      await db.query(
+        'INSERT INTO users (id, name, email, password, google_id, role) VALUES (?, ?, ?, NULL, ?, ?)',
+        [newId, name, email, googleId, 'user']
+      );
+      [rows] = await db.query<any>('SELECT * FROM users WHERE id = ? LIMIT 1', [newId]);
+      user = rows[0];
+    } else if (!user.google_id) {
+      // Link Google ID to existing account
+      await db.query('UPDATE users SET google_id = ? WHERE id = ?', [googleId, user.id]);
+    }
+
+    const token = generateToken({ id: user.id, role: user.role, email: user.email, name: user.name });
+
+    // Redirect to frontend with token (SPA-style with hash)
+    res.redirect(`/index.html?google_token=${token}&role=${user.role}`);
+  } catch (error) {
+    console.error('Google Callback Error:', error);
+    res.redirect('/login.html?error=server_error');
   }
 };

@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Checkout aman di RGS STORE - Marketplace produk digital premium terlengkap.">
+    <meta name="keywords" content="Netflix, Spotify, Discord Nitro, Pterodactyl, checkout">
+    <meta name="robots" content="noindex, follow">
+    <meta property="og:title" content="Checkout — RGS STORE">
     <title>Checkout - RGS STORE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = { theme: { extend: { colors: { primary: { 50:'#f0fdf4',100:'#dcfce7',500:'#22c55e',600:'#16a34a',700:'#15803d' } }, fontFamily: { sans: ['Inter','sans-serif'] } } } }
+      tailwind.config = { theme: { extend: { colors: { primary: { 50:'#fff7ed',100:'#ffedd5',500:'#f97316',600:'#ea6c10',700:'#c2410c' } }, fontFamily: { sans: ['Outfit','sans-serif'] } } } }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans antialiased">
 
@@ -38,6 +43,7 @@
     <main id="checkout-content" class="max-w-4xl mx-auto px-4 py-8 hidden">
         <form id="form-checkout" class="flex flex-col md:flex-row gap-8 items-start">
             <div class="w-full md:w-2/3 space-y-6">
+
                 <!-- Data Penerima -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <h3 class="font-bold text-gray-800 text-lg mb-4 flex items-center">
@@ -62,7 +68,7 @@
                         <span class="w-7 h-7 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-bold mr-2">2</span>
                         Detail Produk
                     </h3>
-                    <div id="checkout-product-detail" class="flex items-center gap-4">
+                    <div id="checkout-product-detail" class="flex flex-col gap-2">
                         <!-- Injected -->
                     </div>
                 </div>
@@ -73,22 +79,28 @@
                         <span class="w-7 h-7 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-bold mr-2">3</span>
                         Pilih Pembayaran
                     </h3>
-                    <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                        <label class="border-2 rounded-xl p-4 cursor-pointer hover:bg-gray-50 flex flex-col items-center justify-center text-center payment-option transition relative border-primary-500 bg-primary-50">
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="border-2 rounded-xl p-4 cursor-pointer hover:bg-orange-50 flex flex-col items-center justify-center text-center payment-option transition relative border-primary-500 bg-primary-50">
                             <input type="radio" name="payment" value="QRIS" class="absolute top-2 right-2 text-primary-600 focus:ring-primary-500" required checked>
-                            <span class="font-bold text-primary-600 text-sm">QRIS</span>
-                            <span class="text-[10px] text-gray-500 mt-0.5">Semua e-wallet</span>
+                            <span class="font-bold text-primary-600 text-sm">🔲 QRIS</span>
+                            <span class="text-[10px] text-gray-500 mt-0.5">Scan & Pay</span>
                         </label>
-                        <label class="border-2 rounded-xl p-4 cursor-pointer hover:bg-gray-50 flex flex-col items-center justify-center text-center payment-option transition relative border-gray-200">
-                            <input type="radio" name="payment" value="BCA Transfer" class="absolute top-2 right-2 text-primary-600 focus:ring-primary-500">
-                            <span class="font-bold text-blue-800 text-sm">BCA Transfer</span>
-                            <span class="text-[10px] text-gray-500 mt-0.5">Verifikasi manual</span>
+                        <label class="border-2 rounded-xl p-4 cursor-pointer hover:bg-orange-50 flex flex-col items-center justify-center text-center payment-option transition relative border-gray-200" id="ewallet-label">
+                            <input type="radio" name="payment" value="E-Wallet" class="absolute top-2 right-2 text-primary-600 focus:ring-primary-500" id="radio-ewallet">
+                            <span class="font-bold text-purple-600 text-sm">💜 E-Wallet</span>
+                            <span class="text-[10px] text-gray-500 mt-0.5">DANA / OVO / GoPay / ShopeePay</span>
                         </label>
-                        <label class="border-2 rounded-xl p-4 cursor-pointer hover:bg-gray-50 flex flex-col items-center justify-center text-center payment-option transition relative border-gray-200">
-                            <input type="radio" name="payment" value="E-Wallet (OVO/DANA)" class="absolute top-2 right-2 text-primary-600 focus:ring-primary-500">
-                            <span class="font-bold text-purple-600 text-sm">E-Wallet</span>
-                            <span class="text-[10px] text-gray-500 mt-0.5">OVO / DANA</span>
-                        </label>
+                    </div>
+                    <!-- E-Wallet Sub-Dropdown -->
+                    <div id="ewallet-dropdown-wrapper" class="mt-4 hidden">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Pilih Aplikasi E-Wallet</label>
+                        <select id="ewallet-select" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none transition text-sm bg-white">
+                            <option value="">-- Pilih E-Wallet --</option>
+                            <option value="DANA">DANA</option>
+                            <option value="OVO">OVO</option>
+                            <option value="GoPay">GoPay</option>
+                            <option value="ShopeePay">ShopeePay</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -101,11 +113,11 @@
                         <div class="flex justify-between"><span>Subtotal</span><span id="co-subtotal" class="font-medium text-gray-800">Rp 0</span></div>
                         <div class="flex justify-between"><span>Biaya Admin</span><span class="font-medium text-green-500">Gratis</span></div>
                     </div>
-                    <div class="flex flex-col mb-6 bg-gray-50 p-4 rounded-xl border">
+                    <div class="flex flex-col mb-6 bg-orange-50 p-4 rounded-xl border border-orange-100">
                         <span class="text-xs text-gray-500 mb-1 font-semibold uppercase">Total Tagihan</span>
                         <span id="co-total" class="font-extrabold text-2xl text-primary-600">Rp 0</span>
                     </div>
-                    <p class="text-[10px] text-gray-400 mb-4 text-center leading-relaxed">Dengan menekan tombol bayar, Anda menyetujui Syarat & Ketentuan yang berlaku.</p>
+                    <p class="text-[10px] text-gray-400 mb-4 text-center leading-relaxed">Dengan menekan tombol bayar, Anda menyetujui Syarat &amp; Ketentuan yang berlaku.</p>
                     <button type="submit" id="btn-pay" class="w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-3.5 rounded-xl transition-all shadow hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2">
                         Bayar Sekarang
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
@@ -118,95 +130,88 @@
     <script src="js/app.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // Guard: must be logged in
             if (!appUtils.requireLogin()) return;
 
             const user = appUtils.getSavedUser();
             const urlParams = new URLSearchParams(window.location.search);
             const productId = urlParams.get('id');
-            
+
             let checkoutItems = [];
             let totalPrice = 0;
 
             try {
                 if (productId) {
-                    // DIRECT BUY MODE
                     const product = await appUtils.getProductById(productId);
                     if (!product) throw new Error('Produk tidak ditemukan');
-                    
                     const price = parseInt(product.final_price || product.price);
                     const variant = urlParams.get('variant') || null;
-                    
-                    checkoutItems.push({
-                        product_id: product.id,
-                        name: product.name,
-                        price: price,
-                        qty: 1,
-                        variant: variant
-                    });
+                    checkoutItems.push({ product_id: product.id, name: product.name, price, qty: 1, variant });
                     totalPrice = price;
                 } else {
-                    // CART MODE
                     const cart = appUtils.getCart();
-                    if (cart.length === 0) {
-                        window.location.href = 'cart.html';
-                        return;
-                    }
+                    if (cart.length === 0) { window.location.href = 'cart.html'; return; }
                     checkoutItems = cart.map(item => ({
-                        product_id: item.id,
-                        name: item.name,
-                        price: parseInt(item.price),
-                        qty: parseInt(item.qty),
-                        variant: item.variant || null
+                        product_id: item.id, name: item.name,
+                        price: parseInt(item.price), qty: parseInt(item.qty), variant: item.variant || null
                     }));
                     totalPrice = checkoutItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
                 }
 
-                // Fill form with user data
                 document.getElementById('co-name').value = user.name;
                 document.getElementById('co-email').value = user.email;
 
-                // Fill product detail UI
                 const detailContainer = document.getElementById('checkout-product-detail');
                 detailContainer.innerHTML = '';
-                
                 checkoutItems.forEach(item => {
                     detailContainer.insertAdjacentHTML('beforeend', `
                         <div class="flex items-center gap-4 py-3 border-b border-gray-50 last:border-0 w-full">
                             <div class="flex-grow">
                                 <p class="font-semibold text-gray-800 text-sm">${item.name}</p>
-                                <p class="text-[10px] text-gray-400">Qty: ${item.qty} ${item.variant ? `• Varian: ${item.variant}` : ''}</p>
+                                <p class="text-[10px] text-gray-400">Qty: ${item.qty}${item.variant ? ` • Varian: ${item.variant}` : ''}</p>
                             </div>
                             <p class="font-bold text-gray-700 text-sm whitespace-nowrap">${appUtils.formatRupiah(item.price * item.qty)}</p>
                         </div>
                     `);
                 });
 
-                // Fill totals
                 document.getElementById('co-subtotal').textContent = appUtils.formatRupiah(totalPrice);
                 document.getElementById('co-total').textContent = appUtils.formatRupiah(totalPrice);
 
-                // Show content, hide loading
                 document.getElementById('checkout-loading').classList.add('hidden');
                 document.getElementById('checkout-content').classList.remove('hidden');
-                
+
             } catch (err) {
                 console.error('Checkout Load Error:', err);
                 document.getElementById('checkout-loading').innerHTML = `
                     <div class="p-6 bg-red-50 border border-red-100 rounded-2xl">
                         <p class="text-red-500 font-bold">Terjadi Kesalahan</p>
                         <p class="text-red-400 text-xs mt-1">${err.message || 'Gagal memuat data.'}</p>
-                        <button onclick="location.reload()" class="btn-orange text-xs mt-4">Coba Lagi 🔄</button>
+                        <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-orange-500 text-white rounded-lg text-sm">Coba Lagi 🔄</button>
                     </div>`;
                 return;
             }
 
-            // Payment selection UI
+            // Payment option selection UI
             const paymentRadios = document.querySelectorAll('input[name="payment"]');
             paymentRadios.forEach(radio => {
                 radio.addEventListener('change', () => {
-                    document.querySelectorAll('.payment-option').forEach(el => { el.classList.remove('border-primary-500', 'bg-primary-50'); el.classList.add('border-gray-200'); });
-                    if (radio.checked) { radio.parentElement.classList.add('border-primary-500', 'bg-primary-50'); radio.parentElement.classList.remove('border-gray-200'); }
+                    document.querySelectorAll('.payment-option').forEach(el => {
+                        el.classList.remove('border-primary-500', 'bg-primary-50', 'bg-orange-50');
+                        el.classList.add('border-gray-200');
+                    });
+                    if (radio.checked) {
+                        radio.parentElement.classList.add('border-primary-500', 'bg-orange-50');
+                        radio.parentElement.classList.remove('border-gray-200');
+                    }
+
+                    // Show/hide E-Wallet dropdown
+                    const ewalletWrapper = document.getElementById('ewallet-dropdown-wrapper');
+                    if (radio.id === 'radio-ewallet' && radio.checked) {
+                        ewalletWrapper.classList.remove('hidden');
+                    } else if (radio.id !== 'radio-ewallet') {
+                        ewalletWrapper.classList.add('hidden');
+                        document.getElementById('ewallet-select').value = '';
+                    }
                 });
             });
 
@@ -214,14 +219,23 @@
             document.getElementById('form-checkout').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const btn = document.getElementById('btn-pay');
-                const selectedMethod = document.querySelector('input[name="payment"]:checked')?.value;
+                let selectedMethod = document.querySelector('input[name="payment"]:checked')?.value;
 
                 if (!selectedMethod) {
                     appUtils.showToast('Silakan pilih metode pembayaran.', 'error');
                     return;
                 }
 
-                // VALIDASI PAYLOAD SEBELUM KIRIM
+                // If E-Wallet selected, get sub-type
+                if (selectedMethod === 'E-Wallet') {
+                    const ewalletType = document.getElementById('ewallet-select').value;
+                    if (!ewalletType) {
+                        Swal.fire('Pilih E-Wallet', 'Silakan pilih salah satu layanan e-wallet (DANA, OVO, dll).', 'warning');
+                        return;
+                    }
+                    selectedMethod = `E-Wallet (${ewalletType})`;
+                }
+
                 if (checkoutItems.length === 0 || isNaN(totalPrice) || totalPrice <= 0) {
                     appUtils.showToast('Gagal memproses data belanja. Silakan coba lagi.', 'error');
                     return;
@@ -229,7 +243,6 @@
 
                 try {
                     appUtils.setLoading(btn, true, 'Memproses...');
-
                     const payload = {
                         customer_name: user.name,
                         customer_email: user.email,
@@ -239,19 +252,13 @@
                     };
 
                     const result = await appUtils.createOrder(payload);
-
                     if (result.success) {
                         appUtils.showToast('Pesanan berhasil dibuat! 🔥', 'success');
-                        
-                        // Clear cart if it was a cart checkout
                         if (!productId) appUtils.saveCart([]);
-                        
-                        setTimeout(() => { 
-                            if (result.data?.order?.id) {
-                                window.location.href = `payment.html?order_id=${result.data.order.id}`;
-                            } else {
-                                window.location.href = 'my-orders.html';
-                            }
+                        setTimeout(() => {
+                            window.location.href = result.data?.order?.id
+                                ? `payment.html?order_id=${result.data.order.id}`
+                                : 'my-orders.html';
                         }, 1200);
                     } else {
                         appUtils.showToast(result.message || 'Gagal membuat pesanan.', 'error');
@@ -259,11 +266,15 @@
                     }
                 } catch (err) {
                     console.error('Order Error:', err);
-                    appUtils.showToast('Koneksi terputap. Coba lagi.', 'error');
+                    appUtils.showToast('Koneksi terputus. Coba lagi.', 'error');
                     appUtils.setLoading(btn, false);
                 }
             });
         });
     </script>
+<!-- Floating WhatsApp -->
+<a href="https://wa.me/62882016259591" target="_blank" class="wa-float" aria-label="WhatsApp CS" style="position:fixed;bottom:28px;right:28px;width:58px;height:58px;background:#25d366;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.6rem;z-index:999;box-shadow:0 4px 20px rgba(37,211,102,0.5);text-decoration:none;">
+    <svg fill="#ffffff" width="30px" height="30px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.955 9.955 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.952 7.952 0 01-4.062-1.115L5 19.5l.615-2.938A7.952 7.952 0 014 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8zm4.406-5.846c-.242-.121-1.432-.707-1.654-.787-.222-.08-.384-.12-.545.12-.162.242-.627.788-.769.95-.141.162-.282.182-.524.06-.242-.12-1.021-.376-1.945-1.2-.718-.64-1.203-1.43-1.344-1.672-.141-.242-.015-.373.105-.493.11-.11.243-.283.364-.424.12-.142.162-.242.242-.404.08-.162.04-.303-.02-.424-.061-.121-.545-1.313-.748-1.797-.197-.472-.398-.407-.545-.415l-.464-.008c-.162 0-.424.06-.646.304-.222.242-.849.83-.849 2.023s.869 2.347.99 2.509c.12.162 1.713 2.615 4.15 3.667.58.251 1.032.4 1.385.512.582.185 1.112.159 1.53.097.467-.07 1.432-.585 1.634-1.15.201-.566.201-1.05.14-1.15-.06-.101-.222-.162-.460-.282z"/></svg>
+</a>
 </body>
 </html>

@@ -3,16 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Login ke RGS STORE - Marketplace produk digital premium terlengkap.">
+    <meta name="keywords" content="login, RGS STORE, marketplace digital">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Login — RGS STORE">
     <title>Login - RGS STORE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = { theme: { extend: { colors: { primary: { 50:'#f0fdf4',100:'#dcfce7',500:'#22c55e',600:'#16a34a',700:'#15803d' } }, fontFamily: { sans: ['Inter','sans-serif'] } } } }
+      tailwind.config = { theme: { extend: { colors: { primary: { 50:'#fff7ed',100:'#ffedd5',500:'#f97316',600:'#ea6c10',700:'#c2410c' } }, fontFamily: { sans: ['Outfit','sans-serif'] } } } }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex items-center justify-center relative overflow-hidden">
-    <div class="absolute -top-20 -right-20 w-72 h-72 bg-primary-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
-    <div class="absolute -bottom-20 -left-20 w-72 h-72 bg-primary-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+    <div class="absolute -top-20 -right-20 w-72 h-72 bg-orange-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+    <div class="absolute -bottom-20 -left-20 w-72 h-72 bg-orange-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
 
     <div class="bg-white p-8 md:p-10 rounded-3xl shadow-xl w-full max-w-md relative z-10 border border-gray-100">
         <div class="text-center mb-8">
@@ -37,9 +42,26 @@
             </button>
         </form>
 
-        <p class="mt-8 text-center text-sm text-gray-500">Belum punya akun? <a href="register.html" class="text-primary-600 hover:underline font-bold">Daftar disini</a></p>
+        <!-- Divider -->
+        <div class="flex items-center gap-3 my-5">
+            <div class="flex-1 h-px bg-gray-200"></div>
+            <span class="text-xs text-gray-400 font-semibold">ATAU</span>
+            <div class="flex-1 h-px bg-gray-200"></div>
+        </div>
 
+        <!-- Google Login Button -->
+        <a href="/api/auth/google" id="btn-google-login"
+           class="w-full flex items-center justify-center gap-3 py-3 px-5 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-primary-400 hover:bg-orange-50 transition-all">
+            <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Login dengan Google
+        </a>
 
+        <p class="mt-6 text-center text-sm text-gray-500">Belum punya akun? <a href="register.html" class="text-primary-600 hover:underline font-bold">Daftar disini</a></p>
     </div>
 
     <script src="js/app.js"></script>
@@ -50,10 +72,22 @@
             window.location.href = user && user.role === 'admin' ? 'admin.html' : 'index.html';
         }
 
+        // Handle google_token in URL (redirect from Google OAuth)
+        const urlParams = new URLSearchParams(window.location.search);
+        const googleToken = urlParams.get('google_token');
+        const googleRole = urlParams.get('role');
+        if (googleToken) {
+            appUtils.saveToken(googleToken);
+            appUtils.showToast('Login Google berhasil! 🎉', 'success');
+            setTimeout(() => {
+                window.location.href = googleRole === 'admin' ? 'admin.html' : 'index.html';
+            }, 800);
+        }
+
         document.getElementById('form-login').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-submit');
-            
+
             try {
                 btn.disabled = true;
                 btn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white inline mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Logging in...';
@@ -71,34 +105,44 @@
                     }, 800);
                 } else {
                     appUtils.showToast(res.message, 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Masuk Sekarang';
                 }
             } catch (err) {
                 console.error('Login Error:', err);
                 appUtils.showToast('Terjadi kesalahan saat login. Coba lagi.', 'error');
-            } finally {
-                // Ensure button is reset even on crash
-                const resuccess = (appUtils.getToken() !== null);
-                if (!resuccess) {
-                    btn.disabled = false;
-                    btn.innerHTML = 'Masuk Sekarang';
-                }
+                btn.disabled = false;
+                btn.innerHTML = 'Masuk Sekarang';
             }
         });
 
-        // Forgot Password logic
-        document.getElementById('forgot-password-link').addEventListener('click', (e) => {
+        // Forgot Password - Swal instead of prompt
+        document.getElementById('forgot-password-link').addEventListener('click', async (e) => {
             e.preventDefault();
-            const email = prompt("Masukkan Email Anda untuk reset password:");
+            const { value: email } = await Swal.fire({
+                title: 'Reset Password',
+                input: 'email',
+                inputLabel: 'Masukkan email akun Anda',
+                inputPlaceholder: 'contoh@email.com',
+                showCancelButton: true,
+                cancelButtonText: 'Batal',
+                confirmButtonText: 'Kirim Link Reset',
+                confirmButtonColor: '#f97316'
+            });
             if (email) {
-                appUtils.forgotPassword(email).then(res => {
-                    if (res.success) {
-                        appUtils.showToast(res.message, 'success');
-                    } else {
-                        appUtils.showToast(res.message, 'error');
-                    }
+                const res = await appUtils.forgotPassword(email);
+                Swal.fire({
+                    icon: res.success ? 'success' : 'error',
+                    title: res.success ? 'Email Terkirim!' : 'Gagal',
+                    text: res.message,
+                    confirmButtonColor: '#f97316'
                 });
             }
         });
     </script>
+<!-- Floating WhatsApp -->
+<a href="https://wa.me/62882016259591" target="_blank" aria-label="WhatsApp CS" style="position:fixed;bottom:28px;right:28px;width:58px;height:58px;background:#25d366;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;z-index:999;box-shadow:0 4px 20px rgba(37,211,102,0.5);text-decoration:none;">
+    <svg fill="#ffffff" width="30" height="30" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.955 9.955 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.952 7.952 0 01-4.062-1.115L5 19.5l.615-2.938A7.952 7.952 0 014 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8zm4.406-5.846c-.242-.121-1.432-.707-1.654-.787-.222-.08-.384-.12-.545.12-.162.242-.627.788-.769.95-.141.162-.282.182-.524.06-.242-.12-1.021-.376-1.945-1.2-.718-.64-1.203-1.43-1.344-1.672-.141-.242-.015-.373.105-.493.11-.11.243-.283.364-.424.12-.142.162-.242.242-.404.08-.162.04-.303-.02-.424-.061-.121-.545-1.313-.748-1.797-.197-.472-.398-.407-.545-.415l-.464-.008c-.162 0-.424.06-.646.304-.222.242-.849.83-.849 2.023s.869 2.347.99 2.509c.12.162 1.713 2.615 4.15 3.667.58.251 1.032.4 1.385.512.582.185 1.112.159 1.53.097.467-.07 1.432-.585 1.634-1.15.201-.566.201-1.05.14-1.15-.06-.101-.222-.162-.460-.282z"/></svg>
+</a>
 </body>
 </html>

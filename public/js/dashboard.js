@@ -117,7 +117,7 @@ document.addEventListener('click', async (e) => {
         if (typeof store !== 'undefined' && store.openTicketModal) {
             store.openTicketModal();
         } else {
-            alert('Fitur tiket sedang dimuat, silakan coba sesaat lagi.');
+            Swal.fire('Info', 'Fitur tiket sedang dimuat, silakan coba sesaat lagi.', 'info');
         }
     }
 
