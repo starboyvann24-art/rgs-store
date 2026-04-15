@@ -17,9 +17,15 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
     const userId = req.user!.id; // sender
     const userRole = req.user!.role;
     const { message, target_user_id } = req.body;
+    let file_url = null;
 
-    if (!message || message.trim() === '') {
-      sendResponse(res, 400, false, 'Pesan tidak boleh kosong.');
+    if (req.file) {
+      file_url = `/chat_files/${req.file.filename}`;
+    }
+
+    // Allow empty message if there's a file
+    if ((!message || message.trim() === '') && !file_url) {
+      sendResponse(res, 400, false, 'Pesan atau file wajib ada.');
       return;
     }
 
@@ -32,8 +38,8 @@ export const sendMessage = async (req: AuthRequest, res: Response, next: NextFun
     const isAdmin = userRole === 'admin' ? 1 : 0;
 
     await db.query(
-      'INSERT INTO messages (user_id, is_admin, message) VALUES (?, ?, ?)',
-      [chatUserId, isAdmin, message]
+      'INSERT INTO messages (user_id, is_admin, message, file_url) VALUES (?, ?, ?, ?)',
+      [chatUserId, isAdmin, message || '', file_url]
     );
 
     sendResponse(res, 201, true, 'Pesan terkirim.');

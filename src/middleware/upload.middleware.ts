@@ -5,14 +5,17 @@ import path from 'path';
 // Storage configuration with auto-folder creation
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    let destFolder = 'public/uploads';
+    let destFolder = 'public/uploads'; // Default to uploads
+    
     if (file.fieldname === 'qris_image') {
       destFolder = 'public/qris';
+    } else if (file.fieldname === 'chat_file' || file.fieldname === 'file') {
+      destFolder = 'public/chat_files';
     } else if (file.fieldname === 'image') {
-      destFolder = 'public/logos';
+      destFolder = 'public/uploads';
     }
     
-    // AUTO CREATE FOLDER JIKA TIDAK ADA (INI WAJIB!)
+    // AUTO CREATE FOLDER JIKA TIDAK ADA
     const dir = path.join(process.cwd(), destFolder);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
@@ -26,9 +29,13 @@ const storage = multer.diskStorage({
 
 export const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 } // Increase to 5MB
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit for chat/images
 });
+
+// Shorthands for specific routes
+export const uploadProduct = upload;
+export const uploadQris = upload;
+export const uploadChat = upload;
 
 // For backward compatibility in routes
 export const uploadProductLogo = upload;
-export const uploadQris = upload;

@@ -132,10 +132,19 @@ const Render = {
         box.innerHTML = ''; // CEGAH DUPLIKASI
         msgs.forEach(m => {
             const me = m.is_admin === 1;
+            const hasFile = m.file_url;
+            const isImg = hasFile && (hasFile.match(/\.(jpg|jpeg|png|gif|webp)$/i));
+            
+            const fileHTML = hasFile ? (isImg ? 
+                `<a href="${m.file_url}" target="_blank" class="block mt-2"><img src="${m.file_url}" class="max-w-xs rounded-lg border shadow-sm hover:scale-[1.02] transition"></a>` : 
+                `<a href="${m.file_url}" target="_blank" class="flex items-center gap-2 mt-2 p-2 bg-black/10 rounded text-[10px] font-bold underline">📎 LIHAT FILE</a>`
+            ) : '';
+
             const el = `
-                <div class="flex ${me ? 'justify-end' : 'justify-start'}">
-                    <div class="px-4 py-2 rounded-2xl text-sm shadow-sm ${me ? 'bg-primary-600 text-white rounded-tr-none' : 'bg-white border text-gray-800 rounded-tl-none'}">
-                        ${m.message}
+                <div class="flex ${me ? 'justify-end' : 'justify-start'} animate-fade-in">
+                    <div class="max-w-[80%] px-4 py-2 rounded-2xl text-sm shadow-sm ${me ? 'bg-primary-600 text-white rounded-tr-none' : 'bg-white border text-gray-800 rounded-tl-none'}">
+                        ${m.message ? `<p>${m.message}</p>` : ''}
+                        ${fileHTML}
                         <div class="text-[8px] opacity-70 text-right mt-1 font-mono">${new Date(m.created_at).toLocaleTimeString()}</div>
                     </div>
                 </div>`;
@@ -268,10 +277,23 @@ document.addEventListener('click', async (e) => {
     }
     if (action === 'send-chat') {
         const inp = document.getElementById('admin-chat-input');
+        const fileInp = document.getElementById('admin-chat-file');
         const msg = inp.value.trim();
-        if (msg && adminState.currentChatUserId) {
-            await appUtils.sendMessage(msg, adminState.currentChatUserId);
+        
+        if ((msg || fileInp.files[0]) && adminState.currentChatUserId) {
+            const formData = new FormData();
+            formData.append('message', msg);
+            formData.append('target_user_id', adminState.currentChatUserId);
+            if (fileInp.files[0]) formData.append('chat_file', fileInp.files[0]);
+
+            btn.disabled = true;
+            await appUtils.sendMessage(formData);
+            btn.disabled = false;
+            
             inp.value = '';
+            fileInp.value = '';
+            document.getElementById('admin-chat-preview').classList.add('hidden');
+            
             Actions.loadChatContent(adminState.currentChatUserId);
             Actions.loadChat();
         }

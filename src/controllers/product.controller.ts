@@ -88,7 +88,7 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
 
     // If file is uploaded, use local path
     if (req.file) {
-      image_url = `/logos/${req.file.filename}`;
+      image_url = `/uploads/${req.file.filename}`;
     }
 
     const id = generateUUID();

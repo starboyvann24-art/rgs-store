@@ -52,14 +52,24 @@ const Render = {
         const box = document.getElementById('chat-messages');
         if (!box) return;
         
+        box.innerHTML = ''; // CEGAH DUPLIKASI
         box.innerHTML = '<div class="bg-blue-50 text-blue-700 p-3 rounded-lg text-xs italic">Silakan kirim pesan mengenai kendala pesanan Anda. Admin akan membalas di sini.</div>';
         
         userState.messages.forEach(m => {
             const isMe = m.is_admin === 0;
+            const hasFile = m.file_url;
+            const isImg = hasFile && (hasFile.match(/\.(jpg|jpeg|png|gif|webp)$/i));
+            
+            const fileHTML = hasFile ? (isImg ? 
+                `<a href="${m.file_url}" target="_blank" class="block mt-2"><img src="${m.file_url}" class="max-w-xs rounded-lg border shadow-sm hover:scale-[1.02] transition"></a>` : 
+                `<a href="${m.file_url}" target="_blank" class="flex items-center gap-2 mt-2 p-2 bg-black/10 rounded text-[10px] font-bold underline">📎 LIHAT FILE</a>`
+            ) : '';
+
             const html = `
                 <div class="flex ${isMe ? 'justify-end' : 'justify-start'} animate-fade-in">
                     <div class="max-w-[85%] rounded-2xl px-4 py-2 text-sm shadow-sm ${isMe ? 'bg-primary-600 text-white rounded-tr-none' : 'bg-white border text-gray-800 rounded-tl-none'}">
-                        ${m.message}
+                        ${m.message ? `<p>${m.message}</p>` : ''}
+                        ${fileHTML}
                         <div class="text-[10px] mt-1 opacity-60 text-right font-mono">${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
                     </div>
                 </div>`;
@@ -126,11 +136,23 @@ document.addEventListener('click', async (e) => {
 
     if (action === 'send-chat') {
         const input = document.getElementById('chat-input');
+        const fileInp = document.getElementById('chat-file');
         const msg = input.value.trim();
-        if (!msg) return;
-        const res = await appUtils.sendMessage(msg);
+        
+        if (!msg && !fileInp.files[0]) return;
+        
+        const formData = new FormData();
+        formData.append('message', msg);
+        if (fileInp.files[0]) formData.append('chat_file', fileInp.files[0]);
+
+        btn.disabled = true;
+        const res = await appUtils.sendMessage(formData);
+        btn.disabled = false;
+
         if (res.success) {
             input.value = '';
+            fileInp.value = '';
+            document.getElementById('chat-preview').classList.add('hidden');
             Actions.loadChat();
         }
     }

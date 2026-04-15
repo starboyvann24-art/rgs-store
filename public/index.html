@@ -81,8 +81,8 @@
         <button class="cat-pill" data-val="Streaming">🎬 Streaming</button>
         <button class="cat-pill" data-val="Discord">💜 Discord</button>
         <button class="cat-pill" data-val="Hosting">🖥️ Hosting</button>
-        <button class="cat-pill" data-val="Productivity">💼 Produktivitas</button>
-        <button class="cat-pill" data-val="Music">🎵 Musik</button>
+        <button class="cat-pill" data-val="Produktivitas">💼 Produktivitas</button>
+        <button class="cat-pill" data-val="Musik">🎵 Musik</button>
         <button class="cat-pill" data-val="Gaming">🎮 Gaming</button>
     </div>
 
@@ -178,112 +178,11 @@
 <a href="https://wa.me/62882016259591" target="_blank" class="wa-float" title="Chat WhatsApp">
     <i class="fa-brands fa-whatsapp"></i>
 </a>
-<button class="cs-float" onclick="store.openTicketModal()" title="Buat Tiket Bantuan">
+<button class="cs-float" data-action="open-ticket-modal" title="Buat Tiket Bantuan">
     <i class="fa-solid fa-headset"></i>
 </button>
 
 <script src="js/app.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', async () => {
-    const productList = document.getElementById('product-list');
-    const emptyState  = document.getElementById('empty-state');
-    const catPills    = document.querySelectorAll('.cat-pill');
-    const searchInput = document.getElementById('main-search');
-
-    let currentCat = 'All';
-
-    async function loadProducts(query = '', cat = 'All') {
-        productList.innerHTML = `
-            <div class="product-card skeleton" style="height:320px"></div>
-            <div class="product-card skeleton" style="height:320px"></div>
-            <div class="product-card skeleton" style="height:320px"></div>
-            <div class="product-card skeleton" style="height:320px"></div>`;
-
-        const params = {};
-        if (query) params.search = query;
-        if (cat !== 'All') params.category = cat;
-
-        try {
-            const products = await store.getProducts(params);
-            console.log("Data produk yang diterima:", products);
-
-            if (!products || !products.length) {
-                productList.style.display = 'none';
-                emptyState.style.display = 'block';
-                return;
-            }
-            productList.style.display = 'grid';
-            emptyState.style.display = 'none';
-            productList.innerHTML = '';
-            
-            // ... render products ...
-        } catch (err) {
-            console.error('Home Load Error:', err);
-            productList.innerHTML = `
-                <div style="grid-column: 1 / -1; padding: 40px; text-align: center;">
-                    <p style="color:var(--text-muted); margin-bottom: 20px;">Gagal memuat produk. Silakan periksa koneksi internet Anda.</p>
-                    <button onclick="location.reload()" class="btn-orange" style="padding: 10px 20px;">Coba Lagi 🔄</button>
-                </div>`;
-            return;
-        }
-
-        for (const [i, p] of products.entries()) {
-            const finalPrice = store.formatRupiah(p.final_price);
-            const origPrice  = p.discount > 0 ? store.formatRupiah(p.price) : '';
-            const disc       = p.discount > 0 ? `<div class="discount-badge">-${p.discount}%</div>` : '';
-            const imgSrc     = p.image_url || 'https://placehold.co/400x400/1e293b/22c55e?text=RGS';
-            
-            // Get review summary if available or just render placeholder stars
-            // Note: In high production, we'd include this in getProducts response
-            const reviewData = await store.getProductReviews(p.id);
-            const stars      = store.renderStars(reviewData.summary.avg_rating, reviewData.summary.total);
-
-            productList.insertAdjacentHTML('beforeend', `
-                <div class="product-card fade-up" style="animation-delay:${i * 0.07}s" onclick="location.href='/product.html?id=${p.id}'">
-                    <div class="product-card-img">
-                        ${disc}
-                        <img src="${imgSrc}" alt="${p.name}" loading="lazy">
-                    </div>
-                    <div class="product-card-body">
-                        <div class="product-cat">${p.category}</div>
-                        <div class="product-name">${p.name}</div>
-                        <div style="margin-bottom:10px">${stars}</div>
-                        <div class="product-price-row" style="display:flex; flex-direction:column; gap:2px">
-                            ${origPrice ? `<div class="price-was">${origPrice}</div>` : ''}
-                            <div class="price-now">${finalPrice}</div>
-                        </div>
-                        <div class="btn-detail">Lihat Detail →</div>
-                    </div>
-                </div>`);
-        }
-    }
-
-    catPills.forEach(btn => {
-        btn.addEventListener('click', () => {
-            catPills.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentCat = btn.dataset.val;
-            loadProducts(searchInput.value, currentCat);
-        });
-    });
-
-    let searchTimer;
-    searchInput.addEventListener('input', e => {
-        clearTimeout(searchTimer);
-        searchTimer = setTimeout(() => loadProducts(e.target.value, currentCat), 450);
-    });
-
-    // Check URL params for category deep link
-    const urlCat = new URLSearchParams(location.search).get('category');
-    if (urlCat) {
-        currentCat = urlCat;
-        catPills.forEach(b => {
-            b.classList.toggle('active', b.dataset.val === urlCat || (b.dataset.val === 'All' && urlCat === 'All'));
-        });
-    }
-
-    loadProducts('', currentCat);
-});
-</script>
+<script src="js/home.js"></script>
 </body>
 </html>

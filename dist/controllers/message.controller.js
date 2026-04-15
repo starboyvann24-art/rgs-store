@@ -19,8 +19,13 @@ const sendMessage = async (req, res, next) => {
         const userId = req.user.id; // sender
         const userRole = req.user.role;
         const { message, target_user_id } = req.body;
-        if (!message || message.trim() === '') {
-            (0, response_1.sendResponse)(res, 400, false, 'Pesan tidak boleh kosong.');
+        let file_url = null;
+        if (req.file) {
+            file_url = `/chat_files/${req.file.filename}`;
+        }
+        // Allow empty message if there's a file
+        if ((!message || message.trim() === '') && !file_url) {
+            (0, response_1.sendResponse)(res, 400, false, 'Pesan atau file wajib ada.');
             return;
         }
         // Determine target (if admin sending to specific user)
@@ -29,7 +34,7 @@ const sendMessage = async (req, res, next) => {
             chatUserId = target_user_id;
         }
         const isAdmin = userRole === 'admin' ? 1 : 0;
-        await database_1.default.query('INSERT INTO messages (user_id, is_admin, message) VALUES (?, ?, ?)', [chatUserId, isAdmin, message]);
+        await database_1.default.query('INSERT INTO messages (user_id, is_admin, message, file_url) VALUES (?, ?, ?, ?)', [chatUserId, isAdmin, message || '', file_url]);
         (0, response_1.sendResponse)(res, 201, true, 'Pesan terkirim.');
     }
     catch (error) {

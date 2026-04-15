@@ -111,7 +111,7 @@ const createProduct = async (req, res, next) => {
         let image_url = req.body.image_url || '';
         // If file is uploaded, use local path
         if (req.file) {
-            image_url = `/logos/${req.file.filename}`;
+            image_url = `/uploads/${req.file.filename}`;
         }
         const id = (0, database_1.generateUUID)();
         const parsePrice = parseInt(price) || 0;

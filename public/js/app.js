@@ -239,10 +239,14 @@ const store = {
     },
 
     // ─── CHAT MESSAGES ─────────────────────────────────────────
-    async sendMessage(message, target_user_id = null) {
+    async sendMessage(data, target_user_id = null) {
+        // Support both legacy (string) and new (FormData)
+        if (data instanceof FormData) {
+            return this.apiCall('/chat', { method: 'POST', body: data });
+        }
         return this.apiCall('/chat', {
             method: 'POST',
-            body: JSON.stringify({ message, target_user_id })
+            body: JSON.stringify({ message: data, target_user_id })
         });
     },
 

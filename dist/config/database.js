@@ -210,6 +210,7 @@ const CREATE_MESSAGES_TABLE = `
     user_id VARCHAR(36) NOT NULL,
     is_admin TINYINT(1) NOT NULL DEFAULT 0,
     message TEXT NOT NULL,
+    file_url TEXT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_messages_user (user_id),
     CONSTRAINT fk_messages_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE

@@ -85,11 +85,19 @@
                             <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-4">
                                 <div class="bg-blue-50 text-blue-700 p-3 rounded-lg text-xs italic">Silakan kirim pesan mengenai kendala pesanan Anda. Admin akan membalas di sini.</div>
                             </div>
-                            <div class="p-4 bg-white border-t flex gap-2">
-                                <input type="text" id="chat-input" placeholder="Tulis pesan..." class="flex-grow border rounded-full px-4 py-2 outline-none focus:ring-2 focus:ring-primary-500">
-                                <button data-action="send-chat" class="bg-primary-600 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-primary-700 shadow-lg transition">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-                                </button>
+                            <div class="p-4 bg-white border-t flex flex-col gap-2">
+                                <div id="chat-preview" class="hidden px-4 py-2 border-b flex items-center justify-between bg-gray-50">
+                                    <span class="text-[10px] text-primary-600 font-bold" id="chat-file-name"></span>
+                                    <button onclick="document.getElementById('chat-file').value=''; document.getElementById('chat-preview').classList.add('hidden')" class="text-red-500 text-xs font-bold">Batal</button>
+                                </div>
+                                <div class="flex gap-2">
+                                    <label for="chat-file" class="bg-gray-100 hover:bg-gray-200 p-2 rounded-lg cursor-pointer transition">
+                                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                                        <input type="file" id="chat-file" class="hidden" onchange="const f=this.files[0]; if(f){ document.getElementById('chat-preview').classList.remove('hidden'); document.getElementById('chat-file-name').textContent=f.name; }">
+                                    </label>
+                                    <input type="text" id="chat-input" placeholder="Tulis pesan..." class="flex-grow border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-primary-500 text-sm">
+                                    <button data-action="send-chat" class="bg-primary-600 text-white px-5 py-2 rounded-lg font-bold hover:bg-primary-700 shadow-lg transition">Kirim</button>
+                                </div>
                             </div>
                         </div>
                     </div>
