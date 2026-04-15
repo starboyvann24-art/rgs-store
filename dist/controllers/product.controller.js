@@ -151,7 +151,7 @@ const updateProduct = async (req, res, next) => {
         const updates = { ...req.body };
         // Handle file upload
         if (req.file) {
-            updates.image_url = `/logos/${req.file.filename}`;
+            updates.image_url = `/uploads/${req.file.filename}`;
         }
         // Check if product exists
         const [existingRows] = await database_1.default.query('SELECT * FROM products WHERE id = ? LIMIT 1', [id]);

@@ -135,7 +135,7 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
 
     // Handle file upload
     if (req.file) {
-      updates.image_url = `/logos/${req.file.filename}`;
+      updates.image_url = `/uploads/${req.file.filename}`;
     }
 
     // Check if product exists
