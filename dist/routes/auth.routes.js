@@ -19,7 +19,8 @@ const router = (0, express_1.Router)();
 passport_1.default.use(new passport_google_oauth20_1.Strategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: '/api/auth/google/callback'
+    callbackURL: 'https://rgs-store.my.id/api/auth/google/callback',
+    proxy: true
 }, (accessToken, refreshToken, profile, done) => {
     return done(null, profile);
 }));
