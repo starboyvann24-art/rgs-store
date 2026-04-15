@@ -6,6 +6,11 @@ import { AuthRequest } from '../middleware/auth.middleware';
  */
 export declare const createOrder: (req: AuthRequest, res: Response, next: NextFunction) => Promise<void>;
 /**
+ * POST /api/v1/orders/confirm
+ * Submit payment proof for an order
+ */
+export declare const confirmOrder: (req: AuthRequest, res: Response, next: NextFunction) => Promise<void>;
+/**
  * GET /api/v1/orders/me
  * Get orders for the current logged-in user
  */
@@ -35,4 +40,9 @@ export declare const deliverOrder: (req: AuthRequest, res: Response, next: NextF
  * Get order statistics (admin only)
  */
 export declare const getOrderStats: (_req: AuthRequest, res: Response, next: NextFunction) => Promise<void>;
+/**
+ * GET /api/v1/orders/admin/waiting
+ * Get all orders waiting for payment confirmation (admin only)
+ */
+export declare const getWaitingOrders: (_req: AuthRequest, res: Response, next: NextFunction) => Promise<void>;
 //# sourceMappingURL=order.controller.d.ts.map

@@ -786,3 +786,57 @@ footer {
 .stat-label { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
 .stat-value { font-size: 1.75rem; font-weight: 900; color: var(--text-bright); }
 .stat-icon { font-size: 1.5rem; margin-bottom: 8px; }
+
+/* ─── Modern Glass & Effects ────────────────────────────── */
+.glass-nav {
+    background: rgba(2, 6, 23, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* ─── Mobile Optimization ────────────────────────────────── */
+@media (max-width: 768px) {
+    .nav-container { padding: 0 1rem; }
+    .logo-brand { font-size: 1.4rem; }
+}
+
+/* Specific for Order History Table in Mobile */
+@media (max-width: 640px) {
+    .rgs-table thead { display: none; }
+    .rgs-table tr { 
+        display: block; 
+        margin-bottom: 1rem; 
+        background: rgba(255,255,255,0.02); 
+        border-radius: 12px;
+        padding: 10px;
+    }
+    .rgs-table td { 
+        display: flex; 
+        justify-content: space-between; 
+        padding: 8px 12px; 
+        border: none;
+        font-size: 0.8rem;
+    }
+    .rgs-table td::before { 
+        content: attr(data-label); 
+        font-weight: 800; 
+        color: var(--text-dim); 
+        text-transform: uppercase;
+        font-size: 0.7rem;
+    }
+}

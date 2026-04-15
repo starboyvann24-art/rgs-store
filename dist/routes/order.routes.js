@@ -5,6 +5,7 @@ const order_controller_1 = require("../controllers/order.controller");
 const validate_middleware_1 = require("../middleware/validate.middleware");
 const order_validation_1 = require("../validations/order.validation");
 const auth_middleware_1 = require("../middleware/auth.middleware");
+const upload_middleware_1 = require("../middleware/upload.middleware");
 // ============================================================
 // RGS STORE — Order Routes v3.1
 // ============================================================
@@ -14,11 +15,15 @@ const router = (0, express_1.Router)();
 router.post('/', auth_middleware_1.verifyToken, (0, validate_middleware_1.validate)(order_validation_1.createOrderSchema), order_controller_1.createOrder);
 // GET /api/orders/me — Get my orders
 router.get('/me', auth_middleware_1.verifyToken, order_controller_1.getMyOrders);
+// POST /api/orders/confirm — Confirm payment
+router.post('/confirm', auth_middleware_1.verifyToken, upload_middleware_1.upload.single('payment_proof'), order_controller_1.confirmOrder);
 // ADMIN ROUTES (auth + admin role)
 // GET /api/orders/stats/summary — Get order statistics
 router.get('/stats/summary', auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, order_controller_1.getOrderStats);
 // GET /api/orders — Get all orders (admin)
 router.get('/', auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, order_controller_1.getAllOrders);
+// GET /api/orders/admin/waiting — Get orders needing verification
+router.get('/admin/waiting', auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, order_controller_1.getWaitingOrders);
 // GET /api/orders/:id — Get single order (admin or owner)
 router.get('/:id', auth_middleware_1.verifyToken, order_controller_1.getOrderById);
 // PUT /api/orders/:id/status — Update order status (admin)

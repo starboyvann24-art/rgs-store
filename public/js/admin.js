@@ -4,6 +4,7 @@ const adminState = {
     orders: [],
     payments: [],
     tickets: [],
+    waitingOrders: [],
     chatUsers: [],
     currentChatUserId: null,
     stats: {}
@@ -172,6 +173,35 @@ const Render = {
                 </tr>`;
             tbody.insertAdjacentHTML('beforeend', row);
         });
+    },
+
+    verification() {
+        const tbody = document.getElementById('admin-table-verification');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (!adminState.waitingOrders.length) {
+            tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-400 text-xs italic">Tidak ada pembayaran yang menunggu verifikasi.</td></tr>';
+            return;
+        }
+        adminState.waitingOrders.forEach(o => {
+            const row = `
+                <tr class="hover:bg-gray-50 border-b border-gray-100">
+                    <td class="p-4"><p class="font-bold text-gray-800">#${o.order_number}</p><p class="text-[10px] text-gray-400">${appUtils.formatDateShort(o.created_at)}</p></td>
+                    <td class="p-4 text-xs font-bold text-gray-700">${o.user_name}<br><span class="text-[10px] text-gray-400 font-normal">${o.user_email}</span></td>
+                    <td class="p-4 font-bold text-primary-600">${appUtils.formatRupiah(o.total_price)}</td>
+                    <td class="p-4">
+                        <a href="${o.payment_proof}" target="_blank" class="block w-20 h-12 border rounded overflow-hidden hover:opacity-80 transition group relative">
+                            <img src="${o.payment_proof}" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[8px] text-white font-bold">LIHAT</div>
+                        </a>
+                    </td>
+                    <td class="p-4 text-right space-x-1">
+                        <button data-action="verify-confirm" data-id="${o.id}" class="bg-blue-600 text-white px-3 py-1.5 rounded text-[10px] font-bold hover:bg-blue-700 transition shadow-sm">Konfirmasi</button>
+                        <button data-action="verify-complete" data-id="${o.id}" class="bg-emerald-600 text-white px-3 py-1.5 rounded text-[10px] font-bold hover:bg-emerald-700 transition shadow-sm">Selesaikan</button>
+                    </td>
+                </tr>`;
+            tbody.insertAdjacentHTML('beforeend', row);
+        });
     }
 };
 
@@ -179,24 +209,27 @@ const Render = {
 const Actions = {
     async loadAll() {
         try {
-            const [products, orders, stats, payments, tickets] = await Promise.all([
+            const [products, orders, stats, payments, tickets, waiting] = await Promise.all([
                 appUtils.getAllProductsAdmin(),
                 appUtils.getAllOrders(),
                 appUtils.getOrderStats(),
                 appUtils.getAllPaymentMethods(),
-                appUtils.getAllTickets()
+                appUtils.getAllTickets(),
+                appUtils.getWaitingOrders()
             ]);
             adminState.products = products || [];
             adminState.orders = orders || [];
             adminState.stats = stats || {};
             adminState.payments = payments || [];
             adminState.tickets = tickets || [];
+            adminState.waitingOrders = waiting || [];
 
             Render.dashboard();
             Render.products();
             Render.orders();
             Render.payments();
             Render.tickets();
+            Render.verification();
         } catch (e) { console.error('Data Load Error:', e); }
     },
 
@@ -303,6 +336,24 @@ document.addEventListener('click', async (e) => {
     if (action === 'close-ticket') {
         await appUtils.updateTicketStatus(id, 'closed');
         Actions.loadAll();
+    }
+
+    // --- VERIFICATION ACTIONS ---
+    if (action === 'verify-confirm') {
+        if (confirm('Konfirmasi pembayaran ini dan pindahkan ke "Sedang Diproses"?')) {
+            await appUtils.updateOrderStatus(id, 'processing');
+            appUtils.showToast('✅ Pembayaran dikonfirmasi!', 'success');
+            Actions.loadAll();
+        }
+    }
+    if (action === 'verify-complete') {
+        const creds = prompt("Masukkan Kredensial/Detail Pesanan (Akun/Link):");
+        if (creds) {
+            await appUtils.deliverOrder(id, creds);
+            await appUtils.updateOrderStatus(id, 'success');
+            appUtils.showToast('✅ Pesanan selesai dan terkirim!', 'success');
+            Actions.loadAll();
+        }
     }
 });
 

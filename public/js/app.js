@@ -127,6 +127,20 @@ const store = {
 
     logout() { this.removeAuth(); window.location.href = '/login.html'; },
 
+    async forgotPassword(email) {
+        return this.apiCall('/auth/forgot-password', {
+            method: 'POST',
+            body: JSON.stringify({ email })
+        });
+    },
+
+    async resetPassword(token, new_password) {
+        return this.apiCall('/auth/reset-password', {
+            method: 'POST',
+            body: JSON.stringify({ token, new_password })
+        });
+    },
+
     // ─── PRODUCTS ─────────────────────────────────────────────
     async getProducts(params = {}) {
         const qs = new URLSearchParams(params).toString();
@@ -201,6 +215,23 @@ const store = {
             method: 'PUT',
             body: JSON.stringify({ credentials })
         });
+    },
+
+    async confirmOrder(formData) {
+        return this.apiCall('/orders/confirm', {
+            method: 'POST',
+            body: formData
+        });
+    },
+
+    async getOrderById(id) {
+        const res = await this.apiCall(`/orders/${id}`);
+        return res.success ? res.data : null;
+    },
+
+    async getWaitingOrders() {
+        const res = await this.apiCall('/orders/admin/waiting');
+        return res.success ? res.data : [];
     },
 
     // ─── PAYMENT METHODS ───────────────────────────────────────
@@ -379,15 +410,16 @@ const store = {
 
     statusBadge(status) {
         const map = {
-            pending:    '<span class="badge badge-pending">⏳ Pending</span>',
-            processing: '<span class="badge badge-processing">🔄 Proses</span>',
-            shipped:    '<span class="badge badge-shipped">📦 Dikirim</span>',
-            success:    '<span class="badge badge-success">✅ Selesai</span>',
-            failed:     '<span class="badge badge-failed">❌ Gagal</span>',
-            cancelled:  '<span class="badge badge-cancelled">🚫 Batal</span>',
-            open:       '<span class="badge badge-open">📭 Open</span>',
-            replied:    '<span class="badge badge-replied">💬 Dibalas</span>',
-            closed:     '<span class="badge badge-closed">🔒 Closed</span>',
+            pending:              '<span class="badge badge-pending">⏳ Pending</span>',
+            waiting_confirmation: '<span class="badge badge-warning">🔍 Menunggu Verifikasi</span>',
+            processing:           '<span class="badge badge-processing">🔄 Proses</span>',
+            shipped:              '<span class="badge badge-shipped">📦 Dikirim</span>',
+            success:              '<span class="badge badge-success">✅ Selesai</span>',
+            failed:               '<span class="badge badge-failed">❌ Gagal</span>',
+            cancelled:            '<span class="badge badge-cancelled">🚫 Batal</span>',
+            open:                 '<span class="badge badge-open">📭 Open</span>',
+            replied:              '<span class="badge badge-replied">💬 Dibalas</span>',
+            closed:               '<span class="badge badge-closed">🔒 Closed</span>',
         };
         return map[status] || `<span class="badge">${status}</span>`;
     },

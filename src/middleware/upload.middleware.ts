@@ -13,6 +13,8 @@ const storage = multer.diskStorage({
       destFolder = 'public/chat_files';
     } else if (file.fieldname === 'image') {
       destFolder = 'public/uploads';
+    } else if (file.fieldname === 'payment_proof') {
+      destFolder = 'public/proofs';
     }
     
     // AUTO CREATE FOLDER JIKA TIDAK ADA

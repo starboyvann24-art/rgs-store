@@ -6,11 +6,14 @@ import {
   getOrderById,
   updateOrderStatus,
   getOrderStats,
-  deliverOrder
+  deliverOrder,
+  confirmOrder,
+  getWaitingOrders
 } from '../controllers/order.controller';
 import { validate } from '../middleware/validate.middleware';
 import { createOrderSchema, updateOrderStatusSchema, deliverOrderSchema } from '../validations/order.validation';
 import { verifyToken, isAdmin } from '../middleware/auth.middleware';
+import { upload } from '../middleware/upload.middleware';
 
 // ============================================================
 // RGS STORE — Order Routes v3.1
@@ -25,12 +28,18 @@ router.post('/', verifyToken, validate(createOrderSchema), createOrder);
 // GET /api/orders/me — Get my orders
 router.get('/me', verifyToken, getMyOrders);
 
+// POST /api/orders/confirm — Confirm payment
+router.post('/confirm', verifyToken, upload.single('payment_proof'), confirmOrder);
+
 // ADMIN ROUTES (auth + admin role)
 // GET /api/orders/stats/summary — Get order statistics
 router.get('/stats/summary', verifyToken, isAdmin, getOrderStats);
 
 // GET /api/orders — Get all orders (admin)
 router.get('/', verifyToken, isAdmin, getAllOrders);
+
+// GET /api/orders/admin/waiting — Get orders needing verification
+router.get('/admin/waiting', verifyToken, isAdmin, getWaitingOrders);
 
 // GET /api/orders/:id — Get single order (admin or owner)
 router.get('/:id', verifyToken, getOrderById);

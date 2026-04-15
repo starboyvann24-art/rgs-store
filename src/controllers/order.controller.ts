@@ -146,6 +146,57 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
 };
 
 /**
+ * POST /api/v1/orders/confirm
+ * Submit payment proof for an order
+ */
+export const confirmOrder = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const { order_id } = req.body;
+    const file = req.file;
+
+    if (!order_id) {
+      sendResponse(res, 400, false, 'Order ID wajib diisi.');
+      return;
+    }
+
+    if (!file) {
+      sendResponse(res, 400, false, 'Bukti pembayaran wajib diunggah.');
+      return;
+    }
+
+    // Check if order exists and belongs to user
+    const [rows] = await db.query<any>(
+      'SELECT id, status FROM orders WHERE id = ? AND user_id = ? LIMIT 1',
+      [order_id, userId]
+    );
+
+    const order = rows[0];
+    if (!order) {
+      sendResponse(res, 404, false, 'Pesanan tidak ditemukan.');
+      return;
+    }
+
+    if (order.status !== 'pending') {
+      sendResponse(res, 400, false, 'Pesanan ini sudah dikonfirmasi atau diproses.');
+      return;
+    }
+
+    // Save absolute or relative path? store uses relative to public usually
+    const proofUrl = `/proofs/${file.filename}`;
+
+    await db.query(
+      'UPDATE orders SET payment_proof = ?, status = ? WHERE id = ?',
+      [proofUrl, 'waiting_confirmation', order_id]
+    );
+
+    sendResponse(res, 200, true, 'Bukti pembayaran berhasil diunggah. Mohon tunggu verifikasi admin.');
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * GET /api/v1/orders/me
  * Get orders for the current logged-in user
  */
@@ -314,6 +365,22 @@ export const getOrderStats = async (_req: AuthRequest, res: Response, next: Next
       success_orders: successRows[0].total,
       total_revenue: revenueRows[0].revenue
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET /api/v1/orders/admin/waiting
+ * Get all orders waiting for payment confirmation (admin only)
+ */
+export const getWaitingOrders = async (_req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const [orders] = await db.query<any>(
+      'SELECT * FROM orders WHERE status = "waiting_confirmation" ORDER BY created_at ASC'
+    );
+
+    sendResponse(res, 200, true, 'Pesanan menunggu verifikasi berhasil dimuat.', orders);
   } catch (error) {
     next(error);
   }

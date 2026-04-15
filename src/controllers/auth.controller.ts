@@ -135,3 +135,78 @@ export const getMe = async (req: any, res: Response, next: NextFunction): Promis
     next(error);
   }
 };
+
+/**
+ * POST /api/v1/auth/forgot-password
+ * Request a password reset link
+ */
+export const forgotPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { email } = req.body;
+    const [userRows] = await db.query<any>('SELECT id, name FROM users WHERE email = ? LIMIT 1', [email.toLowerCase().trim()]);
+    const user = userRows[0];
+
+    if (!user) {
+      // For security, don't reveal if user exists. Just say email sent.
+      sendResponse(res, 200, true, 'Jika email terdaftar, instruksi reset password akan dikirim.');
+      return;
+    }
+
+    const resetToken = require('crypto').randomBytes(32).toString('hex');
+    const expiry = new Date(Date.now() + 3600000); // 1 hour
+
+    await db.query(
+      'UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE id = ?',
+      [resetToken, expiry, user.id]
+    );
+
+    // Simulation log
+    const resetUrl = `${req.protocol}://${req.get('host')}/reset-password.html?token=${resetToken}`;
+    console.log('-------------------------------------------');
+    console.log('📧 PASSWORD RESET REQUEST');
+    console.log(`To: ${email}`);
+    console.log(`Link: ${resetUrl}`);
+    console.log('-------------------------------------------');
+
+    sendResponse(res, 200, true, 'Instruksi reset password telah dikirim ke email Anda.');
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/v1/auth/reset-password
+ * Reset password using token
+ */
+export const resetPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { token, new_password } = req.body;
+
+    if (!token || !new_password) {
+      sendResponse(res, 400, false, 'Token dan password baru wajib diisi.');
+      return;
+    }
+
+    const [rows] = await db.query<any>(
+      'SELECT id FROM users WHERE reset_token = ? AND reset_token_expiry > NOW() LIMIT 1',
+      [token]
+    );
+
+    const user = rows[0];
+    if (!user) {
+      sendResponse(res, 400, false, 'Token tidak valid atau sudah kedaluwarsa.');
+      return;
+    }
+
+    const hashedPassword = await bcrypt.hash(new_password, 10);
+
+    await db.query(
+      'UPDATE users SET password = ?, reset_token = NULL, reset_token_expiry = NULL WHERE id = ?',
+      [hashedPassword, user.id]
+    );
+
+    sendResponse(res, 200, true, 'Password berhasil diperbarui. Silakan login kembali.');
+  } catch (error) {
+    next(error);
+  }
+};

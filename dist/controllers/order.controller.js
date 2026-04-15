@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getOrderStats = exports.deliverOrder = exports.updateOrderStatus = exports.getOrderById = exports.getAllOrders = exports.getMyOrders = exports.createOrder = void 0;
+exports.getWaitingOrders = exports.getOrderStats = exports.deliverOrder = exports.updateOrderStatus = exports.getOrderById = exports.getAllOrders = exports.getMyOrders = exports.confirmOrder = exports.createOrder = void 0;
 const database_1 = __importStar(require("../config/database"));
 const response_1 = require("../utils/response");
 const discord_webhook_1 = require("../utils/discord.webhook");
@@ -155,6 +155,44 @@ const createOrder = async (req, res, next) => {
     }
 };
 exports.createOrder = createOrder;
+/**
+ * POST /api/v1/orders/confirm
+ * Submit payment proof for an order
+ */
+const confirmOrder = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { order_id } = req.body;
+        const file = req.file;
+        if (!order_id) {
+            (0, response_1.sendResponse)(res, 400, false, 'Order ID wajib diisi.');
+            return;
+        }
+        if (!file) {
+            (0, response_1.sendResponse)(res, 400, false, 'Bukti pembayaran wajib diunggah.');
+            return;
+        }
+        // Check if order exists and belongs to user
+        const [rows] = await database_1.default.query('SELECT id, status FROM orders WHERE id = ? AND user_id = ? LIMIT 1', [order_id, userId]);
+        const order = rows[0];
+        if (!order) {
+            (0, response_1.sendResponse)(res, 404, false, 'Pesanan tidak ditemukan.');
+            return;
+        }
+        if (order.status !== 'pending') {
+            (0, response_1.sendResponse)(res, 400, false, 'Pesanan ini sudah dikonfirmasi atau diproses.');
+            return;
+        }
+        // Save absolute or relative path? store uses relative to public usually
+        const proofUrl = `/proofs/${file.filename}`;
+        await database_1.default.query('UPDATE orders SET payment_proof = ?, status = ? WHERE id = ?', [proofUrl, 'waiting_confirmation', order_id]);
+        (0, response_1.sendResponse)(res, 200, true, 'Bukti pembayaran berhasil diunggah. Mohon tunggu verifikasi admin.');
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.confirmOrder = confirmOrder;
 /**
  * GET /api/v1/orders/me
  * Get orders for the current logged-in user
@@ -288,4 +326,18 @@ const getOrderStats = async (_req, res, next) => {
     }
 };
 exports.getOrderStats = getOrderStats;
+/**
+ * GET /api/v1/orders/admin/waiting
+ * Get all orders waiting for payment confirmation (admin only)
+ */
+const getWaitingOrders = async (_req, res, next) => {
+    try {
+        const [orders] = await database_1.default.query('SELECT * FROM orders WHERE status = "waiting_confirmation" ORDER BY created_at ASC');
+        (0, response_1.sendResponse)(res, 200, true, 'Pesanan menunggu verifikasi berhasil dimuat.', orders);
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.getWaitingOrders = getWaitingOrders;
 //# sourceMappingURL=order.controller.js.map

@@ -36,7 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMe = exports.login = exports.register = void 0;
+exports.resetPassword = exports.forgotPassword = exports.getMe = exports.login = exports.register = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const database_1 = __importStar(require("../config/database"));
 const jwt_1 = require("../utils/jwt");
@@ -149,4 +149,61 @@ const getMe = async (req, res, next) => {
     }
 };
 exports.getMe = getMe;
+/**
+ * POST /api/v1/auth/forgot-password
+ * Request a password reset link
+ */
+const forgotPassword = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        const [userRows] = await database_1.default.query('SELECT id, name FROM users WHERE email = ? LIMIT 1', [email.toLowerCase().trim()]);
+        const user = userRows[0];
+        if (!user) {
+            // For security, don't reveal if user exists. Just say email sent.
+            (0, response_1.sendResponse)(res, 200, true, 'Jika email terdaftar, instruksi reset password akan dikirim.');
+            return;
+        }
+        const resetToken = require('crypto').randomBytes(32).toString('hex');
+        const expiry = new Date(Date.now() + 3600000); // 1 hour
+        await database_1.default.query('UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE id = ?', [resetToken, expiry, user.id]);
+        // Simulation log
+        const resetUrl = `${req.protocol}://${req.get('host')}/reset-password.html?token=${resetToken}`;
+        console.log('-------------------------------------------');
+        console.log('📧 PASSWORD RESET REQUEST');
+        console.log(`To: ${email}`);
+        console.log(`Link: ${resetUrl}`);
+        console.log('-------------------------------------------');
+        (0, response_1.sendResponse)(res, 200, true, 'Instruksi reset password telah dikirim ke email Anda.');
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.forgotPassword = forgotPassword;
+/**
+ * POST /api/v1/auth/reset-password
+ * Reset password using token
+ */
+const resetPassword = async (req, res, next) => {
+    try {
+        const { token, new_password } = req.body;
+        if (!token || !new_password) {
+            (0, response_1.sendResponse)(res, 400, false, 'Token dan password baru wajib diisi.');
+            return;
+        }
+        const [rows] = await database_1.default.query('SELECT id FROM users WHERE reset_token = ? AND reset_token_expiry > NOW() LIMIT 1', [token]);
+        const user = rows[0];
+        if (!user) {
+            (0, response_1.sendResponse)(res, 400, false, 'Token tidak valid atau sudah kedaluwarsa.');
+            return;
+        }
+        const hashedPassword = await bcrypt_1.default.hash(new_password, 10);
+        await database_1.default.query('UPDATE users SET password = ?, reset_token = NULL, reset_token_expiry = NULL WHERE id = ?', [hashedPassword, user.id]);
+        (0, response_1.sendResponse)(res, 200, true, 'Password berhasil diperbarui. Silakan login kembali.');
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.resetPassword = resetPassword;
 //# sourceMappingURL=auth.controller.js.map

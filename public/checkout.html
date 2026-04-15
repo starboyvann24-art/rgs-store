@@ -247,10 +247,10 @@
                         if (!productId) appUtils.saveCart([]);
                         
                         setTimeout(() => { 
-                            if (result.data?.whatsapp_url) {
-                                window.location.href = result.data.whatsapp_url;
+                            if (result.data?.order?.id) {
+                                window.location.href = `payment.html?order_id=${result.data.order.id}`;
                             } else {
-                                window.location.href = 'dashboard.html';
+                                window.location.href = 'my-orders.html';
                             }
                         }, 1200);
                     } else {
