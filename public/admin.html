@@ -332,472 +332,447 @@
 
     <script src="js/app.js"></script>
     <script>
-        // NUCLEAR FIX: Global Submit Function
-        window.submitProdukBaru = async function(e) {
-            if(e) e.preventDefault();
-            alert("Tombol Hidup! Memulai pengiriman..."); 
-
-            const form = document.getElementById('formTambahProduk');
-            if(!form) {
-                alert("Error: Form HTML 'formTambahProduk' tidak ditemukan!");
-                return;
-            }
-
-            const formData = new FormData(form);
-            const id = document.getElementById('form-id').value;
-            
-            // Manual variant parsing for FormData to match backend
-            const vStr = document.getElementById('form-variants').value;
-            const vArr = vStr.split(',').map(x => x.trim()).filter(x => x);
-            formData.set('variants', JSON.stringify(vArr));
-
-            try {
-                const url = id ? `/api/products/${id}` : '/api/products';
-                const method = id ? 'PUT' : 'POST';
-                
-                // Get token from appUtils or localStorage
-                const token = localStorage.getItem('rgs_token');
-
-                const response = await fetch(url, {
-                    method: method,
-                    body: formData,
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                const data = await response.json();
-                if(!response.ok) throw new Error(data.message || 'Gagal di server');
-
-                alert("ALHAMDULILLAH! Produk berhasil ditambahkan/diperbarui!");
-                window.location.reload();
-            } catch (err) {
-                alert("Gagal mengirim: " + err.message);
-            }
+        // OMEGA REWRITE: Global State & Event Delegation
+        const adminState = {
+            products: [],
+            orders: [],
+            payments: [],
+            tickets: [],
+            chatUsers: [],
+            currentChatUserId: null,
+            stats: {}
         };
 
-        (function() {
-            let cachedProducts = [];
-            let currentUserId = null;
+        // --- RENDERERS (STRICT DOM CLEARING) ---
+        const Render = {
+            dashboard() {
+                const s = adminState.stats;
+                document.getElementById('stat-revenue').textContent = appUtils.formatRupiah(s.total_revenue || 0);
+                document.getElementById('stat-orders').textContent = s.total_orders || 0;
+                document.getElementById('stat-pending').textContent = s.pending_orders || 0;
+                document.getElementById('stat-products').textContent = adminState.products.filter(p => p.is_active).length;
+                document.getElementById('stat-tickets').textContent = adminState.tickets.filter(t => t.status === 'open').length;
+            },
 
-            // --- ISOLATED MODULE: Tab System ---
-            window.switchTab = function(tabId) {
-                try {
-                    const contents = document.querySelectorAll('.tab-content');
-                    if (contents) contents.forEach(el => el.classList.remove('active'));
-                    
-                    const target = document.getElementById('tab-' + tabId);
-                    if (target) target.classList.add('active');
-
-                    // Sidebar buttons
-                    const tabs = document.querySelectorAll('.admin-tab');
-                    if (tabs) {
-                        tabs.forEach(el => {
-                            el.classList.remove('bg-primary-600', 'text-white');
-                            el.classList.add('text-gray-300', 'hover:bg-gray-800');
-                        });
-                    }
-                    const activeBtn = document.getElementById('btn-tab-' + tabId);
-                    if (activeBtn) {
-                        activeBtn.classList.add('bg-primary-600', 'text-white');
-                        activeBtn.classList.remove('text-gray-300', 'hover:bg-gray-800');
-                    }
-                    
-                    const mobTabs = document.querySelectorAll('.admin-tab-mob');
-                    if (mobTabs) {
-                        mobTabs.forEach(el => {
-                            el.classList.remove('bg-primary-100', 'text-primary-700');
-                            el.classList.add('text-gray-600', 'bg-gray-100');
-                        });
-                    }
-                    const mobBtn = document.getElementById('mob-tab-' + tabId);
-                    if (mobBtn) {
-                        mobBtn.classList.add('bg-primary-100', 'text-primary-700');
-                        mobBtn.classList.remove('text-gray-600', 'bg-gray-100');
-                    }
-                    
-                    if (tabId === 'chat') renderChatUsers();
-                } catch (e) { console.error('Tab Switch Error:', e); }
-            };
-
-            // --- ISOLATED MODULE: Products Management ---
-            const ProductModule = {
-                async load() {
-                    try {
-                        cachedProducts = await appUtils.getAllProductsAdmin() || [];
-                        this.render();
-                        const statEl = document.getElementById('stat-products');
-                        if (statEl) statEl.textContent = cachedProducts.filter(p => !!p.is_active).length;
-                    } catch (e) { console.error('Product Load Error:', e); }
-                },
-                render() {
-                    const tbody = document.getElementById('admin-table-products');
-                    if (!tbody) return;
-                    tbody.innerHTML = '';
-                    if (cachedProducts.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-gray-400">Belum ada produk.</td></tr>';
-                        return;
-                    }
-                    cachedProducts.forEach((p, idx) => {
-                        const fp = parseInt(p.final_price) || 0;
-                        const stock = parseInt(p.stock) || 0;
-                        tbody.innerHTML += `
-                        <tr class="hover:bg-gray-50">
-                            <td class="p-4 text-center text-gray-500">${idx + 1}</td>
+            products() {
+                const tbody = document.getElementById('admin-table-products');
+                if (!tbody) return;
+                tbody.innerHTML = ''; // CEGAH DUPLIKASI
+                if (!adminState.products.length) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-gray-400 text-xs italic">Belum ada produk.</td></tr>';
+                    return;
+                }
+                adminState.products.forEach((p, idx) => {
+                    const row = `
+                        <tr class="hover:bg-gray-50 border-b border-gray-100">
+                            <td class="p-4 text-center text-gray-400 font-mono text-[10px]">${idx + 1}</td>
                             <td class="p-4">
                                 <div class="flex items-center gap-3">
                                     <img src="${p.image_url || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded border object-cover">
                                     <div>
                                         <p class="font-bold text-gray-800 line-clamp-1">${p.name}</p>
-                                        <span class="bg-gray-100 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold text-gray-500">${p.category}</span>
-                                        ${!p.is_active ? '<span class="bg-red-100 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold text-red-500 ml-1">Nonaktif</span>' : ''}
+                                        <span class="bg-gray-100 px-1.5 py-0.5 rounded text-[10px] uppercase font-black text-gray-500">${p.category}</span>
                                     </div>
                                 </div>
                             </td>
-                            <td class="p-4 font-semibold text-primary-600">${appUtils.formatRupiah(fp)}</td>
-                            <td class="p-4 text-center">${p.discount}%</td>
-                            <td class="p-4 font-bold ${stock < 10 ? 'text-red-500' : 'text-gray-700'}">${stock}</td>
-                            <td class="p-4 text-right">
-                                <button onclick="editProduct('${p.id}')" class="text-blue-600 text-xs hover:underline">Edit</button>
-                                <button onclick="deleteProduct('${p.id}', '${p.name.replace(/'/g, "\\'")}')" class="text-red-600 text-xs hover:underline ml-2">Hapus</button>
+                            <td class="p-4 font-bold text-primary-600">${appUtils.formatRupiah(p.final_price)}</td>
+                            <td class="p-4 text-center font-bold text-xs">${p.discount}%</td>
+                            <td class="p-4 font-mono ${p.stock < 10 ? 'text-red-500 font-black' : 'text-gray-600'}">${p.stock}</td>
+                            <td class="p-4 text-right space-x-2">
+                                <button data-action="edit-product" data-id="${p.id}" class="text-blue-600 font-bold text-xs hover:underline decoration-2">EDIT</button>
+                                <button data-action="delete-product" data-id="${p.id}" data-name="${p.name}" class="text-red-600 font-bold text-xs hover:underline decoration-2">HAPUS</button>
                             </td>
                         </tr>`;
-                    });
+                    tbody.insertAdjacentHTML('beforeend', row);
+                });
+            },
+
+            orders() {
+                const tbody = document.getElementById('admin-table-orders');
+                if (!tbody) return;
+                tbody.innerHTML = ''; // CEGAH DUPLIKASI
+                if (!adminState.orders.length) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-gray-400 text-xs italic">Belum ada pesanan masuk.</td></tr>';
+                    return;
                 }
-            };
+                adminState.orders.forEach(o => {
+                    const row = `
+                        <tr class="hover:bg-gray-50 border-b border-gray-100">
+                            <td class="p-4"><p class="font-bold text-gray-800">#${o.order_number}</p><p class="text-[10px] text-gray-400">${appUtils.formatDateShort(o.created_at)}</p></td>
+                            <td class="p-4 text-xs font-bold text-gray-700">${o.user_name}<br><span class="text-[10px] text-gray-400 font-normal">${o.user_email}</span></td>
+                            <td class="p-4 text-xs font-medium">${o.product_name} x ${o.qty}</td>
+                            <td class="p-4 font-bold text-primary-600">${appUtils.formatRupiah(o.total_price)}</td>
+                            <td class="p-4">
+                                <div class="flex gap-1">
+                                    <input type="text" id="creds-${o.id}" value="${o.credentials || ''}" class="text-[10px] border rounded px-2 py-1 w-24">
+                                    <button data-action="save-creds" data-id="${o.id}" class="bg-primary-500 text-white px-2 py-1 rounded text-[10px] font-bold">✔</button>
+                                </div>
+                            </td>
+                            <td class="p-4">
+                                <select data-action="update-order-status" data-id="${o.id}" class="text-[10px] border rounded bg-white p-1 font-bold">
+                                    <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                    <option value="processing" ${o.status === 'processing' ? 'selected' : ''}>Processing</option>
+                                    <option value="success" ${o.status === 'success' ? 'selected' : ''}>Success</option>
+                                    <option value="failed" ${o.status === 'failed' ? 'selected' : ''}>Failed</option>
+                                </select>
+                            </td>
+                        </tr>`;
+                    tbody.insertAdjacentHTML('beforeend', row);
+                });
+            },
 
-            // --- ISOLATED MODULE: Payments Management ---
-            const PaymentModule = {
-                async load() {
-                    const tbody = document.getElementById('admin-table-payments');
-                    if (!tbody) return;
-                    try {
-                        const data = await appUtils.getAllPaymentMethods();
-                        tbody.innerHTML = '';
-                        data.forEach(p => {
-                            tbody.innerHTML += `
-                            <tr class="hover:bg-gray-50">
-                                <td class="p-4 font-bold text-gray-800">${p.name}</td>
-                                <td class="p-4 text-xs capitalize">${p.type}</td>
-                                <td class="p-4 text-xs font-mono">${p.account_number || '-'}</td>
-                                <td class="p-4 text-xs">${p.account_name || '-'}</td>
-                                <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${p.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${p.is_active ? 'AKTIF' : 'OFF'}</span></td>
-                                <td class="p-4 text-right">
-                                    <button onclick="editPayment('${p.id}')" class="text-xs text-blue-600 hover:underline">Edit</button>
-                                    <button onclick="deletePayment('${p.id}')" class="ml-2 text-xs text-red-600 hover:underline">Hapus</button>
-                                </td>
-                            </tr>`;
-                        });
-                    } catch (e) { console.error('Payment Module Error:', e); }
-                }
-            };
+            payments() {
+                const tbody = document.getElementById('admin-table-payments');
+                if (!tbody) return;
+                tbody.innerHTML = ''; // CEGAH DUPLIKASI
+                adminState.payments.forEach(p => {
+                    const row = `
+                        <tr class="hover:bg-gray-50 border-b border-gray-100">
+                            <td class="p-4 font-bold text-gray-800">${p.name}</td>
+                            <td class="p-4 text-xs font-black uppercase text-gray-500">${p.type}</td>
+                            <td class="p-4 text-xs font-mono text-gray-600">${p.account_number || '-'}</td>
+                            <td class="p-4 text-xs font-medium text-gray-700">${p.account_name || '-'}</td>
+                            <td class="p-4 text-center">
+                                <span class="px-2 py-0.5 rounded-[4px] text-[10px] font-black ${p.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${p.is_active ? 'AKTIF' : 'NONAKTIF'}</span>
+                            </td>
+                            <td class="p-4 text-right space-x-2">
+                                <button data-action="edit-payment" data-id="${p.id}" class="text-blue-600 font-black text-xs hover:underline">EDIT</button>
+                                <button data-action="delete-payment" data-id="${p.id}" class="text-red-600 font-black text-xs hover:underline">HAPUS</button>
+                            </td>
+                        </tr>`;
+                    tbody.insertAdjacentHTML('beforeend', row);
+                });
+            },
 
-            // --- ISOLATED MODULE: Orders & Stats ---
-            const OrderModule = {
-                async load() {
-                    try {
-                        const stats = await appUtils.getOrderStats();
-                        const revEl = document.getElementById('stat-revenue');
-                        const ordEl = document.getElementById('stat-orders');
-                        const penEl = document.getElementById('stat-pending');
-                        if (revEl) revEl.textContent = appUtils.formatRupiah(stats.total_revenue || 0);
-                        if (ordEl) ordEl.textContent = stats.total_orders || 0;
-                        if (penEl) penEl.textContent = stats.pending_orders || 0;
-
-                        const orders = await appUtils.getAllOrders();
-                        const tbody = document.getElementById('admin-table-orders');
-                        if (!tbody) return;
-                        tbody.innerHTML = '';
-                        orders.forEach(o => {
-                            tbody.innerHTML += `
-                            <tr class="hover:bg-gray-50">
-                                <td class="p-4"><p class="font-bold text-gray-800">#${o.order_number}</p><p class="text-[10px] text-gray-400">${appUtils.formatDateShort(o.created_at)}</p></td>
-                                <td class="p-4 text-xs"><b>${o.user_name}</b><br><span class="text-gray-400">${o.user_email}</span></td>
-                                <td class="p-4 text-xs font-medium">${o.product_name} x ${o.qty}</td>
-                                <td class="p-4 font-bold text-primary-600">${appUtils.formatRupiah(parseInt(o.total_price))}</td>
-                                <td class="p-4">
-                                    <div class="flex gap-1">
-                                        <input type="text" id="creds-${o.id}" value="${o.credentials || ''}" class="text-[10px] border rounded px-2 py-1 flex-grow">
-                                        <button onclick="submitCreds('${o.id}')" class="bg-primary-500 text-white p-1 rounded">✔</button>
-                                    </div>
-                                </td>
-                                <td class="p-4">
-                                    <select onchange="updateStatus('${o.id}', this.value)" class="text-[10px] border rounded bg-white p-1">
-                                        <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Pending</option>
-                                        <option value="processing" ${o.status === 'processing' ? 'selected' : ''}>Proses</option>
-                                        <option value="success" ${o.status === 'success' ? 'selected' : ''}>Selesai</option>
-                                        <option value="failed" ${o.status === 'failed' ? 'selected' : ''}>Gagal</option>
-                                    </select>
-                                </td>
-                            </tr>`;
-                        });
-                    } catch (e) { console.error('Order Module Error:', e); }
-                }
-            };
-
-            // Global Actions with Protection
-            window.editProduct = (id) => {
-                const p = cachedProducts.find(x => x.id === id);
-                if (p) openFormModal(p);
-            };
-
-            window.deleteProduct = async (id, name) => {
-                if (!confirm(`Hapus produk "${name}"?`)) return;
-                try {
-                    const res = await appUtils.deleteProduct(id);
-                    if (res.success) { appUtils.showToast('Produk dihapus!', 'success'); ProductModule.load(); }
-                } catch (e) { appUtils.showToast('Gagal menghapus produk.', 'error'); }
-            };
-
-            window.submitCreds = async (id) => {
-                const inp = document.getElementById(`creds-${id}`);
-                const val = inp?.value;
-                if (!val) return alert('Isi kredensial lebih dulu!');
-                try {
-                    const res = await appUtils.deliverOrder(id, val);
-                    if (res.success) { appUtils.showToast('Kredensial terkirim!', 'success'); OrderModule.load(); }
-                } catch (e) { appUtils.showToast('Gagal mengirim.', 'error'); }
-            };
-
-            window.updateStatus = async (id, s) => {
-                try {
-                    const res = await appUtils.updateOrderStatus(id, s);
-                    if (res.success) { appUtils.showToast('Status diperbarui!', 'success'); OrderModule.load(); }
-                } catch (e) { appUtils.showToast('Gagal update.', 'error'); }
-            };
-
-            window.editPayment = async (id) => {
-                try {
-                    const all = await appUtils.getAllPaymentMethods();
-                    const p = all.find(x => x.id == id);
-                    if (p) openPaymentModal(p);
-                } catch (e) { console.error(e); }
-            };
-
-            window.deletePayment = async (id) => {
-                if (!confirm('Hapus metode ini?')) return;
-                try {
-                    const res = await appUtils.deletePaymentMethod(id);
-                    if (res.success) { appUtils.showToast('Metode dihapus.', 'success'); PaymentModule.load(); }
-                } catch (e) { console.error(e); }
-            };
-
-            // Chat Functionality
-            window.renderChatUsers = async () => {
+            chatUsers() {
                 const list = document.getElementById('chat-user-list');
                 if (!list) return;
-                try {
-                    const users = await appUtils.getChatUsers();
-                    list.innerHTML = '';
-                    if (!users.length) { list.innerHTML = '<div class="p-8 text-center text-xs text-gray-400">Belum ada chat.</div>'; return; }
-                    users.forEach(u => {
-                        const div = document.createElement('div');
-                        div.className = `p-4 hover:bg-gray-50 cursor-pointer ${currentUserId === u.user_id ? 'bg-primary-50 border-r-4 border-primary-500' : ''}`;
-                        div.onclick = () => {
-                            currentUserId = u.user_id;
-                            const hName = document.getElementById('current-chat-name');
-                            const hEmail = document.getElementById('current-chat-email');
-                            if (hName) hName.textContent = u.name;
-                            if (hEmail) hEmail.textContent = u.email;
-                            renderChatUsers();
-                            loadChatContent();
-                        };
-                        div.innerHTML = `<p class="font-bold text-gray-800 text-sm">${u.name}</p><p class="text-[10px] text-gray-500 truncate">${u.last_message || '...'}</p>`;
-                        list.appendChild(div);
-                    });
-                } catch (e) { console.error(e); }
-            };
+                list.innerHTML = ''; // CEGAH DUPLIKASI
+                adminState.chatUsers.forEach(u => {
+                    const active = adminState.currentChatUserId === u.user_id;
+                    const el = `
+                        <div data-action="select-chat-user" data-id="${u.user_id}" data-name="${u.name}" data-email="${u.email}" 
+                             class="p-4 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-50 ${active ? 'bg-primary-50 border-r-4 border-primary-500' : ''}">
+                            <p class="font-bold text-gray-800 text-sm">${u.name}</p>
+                            <p class="text-[10px] text-gray-400 truncate">${u.last_message || '...'}</p>
+                        </div>`;
+                    list.insertAdjacentHTML('beforeend', el);
+                });
+            },
 
-            async function loadChatContent() {
+            chatMessages(msgs) {
                 const box = document.getElementById('chat-messages');
-                if (!box || !currentUserId) return;
-                try {
-                    const msgs = await appUtils.getUserMessages(currentUserId);
-                    box.innerHTML = '';
-                    msgs.forEach(m => {
-                        const me = m.is_admin === 1;
-                        box.innerHTML += `
+                if (!box) return;
+                box.innerHTML = ''; // CEGAH DUPLIKASI
+                msgs.forEach(m => {
+                    const me = m.is_admin === 1;
+                    const el = `
                         <div class="flex ${me ? 'justify-end' : 'justify-start'}">
-                            <div class="px-3 py-1.5 rounded-xl text-sm ${me ? 'bg-primary-500 text-white rounded-tr-none' : 'bg-white border text-gray-800 rounded-tl-none'}">
+                            <div class="px-4 py-2 rounded-2xl text-sm shadow-sm ${me ? 'bg-primary-600 text-white rounded-tr-none' : 'bg-white border text-gray-800 rounded-tl-none'}">
                                 ${m.message}
-                                <div class="text-[8px] opacity-70 text-right mt-1">${new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+                                <div class="text-[8px] opacity-70 text-right mt-1 font-mono">${new Date(m.created_at).toLocaleTimeString()}</div>
                             </div>
                         </div>`;
-                    });
-                    box.scrollTop = box.scrollHeight;
-                } catch (e) { console.error(e); }
+                    box.insertAdjacentHTML('beforeend', el);
+                });
+                box.scrollTop = box.scrollHeight;
+            },
+
+            tickets() {
+                const tbody = document.getElementById('admin-table-tickets');
+                if (!tbody) return;
+                tbody.innerHTML = ''; // CEGAH DUPLIKASI
+                adminState.tickets.forEach(t => {
+                    const row = `
+                        <tr class="hover:bg-gray-50 border-b border-gray-100">
+                            <td class="p-4 font-mono font-bold text-xs">#${t.ticket_number || t.id.slice(0, 8)}</td>
+                            <td class="p-4 text-xs"><b>${t.user_name}</b><br><span class="text-gray-400">${t.user_email}</span></td>
+                            <td class="p-4"><p class="font-bold text-gray-800 text-xs">${t.subject}</p><p class="text-[10px] text-gray-500 line-clamp-1">${t.message}</p></td>
+                            <td class="p-4 text-center">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-black ${t.status === 'open' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">${t.status.toUpperCase()}</span>
+                            </td>
+                            <td class="p-4 text-right">
+                                <button data-action="close-ticket" data-id="${t.id}" class="bg-gray-800 text-white px-3 py-1 rounded text-[10px] font-bold hover:bg-black transition">TUTUP TIKET</button>
+                            </td>
+                        </tr>`;
+                    tbody.insertAdjacentHTML('beforeend', row);
+                });
+            }
+        };
+
+        // --- DATA LOADERS ---
+        const Actions = {
+            async loadAll() {
+                try {
+                    const [products, orders, stats, payments, tickets] = await Promise.all([
+                        appUtils.getAllProductsAdmin(),
+                        appUtils.getAllOrders(),
+                        appUtils.getOrderStats(),
+                        appUtils.getAllPaymentMethods(),
+                        appUtils.getAllTickets()
+                    ]);
+                    adminState.products = products || [];
+                    adminState.orders = orders || [];
+                    adminState.stats = stats || {};
+                    adminState.payments = payments || [];
+                    adminState.tickets = tickets || [];
+
+                    Render.dashboard();
+                    Render.products();
+                    Render.orders();
+                    Render.payments();
+                    Render.tickets();
+                } catch (e) { console.error('Data Load Error:', e); }
+            },
+
+            async loadChat() {
+                try {
+                    adminState.chatUsers = await appUtils.getChatUsers();
+                    Render.chatUsers();
+                } catch (e) { console.error('Chat Load Error:', e); }
+            },
+
+            async loadChatContent(userId) {
+                try {
+                    const msgs = await appUtils.getUserMessages(userId);
+                    Render.chatMessages(msgs);
+                } catch (e) { console.error('Chat Content Error:', e); }
+            }
+        };
+
+        // --- GLOBAL EVENT DELEGATION (ANTI-DEAD BUTTON) ---
+        document.addEventListener('click', async (e) => {
+            const btn = e.target.closest('button, [data-action]');
+            if (!btn) return;
+            const action = btn.dataset.action;
+            const id = btn.dataset.id;
+
+            // --- TABS & MODALS ---
+            if (action === 'switch-tab') {
+                const tabId = btn.dataset.tab;
+                switchTab(tabId);
+            }
+            if (action === 'open-product-modal') openProductModal();
+            if (action === 'open-payment-modal') openPaymentModal();
+
+            // --- PRODUCT ACTIONS ---
+            if (action === 'edit-product') {
+                const p = adminState.products.find(x => x.id === id);
+                if (p) openProductModal(p);
+            }
+            if (action === 'delete-product') {
+                if (confirm(`Hapus produk "${btn.dataset.name}"?`)) {
+                    await appUtils.deleteProduct(id);
+                    Actions.loadAll();
+                }
             }
 
-            window.sendAdminChat = async () => {
+            // --- PAYMENT ACTIONS ---
+            if (action === 'edit-payment') {
+                const p = adminState.payments.find(x => x.id == id);
+                if (p) openPaymentModal(p);
+            }
+            if (action === 'delete-payment') {
+                if (confirm('Hapus metode pembayaran ini?')) {
+                    await appUtils.deletePaymentMethod(id);
+                    Actions.loadAll();
+                }
+            }
+
+            // --- ORDER ACTIONS ---
+            if (action === 'save-creds') {
+                const val = document.getElementById(`creds-${id}`).value;
+                await appUtils.deliverOrder(id, val);
+                appUtils.showToast('✅ Kredensial terkirim!', 'success');
+                Actions.loadAll();
+            }
+
+            // --- CHAT ACTIONS ---
+            if (action === 'select-chat-user') {
+                adminState.currentChatUserId = id;
+                document.getElementById('current-chat-name').textContent = btn.dataset.name;
+                document.getElementById('current-chat-email').textContent = btn.dataset.email;
+                Render.chatUsers();
+                Actions.loadChatContent(id);
+            }
+            if (action === 'send-chat') {
                 const inp = document.getElementById('admin-chat-input');
-                if (!inp || !currentUserId) return;
                 const msg = inp.value.trim();
-                if (!msg) return;
-                try {
-                    const res = await appUtils.sendMessage(msg, currentUserId);
-                    if (res.success) { inp.value = ''; loadChatContent(); renderChatUsers(); }
-                } catch (e) { console.error(e); }
-            };
+                if (msg && adminState.currentChatUserId) {
+                    await appUtils.sendMessage(msg, adminState.currentChatUserId);
+                    inp.value = '';
+                    Actions.loadChatContent(adminState.currentChatUserId);
+                    Actions.loadChat();
+                }
+            }
 
-            // Modal Lifecycle
-            window.openFormModal = function(p = null) {
-                try {
-                    const form = document.getElementById('form-admin-product');
-                    if (!form) return;
-                    form.reset();
-                    const idInp = document.getElementById('form-id');
-                    const title = document.getElementById('modal-product-title');
-                    const curImgCtn = document.getElementById('current-image-container');
-                    const prevCtn = document.getElementById('image-preview-container');
+            // --- TICKET ACTIONS ---
+            if (action === 'close-ticket') {
+                await appUtils.updateTicketStatus(id, 'closed');
+                Actions.loadAll();
+            }
+        });
 
-                    if (p) {
-                        if (title) title.textContent = 'Edit Produk';
-                        if (idInp) idInp.value = p.id;
-                        document.getElementById('form-name').value = p.name;
-                        document.getElementById('form-category').value = p.category;
-                        document.getElementById('form-price').value = p.price;
-                        document.getElementById('form-discount').value = p.discount;
-                        document.getElementById('form-stock').value = p.stock;
-                        document.getElementById('form-desc').value = p.description || '';
-                        
-                        let vars = '';
-                        try { vars = JSON.parse(p.variants).join(', '); } catch (e) { vars = p.variants || ''; }
-                        document.getElementById('form-variants').value = vars;
+        // HANDLE SELECT CHANGE SEPARATELY
+        document.addEventListener('change', async (e) => {
+            if (e.target.dataset.action === 'update-order-status') {
+                const id = e.target.dataset.id;
+                const status = e.target.value;
+                await appUtils.updateOrderStatus(id, status);
+                appUtils.showToast('✅ Status pesanan diperbarui!', 'success');
+                Actions.loadAll();
+            }
+        });
 
-                        if (curImgCtn && p.image_url) {
-                            curImgCtn.classList.remove('hidden');
-                            document.getElementById('current-image').src = p.image_url;
-                        }
-                    } else {
-                        if (title) title.textContent = 'Tambah Produk';
-                        if (idInp) idInp.value = '';
-                        if (curImgCtn) curImgCtn.classList.add('hidden');
+        // --- SUBMIT HANDLERS (PURE FORMDATA) ---
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formId = form.id;
+            const btn = form.querySelector('button[type="submit"]') || document.getElementById('btn-save-product') || document.getElementById('btn-save-payment');
+            
+            if (btn) btn.disabled = true;
+
+            try {
+                const formData = new FormData(form);
+                const id = form.querySelector('[id$="-id"]').value; // Handles form-id or pay-id
+
+                if (formId === 'formTambahProduk') {
+                    // Variants processing
+                    const vStr = document.getElementById('form-variants').value;
+                    const vArr = vStr.split(',').map(x => x.trim()).filter(x => x);
+                    formData.set('variants', JSON.stringify(vArr));
+
+                    const res = id ? await appUtils.updateProduct(id, formData) : await appUtils.createProduct(formData);
+                    if (res.success) {
+                        appUtils.showToast('✅ Produk Berhasil Disimpan!', 'success');
+                        closeFormModal(); Actions.loadAll();
                     }
-                    if (prevCtn) prevCtn.classList.add('hidden');
-
-                    const m = document.getElementById('modal-product');
-                    if (m) {
-                        m.classList.remove('hidden');
-                        setTimeout(() => m.classList.remove('opacity-0'), 10);
-                        setTimeout(() => document.getElementById('modal-product-inner').classList.remove('scale-95'), 10);
+                } else if (formId === 'form-payment-method') {
+                    formData.set('is_active', document.getElementById('pay-active').checked ? '1' : '0');
+                    const res = id ? await appUtils.updatePaymentMethod(id, formData) : await appUtils.createPaymentMethod(formData);
+                    if (res.success) {
+                        appUtils.showToast('✅ Metode Pembayaran Tersimpan!', 'success');
+                        closePaymentModal(); Actions.loadAll();
                     }
-                } catch (e) { console.error(e); }
-            };
+                }
+            } catch (err) { alert("ERROR: " + err.message); }
+            finally { if (btn) btn.disabled = false; }
+        }
 
-            window.openPaymentModal = function(pay = null) {
-                try {
-                    const form = document.getElementById('form-payment-method');
-                    if (!form) return;
-                    form.reset();
-                    const curQris = document.getElementById('current-qris-container');
-                    if (curQris) curQris.classList.add('hidden');
+        // --- TAB & MODAL HELPERS ---
+        window.switchTab = (tabId) => {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            
+            document.querySelectorAll('.admin-tab').forEach(el => {
+                el.classList.remove('bg-primary-600', 'text-white');
+                el.classList.add('text-gray-300', 'hover:bg-gray-800');
+            });
+            const activeBtn = document.getElementById('btn-tab-' + tabId) || document.getElementById('mob-tab-' + tabId);
+            if (activeBtn) activeBtn.classList.add('bg-primary-600', 'text-white');
 
-                    if (pay) {
-                        document.getElementById('pay-id').value = pay.id;
-                        document.getElementById('pay-name').value = pay.name;
-                        document.getElementById('pay-type').value = pay.type;
-                        document.getElementById('pay-number').value = pay.account_number || '';
-                        document.getElementById('pay-account-name').value = pay.account_name || '';
-                        document.getElementById('pay-active').checked = !!pay.is_active;
-                        
-                        if (curQris && pay.qris_image_url) {
-                            curQris.classList.remove('hidden');
-                            document.getElementById('current-qris-img').src = pay.qris_image_url;
-                        }
-                    } else {
-                        document.getElementById('pay-id').value = '';
-                    }
+            if (tabId === 'chat') Actions.loadChat();
+        };
 
-                    const m = document.getElementById('modal-payment');
-                    if (m) {
-                        m.classList.remove('hidden');
-                        setTimeout(() => { m.classList.remove('opacity-0'); m.querySelector('div').classList.remove('scale-95'); }, 10);
-                    }
-                } catch (e) { console.error(e); }
-            };
+        window.openProductModal = (p = null) => {
+            const form = document.getElementById('formTambahProduk');
+            form.reset();
+            const title = document.getElementById('modal-product-title');
+            const idInp = document.getElementById('form-id');
+            const curImg = document.getElementById('current-image-container');
 
-            window.closeFormModal = () => {
-                const m = document.getElementById('modal-product');
-                if (m) { m.classList.add('opacity-0'); setTimeout(() => m.classList.add('hidden'), 300); }
-            };
-            window.closePaymentModal = () => {
-                const m = document.getElementById('modal-payment');
-                if (m) { m.classList.add('opacity-0'); setTimeout(() => m.classList.add('hidden'), 300); }
-            };
-
-            // Main Initialization
-            document.addEventListener('DOMContentLoaded', async () => {
-                if (!appUtils.requireAdmin()) return;
+            if (p) {
+                title.textContent = 'Edit Produk';
+                idInp.value = p.id;
+                document.getElementById('form-name').value = p.name;
+                document.getElementById('form-category').value = p.category;
+                document.getElementById('form-price').value = p.price;
+                document.getElementById('form-discount').value = p.discount;
+                document.getElementById('form-stock').value = p.stock;
+                document.getElementById('form-desc').value = p.description || '';
                 
-                // --- ISOLATED Product Form Submit ---
-                const pf = document.getElementById('form-admin-product');
-                if (pf) {
-                    pf.onsubmit = async (e) => {
-                        e.preventDefault();
-                        const btn = document.getElementById('btn-save-product');
-                        if (btn) btn.disabled = true;
-                        try {
-                            const fd = new FormData();
-                            const id = document.getElementById('form-id').value;
-                            
-                            fd.append('name', document.getElementById('form-name').value);
-                            fd.append('category', document.getElementById('form-category').value);
-                            fd.append('price', document.getElementById('form-price').value);
-                            fd.append('discount', document.getElementById('form-discount').value);
-                            fd.append('stock', document.getElementById('form-stock').value);
-                            fd.append('description', document.getElementById('form-desc').value);
-                            
-                            const vStr = document.getElementById('form-variants').value;
-                            const vArr = vStr.split(',').map(x => x.trim()).filter(x => x);
-                            fd.append('variants', JSON.stringify(vArr));
+                let vars = '';
+                try { vars = JSON.parse(p.variants).join(', '); } catch (e) { vars = p.variants || ''; }
+                document.getElementById('form-variants').value = vars;
 
-                            const img = document.getElementById('form-image');
-                            if (img && img.files[0]) fd.append('image', img.files[0]);
+                if (p.image_url) {
+                    curImg.classList.remove('hidden');
+                    document.getElementById('current-image').src = p.image_url;
+                } else { curImg.classList.add('hidden'); }
+            } else {
+                title.textContent = 'Tambah Produk';
+                idInp.value = '';
+                curImg.classList.add('hidden');
+            }
 
-                            const res = id ? await appUtils.updateProduct(id, fd) : await appUtils.createProduct(fd);
-                            if (res.success) {
-                                alert(id ? "✅ Produk berhasil diperbarui!" : "✅ Produk berhasil ditambahkan!");
-                                closeFormModal(); ProductModule.load();
-                            } else { alert("Gagal Simpan: " + res.message); }
-                        } catch (err) { console.error(err); } finally { if (btn) btn.disabled = false; }
-                    };
+            const m = document.getElementById('modal-product');
+            m.classList.remove('hidden');
+            setTimeout(() => { m.classList.remove('opacity-0'); m.querySelector('div').classList.remove('scale-95'); }, 10);
+        };
+
+        window.openPaymentModal = (pay = null) => {
+            const form = document.getElementById('form-payment-method');
+            form.reset();
+            const idInp = document.getElementById('pay-id');
+            const curQris = document.getElementById('current-qris-container');
+
+            if (pay) {
+                idInp.value = pay.id;
+                document.getElementById('pay-name').value = pay.name;
+                document.getElementById('pay-type').value = pay.type;
+                document.getElementById('pay-number').value = pay.account_number || '';
+                document.getElementById('pay-account-name').value = pay.account_name || '';
+                document.getElementById('pay-active').checked = !!pay.is_active;
+                
+                if (pay.qris_image_url) {
+                    curQris.classList.remove('hidden');
+                    document.getElementById('current-qris-img').src = pay.qris_image_url;
+                } else { curQris.classList.add('hidden'); }
+            } else {
+                idInp.value = '';
+                curQris.classList.add('hidden');
+            }
+
+            const m = document.getElementById('modal-payment');
+            m.classList.remove('hidden');
+            setTimeout(() => { m.classList.remove('opacity-0'); m.querySelector('div').classList.remove('scale-95'); }, 10);
+        };
+
+        window.closeFormModal = () => {
+            const m = document.getElementById('modal-product');
+            m.classList.add('opacity-0');
+            m.querySelector('div').classList.add('scale-95');
+            setTimeout(() => m.classList.add('hidden'), 300);
+        };
+
+        window.closePaymentModal = () => {
+            const m = document.getElementById('modal-payment');
+            m.classList.add('opacity-0');
+            m.querySelector('div').classList.add('scale-95');
+            setTimeout(() => m.classList.add('hidden'), 300);
+        };
+
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!appUtils.requireAdmin()) return;
+            Actions.loadAll();
+
+            // Bind Form Submits
+            document.getElementById('formTambahProduk').onsubmit = handleFormSubmit;
+            document.getElementById('form-payment-method').onsubmit = handleFormSubmit;
+            
+            // Auto Refresh for Chat
+            setInterval(() => {
+                if (document.getElementById('tab-chat').classList.contains('active')) {
+                    if (adminState.currentChatUserId) Actions.loadChatContent(adminState.currentChatUserId);
+                    Actions.loadChat();
                 }
-
-                // --- ISOLATED Payment Form Submit ---
-                const payf = document.getElementById('form-payment-method');
-                if (payf) {
-                    payf.onsubmit = async (e) => {
-                        e.preventDefault();
-                        const btn = document.getElementById('btn-save-payment');
-                        if (btn) btn.disabled = true;
-                        try {
-                            const fd = new FormData();
-                            const id = document.getElementById('pay-id').value;
-                            fd.append('name', document.getElementById('pay-name').value);
-                            fd.append('type', document.getElementById('pay-type').value);
-                            fd.append('account_number', document.getElementById('pay-number').value);
-                            fd.append('account_name', document.getElementById('pay-account-name').value);
-                            fd.append('is_active', document.getElementById('pay-active').checked ? '1' : '0');
-
-                            const qFile = document.getElementById('pay-qris-file');
-                            if (qFile && qFile.files[0]) fd.append('qris_image', qFile.files[0]);
-
-                            const res = id ? await appUtils.updatePaymentMethod(id, fd) : await appUtils.createPaymentMethod(fd);
-                            if (res.success) { 
-                                appUtils.showToast('✅ Metode Pembayaran Tersimpan!', 'success'); 
-                                closePaymentModal(); PaymentModule.load(); 
-                            } else { alert("Gagal Simpan: " + res.message); }
-                        } catch (err) { console.error(err); } finally { if (btn) btn.disabled = false; }
-                    };
-                }
-
-                // Preview Image Product
-                const pImg = document.getElementById('form-image');
-                if (pImg) {
-                    pImg.onchange = (e) => {
-                        const file = e.target.files[0];
-                        if (file) {
-                            const reader = new FileReader();
+            }, 10000);
+        });
+    </script>
+</body>
+</html>
                             reader.onload = (ev) => {
                                 const prev = document.getElementById('image-preview');
                                 const ctn = document.getElementById('image-preview-container');
