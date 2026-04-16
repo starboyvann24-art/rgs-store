@@ -944,3 +944,46 @@ footer {
 }
 .avatar-upload-wrapper:hover .avatar-overlay { opacity: 1; }
 
+/* ─── Table Responsive Wrapper ────────────────────────────── */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ─── Floating WhatsApp ───────────────────────────────────── */
+.wa-float {
+    position: fixed;
+    z-index: 9999;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background-color: #25d366;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+    transition: transform 0.3s;
+}
+.wa-float:hover {
+    transform: scale(1.1);
+}
+
+/* ─── Mobile Admin Off-canvas ─────────────────────────────── */
+@media (max-width: 768px) {
+    #admin-sidebar {
+        position: fixed;
+        top: 0; left: -100%;
+        width: 260px; height: 100vh;
+        z-index: 10000;
+        transition: 0.3s ease;
+    }
+    #admin-sidebar.open { left: 0; }
+    #admin-sidebar-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 9999; display: none;
+    }
+    #admin-sidebar-overlay.open { display: block; }
+}

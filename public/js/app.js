@@ -200,7 +200,7 @@ const store = {
     },
 
     async getOrderStats() {
-        return this.apiCall('/orders/stats/summary');
+        return this.apiCall('/admin/stats');
     },
 
     async updateOrderStatus(id, status) {
@@ -609,4 +609,34 @@ store.saveToken = function(token) { this.setToken(token); };
 // Auto-run on every page
 document.addEventListener('DOMContentLoaded', () => {
     store.updateNavbar();
+
+    // --- FAKE SALES NOTIFICATION ---
+    function runFakeSales() {
+        const names = ['Dimas', 'Budi', 'Rizky', 'Putra', 'Andi', 'Reza', 'Evan', 'Cahya', 'Naufal', 'Ilham'];
+        const products = ['Panel Pterodactyl', 'Discord Nitro 1 Bulan', 'Netflix Premium 4K', 'Spotify Premium', 'YouTube Premium'];
+        
+        // Timeout acak 3-5 menit (180000 - 300000 ms)
+        const randomTime = Math.floor(Math.random() * (300000 - 180000 + 1)) + 180000;
+        
+        setTimeout(() => {
+            const randomName = names[Math.floor(Math.random() * names.length)];
+            const randomProduct = products[Math.floor(Math.random() * products.length)];
+            
+            Swal.fire({
+                toast: true,
+                position: 'bottom-start',
+                icon: 'success',
+                title: `<span style="font-size:0.85rem"><b>${randomName}</b> baru saja membeli <span style="color:#f97316">${randomProduct}</span>!</span>`,
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true,
+                background: '#fff',
+                iconColor: '#f97316'
+            });
+            runFakeSales();
+        }, randomTime);
+    }
+    
+    // Mulai fake sales pertama (sedikit lebih cepat, misal 30 detik pertama)
+    setTimeout(() => { runFakeSales(); }, 30000);
 });

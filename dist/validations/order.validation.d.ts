@@ -19,10 +19,10 @@ export declare const updateOrderStatusSchema: z.ZodObject<{
     body: z.ZodObject<{
         status: z.ZodEnum<{
             success: "success";
+            shipped: "shipped";
             pending: "pending";
             cancelled: "cancelled";
             failed: "failed";
-            shipped: "shipped";
             processing: "processing";
         }>;
     }, z.core.$strip>;

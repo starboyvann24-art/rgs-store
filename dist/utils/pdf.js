@@ -77,6 +77,16 @@ function generateInvoicePDF(data) {
         doc.fillColor(GRAY).font('Helvetica').fontSize(9)
             .text('Terima kasih telah berbelanja di RGS STORE. Invoice ini dibuat secara otomatis oleh sistem.', 50, 368, { align: 'center', width: 495 })
             .text('Garansi: 1×24 jam setelah produk diterima. CS: wa.me/62882016259591', 50, 382, { align: 'center', width: 495 });
+        // Watermark LUNAS (Hanya jika status success/shipped)
+        if (data.status === 'success' || data.status === 'shipped') {
+            doc.save();
+            doc.translate(297, 420); // center of A4
+            doc.rotate(-45);
+            doc.fillColor('rgba(34,197,94,0.15)'); // Green opacity
+            doc.font('Helvetica-Bold').fontSize(110);
+            doc.text('LUNAS', -250, -55, { align: 'center', width: 500 });
+            doc.restore();
+        }
         doc.end();
     });
 }

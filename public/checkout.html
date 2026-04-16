@@ -82,13 +82,18 @@
                     <div class="grid grid-cols-2 gap-3">
                         <label class="border-2 rounded-xl p-4 cursor-pointer hover:bg-orange-50 flex flex-col items-center justify-center text-center payment-option transition relative border-primary-500 bg-primary-50">
                             <input type="radio" name="payment" value="QRIS" class="absolute top-2 right-2 text-primary-600 focus:ring-primary-500" required checked>
-                            <span class="font-bold text-primary-600 text-sm">🔲 QRIS</span>
-                            <span class="text-[10px] text-gray-500 mt-0.5">Scan & Pay</span>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" alt="QRIS" class="h-6 mb-1 object-contain">
+                            <span class="font-bold text-primary-600 text-sm">QRIS</span>
+                            <span class="text-[10px] text-gray-500 mt-0.5">Scan & Pay All</span>
                         </label>
                         <label class="border-2 rounded-xl p-4 cursor-pointer hover:bg-orange-50 flex flex-col items-center justify-center text-center payment-option transition relative border-gray-200" id="ewallet-label">
                             <input type="radio" name="payment" value="E-Wallet" class="absolute top-2 right-2 text-primary-600 focus:ring-primary-500" id="radio-ewallet">
-                            <span class="font-bold text-purple-600 text-sm">💜 E-Wallet</span>
-                            <span class="text-[10px] text-gray-500 mt-0.5">DANA / OVO / GoPay / ShopeePay</span>
+                            <div class="flex gap-1 justify-center mb-1">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Logo_dana_blue.svg" alt="DANA" class="h-4 object-contain">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/Logo_OVO.svg" alt="OVO" class="h-4 object-contain">
+                            </div>
+                            <span class="font-bold text-purple-600 text-sm">E-Wallet</span>
+                            <span class="text-[10px] text-gray-500 mt-0.5">Dana, Ovo, Spay</span>
                         </label>
                     </div>
                     <!-- E-Wallet Sub-Dropdown -->

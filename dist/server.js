@@ -119,10 +119,13 @@ apiRouter.use('/auth', apiLimiter, auth_routes_1.default);
 apiRouter.use('/products', product_routes_1.default);
 apiRouter.use('/orders', apiLimiter, order_routes_1.default);
 apiRouter.use('/settings', settings_routes_1.default);
+const order_controller_1 = require("./controllers/order.controller");
 apiRouter.use('/tickets', ticket_routes_1.default);
 apiRouter.use('/reviews', review_routes_1.default);
 apiRouter.use('/payments', payment_routes_1.default);
 apiRouter.use('/chat', message_routes_1.default);
+// Fix API Admin Stats Routing explicitly as requested
+apiRouter.get('/admin/stats', auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, order_controller_1.getOrderStats);
 // Register API router under /api
 app.use('/api', apiRouter);
 // ─── 404 HANDLER FOR API ROUTES ───────────────────────────────

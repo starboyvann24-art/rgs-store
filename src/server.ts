@@ -97,10 +97,15 @@ apiRouter.use('/auth', apiLimiter, authRoutes);
 apiRouter.use('/products', productRoutes);
 apiRouter.use('/orders', apiLimiter, orderRoutes);
 apiRouter.use('/settings', settingsRoutes);
+import { getOrderStats } from './controllers/order.controller';
+
 apiRouter.use('/tickets', ticketRoutes);
 apiRouter.use('/reviews', reviewRoutes);
 apiRouter.use('/payments', paymentRoutes);
 apiRouter.use('/chat', messageRoutes);
+
+// Fix API Admin Stats Routing explicitly as requested
+apiRouter.get('/admin/stats', verifyToken, isAdmin, getOrderStats);
 
 // Register API router under /api
 app.use('/api', apiRouter);

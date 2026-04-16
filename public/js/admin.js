@@ -70,10 +70,10 @@ const Render = {
                     <td class="p-4 text-xs font-medium">${o.product_name} x ${o.qty}</td>
                     <td class="p-4 font-bold text-primary-600">${appUtils.formatRupiah(o.total_price)}</td>
                     <td class="p-4">
-                        <div class="flex gap-1">
-                            <input type="text" id="creds-${o.id}" value="${o.credentials || ''}" class="text-[10px] border rounded px-2 py-1 w-24">
-                            <button data-action="save-creds" data-id="${o.id}" class="bg-primary-500 text-white px-2 py-1 rounded text-[10px] font-bold">✔</button>
-                        </div>
+                        ${o.credentials ? 
+                            `<span class="text-[10px] bg-green-100 text-green-700 px-2 py-1 rounded font-bold overflow-hidden text-ellipsis block max-w-xs whitespace-nowrap" title="${o.credentials}">Sudah Dikirim</span>` : 
+                            `<button data-action="open-delivery-modal" data-id="${o.id}" class="bg-primary-500 text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-primary-600 transition shadow">Proses (Kirim)</button>`
+                        }
                     </td>
                     <td class="p-4">
                         <select data-action="update-order-status" data-id="${o.id}" class="text-[10px] border rounded bg-white p-1 font-bold">
@@ -209,6 +209,12 @@ const Render = {
 const Actions = {
     async loadAll() {
         try {
+            // Loading indicator for stats
+            ['stat-revenue', 'stat-orders', 'stat-pending', 'stat-products', 'stat-tickets'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = '<span class="animate-pulse text-gray-300">...</span>';
+            });
+
             const [products, orders, stats, payments, tickets, waiting] = await Promise.all([
                 appUtils.getAllProductsAdmin(),
                 appUtils.getAllOrders(),
@@ -267,6 +273,8 @@ document.addEventListener('click', async (e) => {
     if (action === 'close-product-modal') closeFormModal();
     if (action === 'open-payment-modal') openPaymentModal();
     if (action === 'close-payment-modal') closePaymentModal();
+    if (action === 'open-delivery-modal') openDeliveryModal(id);
+    if (action === 'close-delivery-modal') closeDeliveryModal();
 
     // --- PRODUCT ACTIONS ---
     if (action === 'edit-product') {
@@ -293,12 +301,7 @@ document.addEventListener('click', async (e) => {
     }
 
     // --- ORDER ACTIONS ---
-    if (action === 'save-creds') {
-        const val = document.getElementById(`creds-${id}`).value;
-        await appUtils.deliverOrder(id, val);
-        appUtils.showToast('✅ Kredensial terkirim!', 'success');
-        Actions.loadAll();
-    }
+    // (Removed legacy save-creds button logic since we use a popup now)
 
     // --- CHAT ACTIONS ---
     if (action === 'select-chat-user') {
@@ -398,6 +401,17 @@ async function handleFormSubmit(e) {
                 appUtils.showToast('✅ Metode Pembayaran Tersimpan!', 'success');
                 closePaymentModal(); Actions.loadAll();
             }
+        } else if (formId === 'form-delivery') {
+            // Processing Delivery via Modal
+            const orderId = document.getElementById('delivery-order-id').value;
+            const creds = document.getElementById('delivery-credentials').value;
+            const res = await appUtils.deliverOrder(orderId, creds);
+            if (res && res.success) {
+                appUtils.showToast('✅ Produk Berhasil Dikirim (Email ter-trigger)!', 'success');
+                closeDeliveryModal(); Actions.loadAll();
+            } else {
+                appUtils.showToast(res?.message || 'Gagal mengirim produk', 'error');
+            }
         }
     } catch (err) { Swal.fire("Error", "ERROR: " + err.message, "error"); }
     finally { appUtils.setLoading(btn, false); }
@@ -496,6 +510,21 @@ window.closePaymentModal = () => {
     setTimeout(() => m.classList.add('hidden'), 300);
 };
 
+window.openDeliveryModal = (id) => {
+    document.getElementById('delivery-order-id').value = id;
+    document.getElementById('delivery-credentials').value = '';
+    const m = document.getElementById('modal-delivery');
+    m.classList.remove('hidden');
+    setTimeout(() => { m.classList.remove('opacity-0'); m.querySelector('div').classList.remove('scale-95'); }, 10);
+};
+
+window.closeDeliveryModal = () => {
+    const m = document.getElementById('modal-delivery');
+    m.classList.add('opacity-0');
+    m.querySelector('div').classList.add('scale-95');
+    setTimeout(() => m.classList.add('hidden'), 300);
+};
+
 // --- INIT ---
 document.addEventListener('DOMContentLoaded', () => {
     if (!appUtils.requireAdmin()) return;
@@ -504,6 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Bind Form Submits
     document.getElementById('formTambahProduk').onsubmit = handleFormSubmit;
     document.getElementById('form-payment-method').onsubmit = handleFormSubmit;
+    document.getElementById('form-delivery').onsubmit = handleFormSubmit;
     
     // Auto Refresh for Chat
     setInterval(() => {
@@ -512,4 +542,24 @@ document.addEventListener('DOMContentLoaded', () => {
             Actions.loadChat();
         }
     }, 10000);
+
+    // Mobile Admin Sidebar Offcanvas
+    const sidebar = document.getElementById('admin-sidebar');
+    const overlay = document.getElementById('admin-sidebar-overlay');
+    const mobileBtn = document.getElementById('admin-mobile-menu-btn');
+    const closeBtn = document.getElementById('close-admin-sidebar');
+
+    if (mobileBtn && sidebar) {
+        const toggleMenu = () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        };
+        mobileBtn.addEventListener('click', toggleMenu);
+        closeBtn.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+        // Autoclose sidebar when navigating in mobile
+        document.querySelectorAll('.admin-tab').forEach(btn => btn.addEventListener('click', () => {
+            if (window.innerWidth <= 768) toggleMenu();
+        }));
+    }
 });
