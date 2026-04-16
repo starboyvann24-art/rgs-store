@@ -35,12 +35,16 @@ const UI = {
 const Render = {
     dashboard() {
         const s = adminState.stats;
-        // Ensure keys match backend: total_revenue, total_orders, pending_orders
-        document.getElementById('stat-revenue').textContent = appUtils.formatRupiah(s.total_revenue || 0);
-        document.getElementById('stat-orders').textContent = s.total_orders || 0;
-        document.getElementById('stat-pending').textContent = s.pending_orders || 0;
-        document.getElementById('stat-products').textContent = adminState.products.length;
-        document.getElementById('stat-tickets').textContent = adminState.tickets.filter(t => t.status === 'open').length;
+        // Match IDs in admin.html
+        const revEl = document.getElementById('stat-totalRevenue');
+        const ordEl = document.getElementById('stat-totalOrders');
+        const actEl = document.getElementById('stat-activeProducts');
+        const tktEl = document.getElementById('stat-tickets');
+
+        if (revEl) revEl.textContent = appUtils.formatRupiah(s.total_revenue || 0);
+        if (ordEl) ordEl.textContent = s.total_orders || 0;
+        if (actEl) actEl.textContent = adminState.products.length || 0;
+        if (tktEl) tktEl.textContent = adminState.tickets.filter(t => t.status === 'open').length || 0;
     },
 
     products() {
@@ -128,7 +132,7 @@ const Render = {
     verification() {
         const tbody = document.getElementById('admin-table-verification');
         if (!tbody) return;
-        tbody.innerHTML = ''; // MANDATORY CLEAR FIRST
+        tbody.innerHTML = ''; // MANDATORY CLEAR
 
         if (!adminState.waitingOrders.length) {
             tbody.innerHTML = '<tr><td colspan="5" class="p-12 text-center text-gray-400 italic">Semua pembayaran telah diverifikasi.</td></tr>';
@@ -162,7 +166,11 @@ const Render = {
     payments() {
         const tbody = document.getElementById('admin-table-payments');
         if (!tbody) return;
-        tbody.innerHTML = ''; // MANDATORY CLEAR FIRST
+        tbody.innerHTML = ''; // MANDATORY CLEAR
+        if (!adminState.payments.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="p-12 text-center text-gray-400 italic">Belum ada metode pembayaran.</td></tr>';
+            return;
+        }
         adminState.payments.forEach(p => {
             const row = `
                 <tr class="hover:bg-gray-50 border-b border-gray-100">
@@ -256,7 +264,7 @@ const Render = {
     files() {
         const tbody = document.getElementById('admin-table-files');
         if (!tbody) return;
-        tbody.innerHTML = '';
+        tbody.innerHTML = ''; // MANDATORY CLEAR
         if (!adminState.files.length) {
             tbody.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 italic">Belum ada berkas terupload.</td></tr>';
             return;
