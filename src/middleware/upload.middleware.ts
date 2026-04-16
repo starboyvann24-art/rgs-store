@@ -17,6 +17,8 @@ const storage = multer.diskStorage({
       destFolder = 'public/proofs';
     } else if (file.fieldname === 'avatar') {
       destFolder = 'public/avatars';
+    } else if (file.fieldname === 'admin_file') {
+      destFolder = 'public/uploads/admin';
     }
     
     // AUTO CREATE FOLDER JIKA TIDAK ADA

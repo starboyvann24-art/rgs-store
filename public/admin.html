@@ -55,6 +55,10 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 Verifikasi Bayar
             </button>
+            <button data-action="switch-tab" data-tab="storage" id="btn-tab-storage" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 text-gray-300 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2z"></path></svg>
+                Penyimpanan Berkas (V7)
+            </button>
         </nav>
         <div class="p-4 border-t border-gray-800 mt-auto">
              <a href="index.html" class="block w-full text-center px-4 py-2 text-gray-400 hover:text-white rounded-lg transition font-medium text-xs mb-2">← Kembali ke Toko</a>
@@ -63,7 +67,7 @@
     </aside>
 
     <!-- Main Content Right -->
-    <main class="flex-grow flex flex-col w-full overflow-hidden">
+    <main class="flex-grow flex flex-col w-full overflow-hidden md:pl-64">
         
         <!-- Mobile Topbar -->
         <header class="bg-gray-900 text-white p-4 flex justify-between items-center md:hidden h-16 sticky top-0 z-40">
@@ -256,7 +260,33 @@
                                     <th class="p-4 font-semibold text-gray-600 text-right">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody id="admin-table-verification" class="divide-y divide-gray-100"></tbody>
+            <tbody id="admin-table-verification" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: Storage -->
+            <div id="tab-storage" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold">Penyimpanan Berkas (Admin)</h2>
+                    <div class="flex gap-2">
+                        <input type="file" id="admin-file-input" class="hidden">
+                        <button onclick="document.getElementById('admin-file-input').click()" class="bg-primary-500 hover:bg-primary-600 text-white font-bold py-2 px-4 rounded-lg shadow transition">+ Upload Berkas</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left min-w-[800px]">
+                            <thead class="bg-gray-50 border-b">
+                                <tr>
+                                    <th class="p-4 font-semibold text-gray-600">Nama Berkas</th>
+                                    <th class="p-4 font-semibold text-gray-600">Ukuran</th>
+                                    <th class="p-4 font-semibold text-gray-600">Tgl Upload</th>
+                                    <th class="p-4 font-semibold text-gray-600 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-table-files" class="divide-y divide-gray-100"></tbody>
                         </table>
                     </div>
                 </div>

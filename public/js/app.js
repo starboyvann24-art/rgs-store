@@ -43,12 +43,16 @@ const store = {
             body: options.body,
             method: options.method || 'GET'
         };
+
+        const headers = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
         if (!isFormData) {
-            fetchOptions.headers = headers;
-        } else {
-            // For FormData, we ONLY include Authorization if it exists, NO Content-Type
-            if (token) fetchOptions.headers = { 'Authorization': `Bearer ${token}` };
+            headers['Content-Type'] = 'application/json';
         }
+        
+        // Final absolute protection for FormData: no Content-Type header allowed!
+        fetchOptions.headers = headers;
 
         try {
             const res = await fetch(`${API_BASE}${endpoint}`, fetchOptions);
@@ -294,6 +298,25 @@ const store = {
         return this.apiCall(`/tickets/${id}/status`, {
             method: 'PUT',
             body: JSON.stringify({ status })
+        });
+    },
+
+    // ─── ADMIN FILE MANAGER ────────────────────────────────────
+    async getAllAdminFiles() {
+        const res = await this.apiCall('/admin/files');
+        return res.success ? res.data : [];
+    },
+
+    async uploadAdminFile(formData) {
+        return this.apiCall('/admin/files', {
+            method: 'POST',
+            body: formData
+        });
+    },
+
+    async deleteAdminFile(filename) {
+        return this.apiCall(`/admin/files/${filename}`, {
+            method: 'DELETE'
         });
     },
 

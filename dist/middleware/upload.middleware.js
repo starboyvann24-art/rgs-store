@@ -26,6 +26,9 @@ const storage = multer_1.default.diskStorage({
         else if (file.fieldname === 'avatar') {
             destFolder = 'public/avatars';
         }
+        else if (file.fieldname === 'admin_file') {
+            destFolder = 'public/uploads/admin';
+        }
         // AUTO CREATE FOLDER JIKA TIDAK ADA
         const dir = path_1.default.join(process.cwd(), destFolder);
         if (!fs_1.default.existsSync(dir)) {

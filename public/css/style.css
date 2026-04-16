@@ -513,7 +513,7 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
 /* ─── WhatsApp Float ──────────────────────────────────────── */
 .wa-float {
     position: fixed;
-    bottom: 28px; right: 28px;
+    bottom: 20px; right: 20px;
     width: 58px; height: 58px;
     background: #25d366;
     border-radius: 50%;
@@ -522,9 +522,10 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
     justify-content: center;
     color: #fff;
     font-size: 1.6rem;
-    z-index: 999;
+    z-index: 9999999 !important;
     box-shadow: 0 4px 20px rgba(37,211,102,0.5);
     transition: 0.3s;
+    pointer-events: auto !important;
 }
 .wa-float:hover { transform: scale(1.1); box-shadow: 0 6px 30px rgba(37,211,102,0.7); }
 

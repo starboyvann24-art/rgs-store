@@ -11,7 +11,8 @@ const adminState = {
     waitingOrders: [],
     stats: {},
     currentChatUserId: null,
-    chatUsers: []
+    chatUsers: [],
+    files: []
 };
 
 // ─── SKELETON LOADERS ─────────────────────────────────────────
@@ -23,7 +24,7 @@ const UI = {
             if (!el) return;
             if (id.startsWith('stat-')) {
                 el.innerHTML = '<span class="animate-pulse text-gray-300">...</span>';
-            } else if (id.startsWith('admin-table-') || id === 'chat-user-list') {
+            } else if (id.startsWith('admin-table-') || id === 'chat-user-list' || id === 'admin-table-files') {
                 el.innerHTML = skelRow.repeat(4);
             }
         });
@@ -34,6 +35,7 @@ const UI = {
 const Render = {
     dashboard() {
         const s = adminState.stats;
+        // Ensure keys match backend: total_revenue, total_orders, pending_orders
         document.getElementById('stat-revenue').textContent = appUtils.formatRupiah(s.total_revenue || 0);
         document.getElementById('stat-orders').textContent = s.total_orders || 0;
         document.getElementById('stat-pending').textContent = s.pending_orders || 0;
@@ -126,7 +128,7 @@ const Render = {
     verification() {
         const tbody = document.getElementById('admin-table-verification');
         if (!tbody) return;
-        tbody.innerHTML = '';
+        tbody.innerHTML = ''; // MANDATORY CLEAR FIRST
 
         if (!adminState.waitingOrders.length) {
             tbody.innerHTML = '<tr><td colspan="5" class="p-12 text-center text-gray-400 italic">Semua pembayaran telah diverifikasi.</td></tr>';
@@ -160,7 +162,7 @@ const Render = {
     payments() {
         const tbody = document.getElementById('admin-table-payments');
         if (!tbody) return;
-        tbody.innerHTML = '';
+        tbody.innerHTML = ''; // MANDATORY CLEAR FIRST
         adminState.payments.forEach(p => {
             const row = `
                 <tr class="hover:bg-gray-50 border-b border-gray-100">
@@ -183,17 +185,25 @@ const Render = {
     tickets() {
         const tbody = document.getElementById('admin-table-tickets');
         if (!tbody) return;
-        tbody.innerHTML = '';
+        tbody.innerHTML = ''; // MANDATORY CLEAR FIRST
         adminState.tickets.forEach(t => {
             const row = `
                 <tr class="hover:bg-gray-50 border-b border-gray-100">
                     <td class="p-4 font-mono font-bold text-xs text-primary-500">#${t.ticket_number}</td>
-                    <td class="p-4"><p class="font-bold text-xs">${t.user_name}</p><p class="text-[10px] text-gray-400">${t.user_email}</p></td>
-                    <td class="p-4"><p class="font-bold text-gray-800 text-xs">${t.subject}</p></td>
+                    <td class="p-4">
+                        <p class="font-bold text-xs">${t.user_name}</p>
+                        <p class="text-[10px] text-gray-400">${t.user_email}</p>
+                    </td>
+                    <td class="p-4">
+                        <p class="font-bold text-gray-800 text-xs">${t.subject}</p>
+                        <p class="text-[10px] text-gray-400 italic line-clamp-1">${t.message}</p>
+                        ${t.admin_reply ? `<div class="mt-1 p-2 bg-gray-50 border-l-2 border-primary-500 text-[9px] text-gray-600"><b>Admin:</b> ${t.admin_reply}</div>` : ''}
+                    </td>
                     <td class="p-4 text-center">
                         <span class="px-2 py-0.5 rounded text-[9px] font-black ${t.status === 'open' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}">${t.status.toUpperCase()}</span>
                     </td>
-                    <td class="p-4 text-right">
+                    <td class="p-4 text-right space-x-1">
+                        <button data-action="reply-ticket" data-id="${t.id}" data-subject="${t.subject}" class="bg-primary-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-primary-600 transition">BALAS</button>
                         <button data-action="close-ticket" data-id="${t.id}" class="bg-gray-800 text-white px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-black transition">CLOSE</button>
                     </td>
                 </tr>`;
@@ -241,6 +251,31 @@ const Render = {
             box.insertAdjacentHTML('beforeend', el);
         });
         box.scrollTop = box.scrollHeight;
+    },
+
+    files() {
+        const tbody = document.getElementById('admin-table-files');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (!adminState.files.length) {
+            tbody.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 italic">Belum ada berkas terupload.</td></tr>';
+            return;
+        }
+        adminState.files.forEach(f => {
+            const row = `
+                <tr class="hover:bg-gray-50 border-b border-gray-100">
+                    <td class="p-4 font-bold text-gray-800 text-xs">
+                        <a href="${f.url}" target="_blank" class="hover:underline text-blue-600">${f.name}</a>
+                    </td>
+                    <td class="p-4 text-[10px] text-gray-400 font-mono">${(f.size / 1024).toFixed(1)} KB</td>
+                    <td class="p-4 text-[10px] text-gray-400">${appUtils.formatDateShort(f.created_at)}</td>
+                    <td class="p-4 text-right space-x-2">
+                        <button data-action="copy-file-link" data-url="${f.url}" class="text-primary-600 font-bold text-[10px] hover:underline">COPY LINK</button>
+                        <button data-action="delete-file" data-id="${f.name}" class="text-red-600 font-bold text-[10px] hover:underline">HAPUS</button>
+                    </td>
+                </tr>`;
+            tbody.insertAdjacentHTML('beforeend', row);
+        });
     }
 };
 
@@ -272,6 +307,7 @@ const Actions = {
             Render.payments();
             Render.tickets();
             Render.verification();
+            await Actions.loadFiles();
         } catch (err) {
             console.error('Failed to load admin data:', err);
             appUtils.showToast('Gagal memuat data!', 'error');
@@ -290,6 +326,13 @@ const Actions = {
             const msgs = await appUtils.getUserMessages(userId);
             Render.messages(msgs);
         } catch (e) { console.error('Chat content error:', e); }
+    },
+
+    async loadFiles() {
+        try {
+            adminState.files = await appUtils.getAllAdminFiles();
+            Render.files();
+        } catch (e) { console.error('Files load error:', e); }
     }
 };
 
@@ -369,9 +412,53 @@ document.addEventListener('click', async (e) => {
     if (action === 'send-chat') sendMessageAdmin(btn);
 
     // Tickets
+    if (action === 'reply-ticket') {
+        const { value: reply } = await Swal.fire({
+            title: 'Balas Tiket Support',
+            text: `Membalas Tiket #${btn.dataset.id} - ${btn.dataset.subject}`,
+            input: 'textarea',
+            inputPlaceholder: 'Tulis balasan Anda di sini...',
+            showCancelButton: true,
+            confirmButtonColor: '#f97316',
+            confirmButtonText: 'Kirim Balasan'
+        });
+        if (reply) {
+            const res = await appUtils.replyTicket(id, reply);
+            if (res.success) {
+                appUtils.showToast('Balasan terkirim!', 'success');
+                Actions.loadAll();
+            } else {
+                Swal.fire('Gagal', res.message, 'error');
+            }
+        }
+    }
+
     if (action === 'close-ticket') {
-        await appUtils.updateTicketStatus(id, 'closed');
-        Actions.loadAll();
+        const res = await Swal.fire({
+            title: 'Tutup Tiket?',
+            text: 'Tiket akan ditandai sebagai SELESAI.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#1f2937'
+        });
+        if (res.isConfirmed) {
+            await appUtils.updateTicketStatus(id, 'closed');
+            Actions.loadAll();
+        }
+    }
+
+    // File Management (Merged)
+    if (action === 'delete-file') {
+        const res = await Swal.fire({ title: 'Hapus Berkas?', text: `Hapus "${id}" permanen?`, icon: 'warning', showCancelButton: true });
+        if (res.isConfirmed) {
+            await appUtils.deleteAdminFile(id);
+            Actions.loadFiles();
+        }
+    }
+    if (action === 'copy-file-link') {
+        const fullUrl = window.location.origin + btn.dataset.url;
+        appUtils.copyToClipboard(fullUrl);
+        appUtils.showToast('Link disalin!', 'success');
     }
 });
 
@@ -383,6 +470,8 @@ document.addEventListener('change', async (e) => {
         Actions.loadAll();
     }
 });
+
+
 
 // ─── HELPERS & FORM LOGIC ─────────────────────────────────────
 async function handleFormSubmit(e) {
@@ -533,6 +622,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mobileTrigger) mobileTrigger.onclick = toggleSidebar;
     if (mobileClose) mobileClose.onclick = toggleSidebar;
     if (overlay) overlay.onclick = toggleSidebar;
+
+    // File Upload Handler
+    const fileInp = document.getElementById('admin-file-input');
+    if (fileInp) {
+        fileInp.onchange = async () => {
+            const file = fileInp.files[0];
+            if (!file) return;
+            
+            const fd = new FormData();
+            fd.append('admin_file', file);
+            
+            Swal.fire({ title: 'Mengupload...', didOpen: () => Swal.showLoading() });
+            const res = await appUtils.uploadAdminFile(fd);
+            Swal.close();
+            
+            if (res.success) {
+                appUtils.showToast('✅ Berkas berhasil diupload!', 'success');
+                Actions.loadFiles();
+            } else {
+                Swal.fire('Gagal', res.message, 'error');
+            }
+            fileInp.value = ''; // Reset
+        };
+    }
 
     // Chat Auto Refresh
     setInterval(() => {

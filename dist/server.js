@@ -55,6 +55,7 @@ const ticket_routes_1 = __importDefault(require("./routes/ticket.routes"));
 const review_routes_1 = __importDefault(require("./routes/review.routes"));
 const payment_routes_1 = __importDefault(require("./routes/payment.routes"));
 const message_routes_1 = __importDefault(require("./routes/message.routes"));
+const admin_routes_1 = __importDefault(require("./routes/admin.routes"));
 const auth_middleware_1 = require("./middleware/auth.middleware");
 const response_1 = require("./utils/response");
 // ============================================================
@@ -119,6 +120,7 @@ apiRouter.use('/tickets', ticket_routes_1.default);
 apiRouter.use('/reviews', review_routes_1.default);
 apiRouter.use('/payments', payment_routes_1.default);
 apiRouter.use('/chat', message_routes_1.default);
+apiRouter.use('/admin', admin_routes_1.default);
 // Fix API Admin Stats Routing explicitly as requested
 apiRouter.get('/admin/stats', auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, order_controller_1.getOrderStats);
 // Register API router under /api

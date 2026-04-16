@@ -19,6 +19,7 @@ import ticketRoutes from './routes/ticket.routes';
 import reviewRoutes from './routes/review.routes';
 import paymentRoutes from './routes/payment.routes';
 import messageRoutes from './routes/message.routes';
+import adminRoutes from './routes/admin.routes';
 import { verifyToken, isAdmin } from './middleware/auth.middleware';
 import { errorHandler } from './middleware/error.middleware';
 import { sendResponse } from './utils/response';
@@ -97,6 +98,7 @@ apiRouter.use('/tickets', ticketRoutes);
 apiRouter.use('/reviews', reviewRoutes);
 apiRouter.use('/payments', paymentRoutes);
 apiRouter.use('/chat', messageRoutes);
+apiRouter.use('/admin', adminRoutes);
 
 // Fix API Admin Stats Routing explicitly as requested
 apiRouter.get('/admin/stats', verifyToken, isAdmin, getOrderStats);
