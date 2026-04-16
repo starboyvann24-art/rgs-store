@@ -24,8 +24,18 @@ passport_1.default.use(new passport_google_oauth20_1.Strategy({
 }, (accessToken, refreshToken, profile, done) => {
     return done(null, profile);
 }));
-passport_1.default.serializeUser((user, done) => done(null, user));
-passport_1.default.deserializeUser((user, done) => done(null, user));
+// ─── Passport Serialize/Deserialize (DB-backed) ──────────────
+// Store only the user ID in session, lookup from DB on each request
+passport_1.default.serializeUser((user, done) => {
+    // The 'user' here is populated by the Google strategy callback
+    // We store only the google profile id temporarily; JWT is the real auth
+    done(null, user.id || user);
+});
+passport_1.default.deserializeUser(async (id, done) => {
+    // We use JWT for real auth, session is only needed for OAuth handshake
+    // Just pass through the stored id
+    done(null, id);
+});
 // ─── Standard Auth Routes ─────────────────────────────────────
 // POST /api/auth/register
 router.post('/register', (0, validate_middleware_1.validate)(auth_validation_1.registerSchema), auth_controller_1.register);

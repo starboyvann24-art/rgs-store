@@ -83,12 +83,20 @@ const apiLimiter = (0, express_rate_limit_1.default)({
 });
 app.use(express_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
+// ─── TRUST PROXY (MANDATORY for cPanel / Reverse Proxy) ─────
+// Without this, express-session cookie.secure won't work behind HTTPS proxy
+app.set('trust proxy', 1);
 // ─── SESSION & PASSPORT (for Google OAuth) ───────────────────
 app.use((0, express_session_1.default)({
     secret: process.env.SESSION_SECRET || 'rgs_store_session_secret_2026',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 1 day
+    proxy: true,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production', // HTTPS only in prod
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 24 * 60 * 60 * 1000 // 1 day
+    }
 }));
 app.use(passport_1.default.initialize());
 app.use(passport_1.default.session());
@@ -150,7 +158,7 @@ async function startServer() {
             console.error('⚠️ WARNING: Failed to connect to MySQL database on boot. Endpoints will fail, but server will remain active.');
         }
         // Auto-create necessary folders
-        const dirs = ['uploads', 'qris', 'proofs', 'chat_files', 'avatars'];
+        const dirs = ['uploads', 'uploads/admin', 'qris', 'proofs', 'chat_files', 'avatars'];
         dirs.forEach(dir => {
             const p = path_1.default.join(__dirname, '..', 'public', dir);
             if (!fs_1.default.existsSync(p)) {

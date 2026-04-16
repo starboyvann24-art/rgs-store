@@ -37,14 +37,25 @@ router.get('/:id/invoice', auth_middleware_1.verifyToken, async (req, res) => {
         const userId = req.user.id;
         const role = req.user.role;
         const db2 = require('../config/database').default;
-        const query = role === 'admin'
-            ? 'SELECT orders.*, products.name as product_name, products.price as original_product_price FROM orders JOIN products ON orders.product_id = products.id WHERE orders.id = ? LIMIT 1'
-            : 'SELECT orders.*, products.name as product_name, products.price as original_product_price FROM orders JOIN products ON orders.product_id = products.id WHERE orders.id = ? AND orders.user_id = ? LIMIT 1';
+        // Use JOIN to fetch real product name from products table
+        const baseQuery = `
+      SELECT 
+        o.*,
+        COALESCE(p.name, o.product_name) AS product_name_display,
+        p.price AS product_original_price
+      FROM orders o
+      LEFT JOIN products p ON o.product_id = p.id
+      WHERE o.id = ?
+    `;
+        const adminQuery = baseQuery + ' LIMIT 1';
+        const ownerQuery = baseQuery + ' AND o.user_id = ? LIMIT 1';
         const params = role === 'admin' ? [orderId] : [orderId, userId];
+        const query = role === 'admin' ? adminQuery : ownerQuery;
         const [rows] = await db2.query(query, params);
         const order = rows[0];
         if (!order) {
-            res.status(404).json({ success: false, message: 'Order not found' });
+            // Return JSON 404 — never crash/timeout
+            res.status(404).json({ success: false, message: 'Order tidak ditemukan atau Anda tidak berhak mengaksesnya.' });
             return;
         }
         const { generateInvoicePDF } = require('../utils/pdf');
@@ -52,7 +63,7 @@ router.get('/:id/invoice', auth_middleware_1.verifyToken, async (req, res) => {
             order_number: order.order_number,
             customer_name: order.user_name,
             customer_email: order.user_email,
-            product_name: order.product_name,
+            product_name: order.product_name_display || order.product_name || 'Produk Digital',
             qty: order.qty,
             unit_price: order.unit_price,
             total_price: order.total_price,
@@ -60,15 +71,18 @@ router.get('/:id/invoice', auth_middleware_1.verifyToken, async (req, res) => {
             status: order.status,
             created_at: order.created_at
         });
+        // Set correct PDF response headers
         res.set({
             'Content-Type': 'application/pdf',
-            'Content-Disposition': `attachment; filename="Invoice-${order.order_number}.pdf"`,
-            'Content-Length': pdfBuffer.length
+            'Content-Disposition': `attachment; filename="Invoice-RGS-${order.order_number}.pdf"`,
+            'Content-Length': pdfBuffer.length,
+            'Cache-Control': 'no-cache'
         });
         res.send(pdfBuffer);
     }
     catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        console.error('Invoice generation error:', err);
+        res.status(500).json({ success: false, message: 'Gagal membuat invoice: ' + (err.message || 'Server error') });
     }
 });
 exports.default = router;

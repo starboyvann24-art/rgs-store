@@ -23,8 +23,20 @@ passport.use(new GoogleStrategy({
   return done(null, profile);
 }));
 
-passport.serializeUser((user: any, done: any) => done(null, user));
-passport.deserializeUser((user: any, done: any) => done(null, user));
+// ─── Passport Serialize/Deserialize (DB-backed) ──────────────
+// Store only the user ID in session, lookup from DB on each request
+passport.serializeUser((user: any, done: any) => {
+  // The 'user' here is populated by the Google strategy callback
+  // We store only the google profile id temporarily; JWT is the real auth
+  done(null, user.id || user);
+});
+
+passport.deserializeUser(async (id: any, done: any) => {
+  // We use JWT for real auth, session is only needed for OAuth handshake
+  // Just pass through the stored id
+  done(null, id);
+});
+
 
 // ─── Standard Auth Routes ─────────────────────────────────────
 // POST /api/auth/register

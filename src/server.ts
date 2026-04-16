@@ -55,12 +55,21 @@ const apiLimiter = rateLimit({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// ─── TRUST PROXY (MANDATORY for cPanel / Reverse Proxy) ─────
+// Without this, express-session cookie.secure won't work behind HTTPS proxy
+app.set('trust proxy', 1);
+
 // ─── SESSION & PASSPORT (for Google OAuth) ───────────────────
 app.use(session({
   secret: process.env.SESSION_SECRET || 'rgs_store_session_secret_2026',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 1 day
+  proxy: true,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // HTTPS only in prod
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 24 * 60 * 60 * 1000 // 1 day
+  }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -135,7 +144,7 @@ async function startServer(): Promise<void> {
     }
 
     // Auto-create necessary folders
-    const dirs = ['uploads', 'qris', 'proofs', 'chat_files', 'avatars'];
+    const dirs = ['uploads', 'uploads/admin', 'qris', 'proofs', 'chat_files', 'avatars'];
     dirs.forEach(dir => {
       const p = path.join(__dirname, '..', 'public', dir);
       if (!fs.existsSync(p)) {
