@@ -17,8 +17,8 @@ const upload_middleware_1 = require("../middleware/upload.middleware");
 const router = (0, express_1.Router)();
 // ─── Setup Passport Google Strategy ──────────────────────────
 passport_1.default.use(new passport_google_oauth20_1.Strategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    clientID: process.env.GOOGLE_CLIENT_ID || 'dummy_client_id_to_prevent_startup_crash',
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'dummy_client_secret',
     callbackURL: 'https://rgs-store.my.id/api/auth/google/callback',
     proxy: true
 }, (accessToken, refreshToken, profile, done) => {

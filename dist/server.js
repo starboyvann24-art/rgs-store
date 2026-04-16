@@ -152,8 +152,7 @@ async function startServer() {
         // Test database connection
         const dbOk = await (0, database_1.testConnection)();
         if (!dbOk) {
-            console.error('❌ Failed to connect to database. Check your .env configuration.');
-            process.exit(1);
+            console.error('⚠️ WARNING: Failed to connect to MySQL database on boot. Endpoints will fail, but server will remain active.');
         }
         // Auto-create necessary folders
         const dirs = ['uploads', 'qris', 'proofs', 'chat_files', 'avatars'];
@@ -164,8 +163,10 @@ async function startServer() {
                 console.log(`   📂 Created directory: public/${dir}`);
             }
         });
-        // Initialize database tables
-        await (0, database_1.initializeDatabase)();
+        // Initialize database tables ONLY if DB is connected
+        if (dbOk) {
+            await (0, database_1.initializeDatabase)();
+        }
         // Start listening
         app.listen(PORT, () => {
             console.log('');
@@ -180,8 +181,11 @@ async function startServer() {
         });
     }
     catch (error) {
-        console.error('❌ Failed to start server:', error);
-        process.exit(1);
+        console.error('❌ Failed to start server gracefully, running in degraded mode:', error);
+        // Degraded fallback listening if something threw unexpected
+        app.listen(PORT, () => {
+            console.log(`⚠️ RUNNING IN DEGRADED 503-FALLBACK MODE ON PORT ${PORT}`);
+        });
     }
 }
 startServer();

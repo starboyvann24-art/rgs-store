@@ -15,8 +15,8 @@ const router: Router = Router();
 
 // ─── Setup Passport Google Strategy ──────────────────────────
 passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID!,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+  clientID: process.env.GOOGLE_CLIENT_ID || 'dummy_client_id_to_prevent_startup_crash',
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'dummy_client_secret',
   callbackURL: 'https://rgs-store.my.id/api/auth/google/callback',
   proxy: true
 }, (accessToken: any, refreshToken: any, profile: any, done: any) => {
