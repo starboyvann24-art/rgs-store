@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="RGS STORE - Marketplace produk digital premium terlengkap.">
+    <meta name="description" content="RGS STORE - Riwayat pesanan Anda.">
     <meta name="keywords" content="Netflix, Spotify, Discord Nitro, Pterodactyl">
     <meta name="robots" content="index, follow">
-    <meta property="og:title" content="RGS STORE — Premium Digital">
+    <meta property="og:title" content="Pesanan Saya - RGS STORE">
     <title>Pesanan Saya - RGS STORE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="js/tailwind-config.js"></script>
@@ -14,16 +14,16 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body class="bg-slate-950 text-slate-200 font-sans antialiased min-h-screen">
+<body class="bg-gray-50 text-gray-800 font-sans antialiased min-h-screen">
 
     <!-- Navbar -->
-    <nav class="glass-nav sticky top-0 z-50 border-b border-white/10">
+    <nav class="bg-white sticky top-0 z-50 border-b border-gray-200 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
             <a href="index.html" class="flex items-center gap-2">
                 <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center shadow-lg shadow-orange-500/20">
                     <span class="text-white font-black text-xs">RGS</span>
                 </div>
-                <span class="font-bold text-xl tracking-tight text-white">RGS<span class="text-orange-500">STORE</span></span>
+                <span class="font-bold text-xl tracking-tight text-gray-900">RGS<span class="text-orange-500">STORE</span></span>
             </a>
             <div id="nav-auth-container"></div>
         </div>
@@ -32,11 +32,11 @@
     <main class="max-w-6xl mx-auto px-4 py-12">
         <div class="flex flex-col md:flex-row items-end justify-between gap-4 mb-10">
             <div>
-                <h1 class="text-4xl font-black text-white">Pesanan Saya</h1>
-                <p class="text-slate-400 mt-2">Pantau status dan ambil detail produk pesanan Anda</p>
+                <h1 class="text-3xl md:text-4xl font-black text-gray-900">Pesanan Saya</h1>
+                <p class="text-gray-500 mt-2">Pantau status dan ambil detail produk pesanan Anda</p>
             </div>
             <div class="flex gap-2">
-                <a href="index.html" class="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm font-bold hover:bg-white/10 transition">Kembali Belanja</a>
+                <a href="index.html" class="px-5 py-2.5 rounded-xl bg-gray-100 border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-200 transition">Kembali Belanja</a>
             </div>
         </div>
 
@@ -44,26 +44,26 @@
             <div class="w-12 h-12 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin"></div>
         </div>
 
-        <div id="orders-container" class="hidden grid grid-cols-1 gap-6">
+        <div id="orders-container" class="hidden" style="display:none; flex-direction:column; gap:20px;">
             <!-- Injected by my-orders.js -->
         </div>
 
-        <div id="orders-empty" class="hidden flex flex-col items-center justify-center py-24 glass-card rounded-3xl border border-white/10">
-            <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6">
-                <svg class="w-10 h-10 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+        <div id="orders-empty" class="hidden flex flex-col items-center justify-center py-24 bg-white rounded-2xl border border-gray-200 shadow-sm">
+            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
             </div>
-            <h3 class="text-xl font-bold text-white">Belum Ada Pesanan</h3>
-            <p class="text-slate-500 mt-2 mb-8">Anda belum melakukan transaksi apapun di toko kami.</p>
-            <a href="index.html" class="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-2xl shadow-xl shadow-orange-500/20 transition-all active:scale-95">Mulai Belanja</a>
+            <h3 class="text-xl font-bold text-gray-900">Belum Ada Pesanan</h3>
+            <p class="text-gray-500 mt-2 mb-8">Anda belum melakukan transaksi apapun di toko kami.</p>
+            <a href="index.html" class="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-2xl shadow-lg shadow-orange-500/20 transition-all active:scale-95">Mulai Belanja</a>
         </div>
     </main>
 
     <script src="js/app.js"></script>
     <script src="js/my-orders.js"></script>
 <!-- Floating WhatsApp -->
-<a href="https://wa.me/6281234567890" target="_blank" class="wa-float" aria-label="WhatsApp CS">
+<a href="https://wa.me/62882016259591" target="_blank" class="wa-float" aria-label="WhatsApp CS">
     <svg fill="#ffffff" width="30px" height="30px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12.0003 2.00024C6.47745 2.00024 2.0003 6.4774 2.0003 12.0002C2.0003 13.7663 2.45863 15.4267 3.25992 16.8529L2.0003 22.0003L7.29177 20.7602C8.74106 21.5458 10.3164 22.0003 12.0003 22.0003C17.5232 22.0003 22.0003 17.5231 22.0003 12.0002C22.0003 6.4774 17.5232 2.00024 12.0003 2.00024ZM11.0003 7.00024H13.0003C13.2764 7.00024 13.5003 7.2241 13.5003 7.50024V9.00024C13.5003 9.27638 13.2764 9.50024 13.0003 9.50024H12.0003V11.0002H13.0003C13.5526 11.0002 14.0003 11.4479 14.0003 12.0002V15.0002C14.0003 15.2764 13.7764 15.5002 13.5003 15.5002H11.0003C10.7242 15.5002 10.5003 15.2764 10.5003 15.0002V13.5002H11.5003V12.0002H10.5003C9.94801 12.0002 9.5003 11.5525 9.5003 11.0002V8.00024C9.5003 7.44796 9.94801 7.00024 10.5003 7.00024H11.0003Z"/>
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
     </svg>
 </a>
 </body>

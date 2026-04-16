@@ -230,7 +230,7 @@ const Actions = {
             ]);
             adminState.products = products || [];
             adminState.orders = orders || [];
-            adminState.stats = stats || {};
+            adminState.stats = (stats && stats.data) ? stats.data : (stats || {});
             adminState.payments = payments || [];
             adminState.tickets = tickets || [];
             adminState.waitingOrders = waiting || [];
@@ -287,7 +287,8 @@ document.addEventListener('click', async (e) => {
         if (p) openProductModal(p);
     }
     if (action === 'delete-product') {
-        if (confirm(`Hapus produk "${btn.dataset.name}"?`)) {
+        const result = await Swal.fire({ title: 'Hapus Produk?', text: `Yakin hapus "${btn.dataset.name}"?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#6b7280', confirmButtonText: 'Ya, Hapus!' });
+        if (result.isConfirmed) {
             await appUtils.deleteProduct(id);
             Actions.loadAll();
         }
@@ -299,7 +300,8 @@ document.addEventListener('click', async (e) => {
         if (p) openPaymentModal(p);
     }
     if (action === 'delete-payment') {
-        if (confirm('Hapus metode pembayaran ini?')) {
+        const result = await Swal.fire({ title: 'Hapus Metode Pembayaran?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#6b7280', confirmButtonText: 'Ya, Hapus!' });
+        if (result.isConfirmed) {
             await appUtils.deletePaymentMethod(id);
             Actions.loadAll();
         }
@@ -348,14 +350,15 @@ document.addEventListener('click', async (e) => {
 
     // --- VERIFICATION ACTIONS ---
     if (action === 'verify-confirm') {
-        if (confirm('Konfirmasi pembayaran ini dan pindahkan ke "Sedang Diproses"?')) {
+        const result = await Swal.fire({ title: 'Konfirmasi Pembayaran?', text: 'Pindahkan pesanan ini ke status "Sedang Diproses"?', icon: 'question', showCancelButton: true, confirmButtonColor: '#f97316', cancelButtonColor: '#6b7280', confirmButtonText: 'Ya, Konfirmasi!' });
+        if (result.isConfirmed) {
             await appUtils.updateOrderStatus(id, 'processing');
             appUtils.showToast('✅ Pembayaran dikonfirmasi!', 'success');
             Actions.loadAll();
         }
     }
     if (action === 'verify-complete') {
-        const creds = prompt("Masukkan Kredensial/Detail Pesanan (Akun/Link):");
+        const { value: creds } = await Swal.fire({ title: 'Selesaikan Pesanan', input: 'textarea', inputLabel: 'Masukkan Kredensial/Detail Pesanan:', inputPlaceholder: 'Email: xxx\nPass: xxx', showCancelButton: true, confirmButtonColor: '#f97316', confirmButtonText: 'Kirim & Selesaikan' });
         if (creds) {
             await appUtils.deliverOrder(id, creds);
             await appUtils.updateOrderStatus(id, 'success');
@@ -405,17 +408,6 @@ async function handleFormSubmit(e) {
             if (res.success) {
                 appUtils.showToast('✅ Metode Pembayaran Tersimpan!', 'success');
                 closePaymentModal(); Actions.loadAll();
-            }
-        } else if (formId === 'form-delivery') {
-            // Processing Delivery via Modal
-            const orderId = document.getElementById('delivery-order-id').value;
-            const creds = document.getElementById('delivery-credentials').value;
-            const res = await appUtils.deliverOrder(orderId, creds);
-            if (res && res.success) {
-                appUtils.showToast('✅ Produk Berhasil Dikirim (Email ter-trigger)!', 'success');
-                closeDeliveryModal(); Actions.loadAll();
-            } else {
-                appUtils.showToast(res?.message || 'Gagal mengirim produk', 'error');
             }
         }
     } catch (err) { Swal.fire("Error", "ERROR: " + err.message, "error"); }
@@ -549,7 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Bind Form Submits
     document.getElementById('formTambahProduk').onsubmit = handleFormSubmit;
     document.getElementById('form-payment-method').onsubmit = handleFormSubmit;
-    document.getElementById('form-delivery').onsubmit = handleFormSubmit;
+    // form-delivery removed — delivery handled via SweetAlert2 modal
     
     // Auto Refresh for Chat
     setInterval(() => {

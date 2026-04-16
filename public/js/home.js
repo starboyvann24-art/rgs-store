@@ -40,10 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const disc       = p.discount > 0 ? `<div class="discount-badge">-${p.discount}%</div>` : '';
                 
                 // Placeholder image if image_url is missing
-                const imgSrc     = p.image_url || 'https://placehold.co/400x400/1e293b/22c55e?text=RGS+STORE';
-                
-                const reviewData = await store.getProductReviews(p.id);
-                const stars      = store.renderStars(reviewData.summary.avg_rating, reviewData.summary.total);
+                const imgSrc     = p.image_url || 'https://placehold.co/400x400/f97316/ffffff?text=RGS+STORE';
 
                 productList.insertAdjacentHTML('beforeend', `
                     <div class="product-card fade-up" style="animation-delay:${i * 0.05}s" onclick="location.href='/product.html?id=${p.id}'">
@@ -54,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="product-card-body">
                             <div class="product-cat">${p.category}</div>
                             <div class="product-name">${p.name}</div>
-                            <div style="margin-bottom:10px">${stars}</div>
+                            <div class="product-stock" style="font-size:11px;color:${p.stock < 10 ? '#ef4444' : '#64748b'};margin-bottom:8px;font-weight:600;">Stok: ${p.stock}</div>
                             <div class="product-price-row" style="display:flex; flex-direction:column; gap:2px">
                                 ${origPrice ? `<div class="price-was">${origPrice}</div>` : ''}
                                 <div class="price-now">${finalPrice}</div>

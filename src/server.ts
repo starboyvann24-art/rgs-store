@@ -63,17 +63,9 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// ─── ADMIN PROTECTION (Before Static) ────────────────────────
-// Protect /admin.html from unauthorized access
-app.get(['/admin', '/admin.html'], verifyToken, isAdmin, (req, res, next) => {
-  next(); // Allow if admin
-});
-
-// Fallback for non-admin attempts (since static matches after)
-app.use(['/admin', '/admin.html'], (req, res, next) => {
-  // If we reach here without verifyToken/isAdmin passing, it's either unauth or non-admin
-  res.redirect('/index.html');
-});
+// ─── ADMIN PROTECTION ────────────────────────────────────────
+// Admin access is guarded client-side via admin.js requireAdmin()
+// and all admin API endpoints use verifyToken + isAdmin middleware.
 
 // ─── STATIC FILES (Frontend) ─────────────────────────────────
 // Serve all files from /public directory (HTML, CSS, JS, images)
