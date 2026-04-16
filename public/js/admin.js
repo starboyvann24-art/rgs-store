@@ -1,665 +1,888 @@
 /**
- * RGS STORE — ADMIN DASHBOARD V6 (SUPER PREMIUM)
- * Total Rewrite: Zero Bug Policy, Anti-Duplicate, Real-time Stats.
+ * RGS STORE — Admin Dashboard V9 (TOTAL REBUILD)
+ * Zero-bug, anti-spam, stats synced, file-picker integrated.
  */
 
-const adminState = {
-    products: [],
-    orders: [],
-    payments: [],
-    tickets: [],
+'use strict';
+
+// ─────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────
+const AdminState = {
+    products:      [],
+    orders:        [],
     waitingOrders: [],
-    stats: {},
+    payments:      [],
+    tickets:       [],
+    files:         [],
+    chatUsers:     [],
+    stats:         {},
     currentChatUserId: null,
-    chatUsers: [],
-    files: []
+    selectedFileUrl: null,
+    selectedFileName: null,
 };
 
-// ─── SKELETON LOADERS ─────────────────────────────────────────
-const UI = {
-    showSkeletons(targetIds) {
-        const skelRow = `<tr><td colspan="10" class="p-4"><div class="h-10 bg-gray-100 rounded animate-pulse w-full"></div></td></tr>`;
-        targetIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (!el) return;
-            if (id.startsWith('stat-')) {
-                el.innerHTML = '<span class="animate-pulse text-gray-300">...</span>';
-            } else if (id.startsWith('admin-table-') || id === 'chat-user-list' || id === 'admin-table-files') {
-                el.innerHTML = skelRow.repeat(4);
-            }
-        });
+// ─────────────────────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────────────────────
+const fmt = {
+    rupiah(n) {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(parseInt(n) || 0);
+    },
+    date(d) {
+        if (!d) return '—';
+        return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    },
+    dateShort(d) {
+        if (!d) return '—';
+        return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    },
+    size(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+    },
+    statusBadge(status) {
+        const map = {
+            pending:               '<span class="badge badge-pending">⏳ Pending</span>',
+            waiting_confirmation:  '<span class="badge badge-waiting">🔍 Menunggu Verif.</span>',
+            processing:            '<span class="badge badge-processing">🔄 Proses</span>',
+            success:               '<span class="badge badge-success">✅ Selesai</span>',
+            failed:                '<span class="badge badge-failed">❌ Gagal</span>',
+            cancelled:             '<span class="badge badge-cancelled">🚫 Batal</span>',
+            open:                  '<span class="badge badge-pending">📭 Open</span>',
+            closed:                '<span class="badge badge-cancelled">🔒 Closed</span>',
+        };
+        return map[status] || `<span class="badge">${status}</span>`;
     }
 };
 
-// ─── RENDERERS (STRICT DOM CLEARING) ──────────────────────────
-const Render = {
-    dashboard() {
-        const s = adminState.stats;
-        // Match IDs in admin.html
-        const revEl = document.getElementById('stat-totalRevenue');
-        const ordEl = document.getElementById('stat-totalOrders');
-        const actEl = document.getElementById('stat-activeProducts');
-        const tktEl = document.getElementById('stat-tickets');
+function el(id) { return document.getElementById(id); }
 
-        if (revEl) revEl.textContent = appUtils.formatRupiah(s.total_revenue || 0);
-        if (ordEl) ordEl.textContent = s.total_orders || 0;
-        if (actEl) actEl.textContent = adminState.products.length || 0;
-        if (tktEl) tktEl.textContent = adminState.tickets.filter(t => t.status === 'open').length || 0;
+function setHTML(id, html) {
+    const elem = el(id);
+    if (elem) elem.innerHTML = html; // MANDATORY CLEAR + SET
+}
+
+function showToast(msg, type = 'success') {
+    try { appUtils.showToast(msg, type); } catch(e) { console.log(msg); }
+}
+
+function confirmDialog(title, text) {
+    return Swal.fire({
+        title, text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ff9d00',
+        cancelButtonColor: '#1a2235',
+        confirmButtonText: 'Ya, Lanjutkan!',
+        background: '#0a0e17',
+        color: '#e2e8f0'
+    });
+}
+
+// ─────────────────────────────────────────────────────────────────
+// RENDERERS (each one ALWAYS clears innerHTML first)
+// ─────────────────────────────────────────────────────────────────
+const Render = {
+    stats() {
+        const s = AdminState.stats;
+        setHTML('stat-revenue',  fmt.rupiah(s.total_revenue || 0));
+        setHTML('stat-orders',   s.total_orders  || '0');
+        setHTML('stat-pending',  s.pending_orders || '0');
+        setHTML('stat-products', AdminState.products.length);
+    },
+
+    dashboardRecentOrders() {
+        const tbody = el('dash-recent-orders');
+        if (!tbody) return;
+        tbody.innerHTML = ''; // CLEAR
+        const recent = AdminState.orders.slice(0, 6);
+        if (!recent.length) {
+            tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><i class="fa-solid fa-inbox"></i><br>Belum ada pesanan</td></tr>';
+            return;
+        }
+        recent.forEach(o => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><span style="color:#fff; font-weight:700; font-size:0.8rem;">#${o.order_number}</span><br><span style="color:#475569; font-size:0.7rem;">${fmt.dateShort(o.created_at)}</span></td>
+                <td style="color:#94a3b8; font-size:0.78rem;">${o.user_name || '—'}</td>
+                <td style="color:var(--neon-orange); font-weight:700; font-size:0.82rem;">${fmt.rupiah(o.total_price)}</td>
+                <td>${fmt.statusBadge(o.status)}</td>`;
+            tbody.appendChild(tr);
+        });
+    },
+
+    dashboardWaiting() {
+        const tbody = el('dash-waiting-orders');
+        if (!tbody) return;
+        tbody.innerHTML = ''; // CLEAR
+        if (!AdminState.waitingOrders.length) {
+            tbody.innerHTML = '<tr><td colspan="3" class="empty-state"><i class="fa-solid fa-check-circle"></i><br>Tidak ada yg menunggu</td></tr>';
+            return;
+        }
+        AdminState.waitingOrders.forEach(o => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><span style="color:#fff; font-weight:700; font-size:0.8rem;">#${o.order_number}</span></td>
+                <td style="color:#94a3b8; font-size:0.78rem;">${o.user_name || '—'}</td>
+                <td style="text-align:right;"><button class="btn-sm-primary" onclick="AdminV9.openDeliveryModal('${o.id}')">Proses</button></td>`;
+            tbody.appendChild(tr);
+        });
     },
 
     products() {
-        const tbody = document.getElementById('admin-table-products');
+        const tbody = el('table-products');
         if (!tbody) return;
-        tbody.innerHTML = ''; // MANDATORY CLEAR
-        
-        if (!adminState.products.length) {
-            tbody.innerHTML = '<tr><td colspan="6" class="p-12 text-center text-gray-400 italic">Belum ada produk terdaftar.</td></tr>';
+        tbody.innerHTML = ''; // CRITICAL CLEAR — ANTI SPAM
+        if (!AdminState.products.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fa-solid fa-boxes-stacked"></i><br>Belum ada produk</td></tr>';
             return;
         }
-
-        adminState.products.forEach((p, idx) => {
-            const row = `
-                <tr class="hover:bg-gray-50/80 border-b border-gray-100 transition-colors">
-                    <td class="p-4 text-center text-gray-400 font-mono text-[10px]">${idx + 1}</td>
-                    <td class="p-4">
-                        <div class="flex items-center gap-3">
-                            <img src="${p.image_url || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-lg border object-cover shadow-sm">
-                            <div>
-                                <p class="font-bold text-gray-800 line-clamp-1">${p.name}</p>
-                                <span class="bg-primary-50 text-primary-600 px-2 py-0.5 rounded text-[9px] uppercase font-black">${p.category}</span>
-                            </div>
+        AdminState.products.forEach((p, idx) => {
+            const diskont = parseFloat(p.discount) || 0;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="color:#475569; font-size:0.75rem; font-weight:700;">${idx + 1}</td>
+                <td>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img src="${p.image_url || 'https://via.placeholder.com/40'}" style="width:38px; height:38px; border-radius:8px; object-fit:cover; border:1px solid rgba(255,255,255,0.08);">
+                        <div>
+                            <div style="font-weight:700; color:#fff; font-size:0.85rem;">${p.name}</div>
+                            <span style="font-size:0.65rem; background:rgba(255,157,0,0.1); color:var(--neon-orange); padding:2px 8px; border-radius:99px;">${p.category}</span>
                         </div>
-                    </td>
-                    <td class="p-4"><span class="font-bold text-primary-600">${appUtils.formatRupiah(p.final_price)}</span></td>
-                    <td class="p-4 text-center font-bold text-xs text-orange-500">${p.discount}%</td>
-                    <td class="p-4 font-mono ${p.stock < 5 ? 'text-red-500 font-black scale-110' : 'text-gray-600'}">${p.stock}</td>
-                    <td class="p-4 text-right space-x-2">
-                        <button data-action="edit-product" data-id="${p.id}" class="text-blue-600 font-bold text-[10px] hover:underline">EDIT</button>
-                        <button data-action="delete-product" data-id="${p.id}" data-name="${p.name}" class="text-red-600 font-bold text-[10px] hover:underline">HAPUS</button>
-                    </td>
-                </tr>`;
-            tbody.insertAdjacentHTML('beforeend', row);
+                    </div>
+                </td>
+                <td style="font-weight:800; color:var(--neon-cyan);">${fmt.rupiah(p.final_price)}</td>
+                <td style="color:${diskont > 0 ? 'var(--neon-orange)' : '#475569'}; font-weight:700;">${diskont > 0 ? diskont + '%' : '—'}</td>
+                <td style="font-weight:700; color:${p.stock < 5 ? 'var(--neon-red)' : '#e2e8f0'};">${p.stock}</td>
+                <td>${p.is_active != 0 ? '<span class="badge badge-active">● Aktif</span>' : '<span class="badge badge-inactive">● Nonaktif</span>'}</td>
+                <td style="text-align:right; white-space:nowrap;">
+                    <button class="btn-sm-edit" onclick="AdminV9.editProduct('${p.id}')">Edit</button>
+                    <button class="btn-danger" onclick="AdminV9.deleteProduct('${p.id}', '${p.name.replace(/'/g,"\\'")}')">Hapus</button>
+                </td>`;
+            tbody.appendChild(tr);
         });
     },
 
     orders() {
-        const tbody = document.getElementById('admin-table-orders');
+        const tbody = el('table-orders');
         if (!tbody) return;
-        tbody.innerHTML = ''; // MANDATORY CLEAR
-
-        if (!adminState.orders.length) {
-            tbody.innerHTML = '<tr><td colspan="7" class="p-12 text-center text-gray-400 italic">Tidak ada riwayat pesanan.</td></tr>';
+        tbody.innerHTML = ''; // CRITICAL CLEAR — ANTI SPAM
+        if (!AdminState.orders.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fa-solid fa-receipt"></i><br>Belum ada pesanan</td></tr>';
             return;
         }
-
-        adminState.orders.forEach(o => {
-            const isSuccess = o.status === 'success';
-            const row = `
-                <tr class="hover:bg-gray-50 border-b border-gray-100">
-                    <td class="p-4">
-                        <p class="font-black text-gray-900">#${o.order_number}</p>
-                        <p class="text-[10px] text-gray-400 font-medium">${appUtils.formatDateShort(o.created_at)}</p>
-                    </td>
-                    <td class="p-4">
-                        <p class="font-bold text-gray-700 text-xs">${o.user_name}</p>
-                        <p class="text-[10px] text-gray-400">${o.user_email}</p>
-                    </td>
-                    <td class="p-4 text-xs font-medium">
-                        <span class="text-gray-800">${o.product_name}</span> 
-                        <span class="text-gray-400">×${o.qty}</span>
-                    </td>
-                    <td class="p-4 font-bold text-primary-600">${appUtils.formatRupiah(o.total_price)}</td>
-                    <td class="p-4">
-                        ${o.credentials ? 
-                            `<div class="max-w-[140px] truncate bg-green-50 text-green-700 border border-green-100 px-2 py-1 rounded text-[10px] font-mono font-bold" title="${o.credentials}">Sent: ${o.credentials}</div>` : 
-                            `<button data-action="open-delivery-modal" data-id="${o.id}" class="bg-primary-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-primary-600 transition shadow-sm">KIRIM PRODUK</button>`
-                        }
-                    </td>
-                    <td class="p-4">
-                        <select data-action="update-order-status" data-id="${o.id}" class="text-[10px] border rounded bg-white p-1 font-bold outline-none focus:ring-1 focus:ring-primary-400">
-                            <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Pending</option>
-                            <option value="processing" ${o.status === 'processing' ? 'selected' : ''}>Processing</option>
-                            <option value="success" ${o.status === 'success' ? 'selected' : ''}>Success</option>
-                            <option value="failed" ${o.status === 'failed' ? 'selected' : ''}>Failed</option>
-                            <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-                        </select>
-                    </td>
-                </tr>`;
-            tbody.insertAdjacentHTML('beforeend', row);
+        AdminState.orders.forEach(o => {
+            const tr = document.createElement('tr');
+            const credHTML = o.credentials
+                ? `<span style="display:inline-block; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; background:rgba(0,255,136,0.08); color:var(--neon-green); padding:3px 8px; border-radius:6px; font-size:0.72rem;" title="${o.credentials}">✓ ${o.credentials}</span>`
+                : `<button class="btn-sm-primary" onclick="AdminV9.openDeliveryModal('${o.id}')">Kirim Produk</button>`;
+            tr.innerHTML = `
+                <td>
+                    <div style="font-weight:800; color:#fff;">#${o.order_number}</div>
+                    <div style="font-size:0.7rem; color:#475569;">${fmt.dateShort(o.created_at)}</div>
+                </td>
+                <td>
+                    <div style="font-weight:600; font-size:0.82rem;">${o.user_name || '—'}</div>
+                    <div style="font-size:0.7rem; color:#475569;">${o.user_email || ''}</div>
+                </td>
+                <td style="font-size:0.82rem;">${o.product_name || '—'} <span style="color:#475569;">×${o.qty}</span></td>
+                <td style="font-weight:800; color:var(--neon-orange);">${fmt.rupiah(o.total_price)}</td>
+                <td style="font-size:0.75rem; color:#64748b;">${o.payment_method || '—'}</td>
+                <td>${credHTML}</td>
+                <td>
+                    <select style="background:var(--bg-card); border:1px solid rgba(255,255,255,0.08); border-radius:7px; color:#e2e8f0; padding:4px 8px; font-size:0.75rem; outline:none; cursor:pointer;"
+                        onchange="AdminV9.updateStatus('${o.id}', this.value)">
+                        <option value="pending" ${o.status==='pending'?'selected':''}>Pending</option>
+                        <option value="processing" ${o.status==='processing'?'selected':''}>Processing</option>
+                        <option value="success" ${o.status==='success'?'selected':''}>Selesai</option>
+                        <option value="failed" ${o.status==='failed'?'selected':''}>Gagal</option>
+                        <option value="cancelled" ${o.status==='cancelled'?'selected':''}>Batal</option>
+                    </select>
+                </td>`;
+            tbody.appendChild(tr);
         });
     },
 
     verification() {
-        const tbody = document.getElementById('admin-table-verification');
+        const tbody = el('table-verification');
         if (!tbody) return;
-        tbody.innerHTML = ''; // MANDATORY CLEAR
+        tbody.innerHTML = ''; // CRITICAL CLEAR — ANTI SPAM
+        // Update badge
+        const badge = el('badge-verification');
+        if (badge) badge.textContent = AdminState.waitingOrders.length;
 
-        if (!adminState.waitingOrders.length) {
-            tbody.innerHTML = '<tr><td colspan="5" class="p-12 text-center text-gray-400 italic">Semua pembayaran telah diverifikasi.</td></tr>';
+        if (!AdminState.waitingOrders.length) {
+            tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="fa-solid fa-check-circle"></i><br>Semua pembayaran sudah diverifikasi</td></tr>';
             return;
         }
-
-        adminState.waitingOrders.forEach(o => {
-            const row = `
-                <tr class="hover:bg-gray-50 border-b border-gray-100">
-                    <td class="p-4">
-                        <p class="font-bold text-gray-800">#${o.order_number}</p>
-                        <p class="text-[10px] text-gray-400 font-mono">${appUtils.formatDateShort(o.created_at)}</p>
-                    </td>
-                    <td class="p-4 text-xs"><b>${o.user_name}</b><br><span class="text-gray-400">${o.user_email}</span></td>
-                    <td class="p-4 font-bold text-primary-600">${appUtils.formatRupiah(o.total_price)}</td>
-                    <td class="p-4">
-                        <a href="${o.payment_proof}" target="_blank" class="block w-20 h-12 border rounded-lg overflow-hidden relative group">
-                            <img src="${o.payment_proof}" class="w-full h-full object-cover">
-                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-[8px] text-white font-bold">PREVIEW</div>
-                        </a>
-                    </td>
-                    <td class="p-4 text-right space-x-1">
-                        <button data-action="verify-confirm" data-id="${o.id}" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-blue-700 transition">KONFIRMASI</button>
-                        <button data-action="open-delivery-modal" data-id="${o.id}" class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-emerald-700 transition">KIRIM + SELESAI</button>
-                    </td>
-                </tr>`;
-            tbody.insertAdjacentHTML('beforeend', row);
+        AdminState.waitingOrders.forEach(o => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <div style="font-weight:800; color:#fff;">#${o.order_number}</div>
+                    <div style="font-size:0.7rem; color:#475569;">${fmt.dateShort(o.created_at)}</div>
+                </td>
+                <td>
+                    <div style="font-weight:600;">${o.user_name || '—'}</div>
+                    <div style="font-size:0.7rem; color:#475569;">${o.user_email || ''}</div>
+                </td>
+                <td style="font-weight:800; color:var(--neon-orange);">${fmt.rupiah(o.total_price)}</td>
+                <td>
+                    ${o.payment_proof
+                        ? `<a href="${o.payment_proof}" target="_blank" style="display:inline-block;">
+                              <img src="${o.payment_proof}" style="height:48px; border-radius:6px; border:1px solid rgba(255,255,255,0.1); cursor:pointer;" title="Klik untuk memperbesar">
+                           </a>`
+                        : '<span style="color:#475569; font-size:0.75rem;">Tidak ada</span>'}
+                </td>
+                <td style="text-align:right; white-space:nowrap;">
+                    <button class="btn-sm-primary" onclick="AdminV9.confirmPayment('${o.id}')">Konfirmasi</button>
+                    <button class="btn-neon-orange" onclick="AdminV9.openDeliveryModal('${o.id}')" style="font-size:0.7rem; padding:0.35rem 0.8rem;">Kirim + Selesai</button>
+                </td>`;
+            tbody.appendChild(tr);
         });
     },
 
     payments() {
-        const tbody = document.getElementById('admin-table-payments');
+        const tbody = el('table-payments');
         if (!tbody) return;
-        tbody.innerHTML = ''; // MANDATORY CLEAR
-        if (!adminState.payments.length) {
-            tbody.innerHTML = '<tr><td colspan="6" class="p-12 text-center text-gray-400 italic">Belum ada metode pembayaran.</td></tr>';
+        tbody.innerHTML = ''; // CRITICAL CLEAR — ANTI SPAM
+        if (!AdminState.payments.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fa-solid fa-credit-card"></i><br>Belum ada metode pembayaran</td></tr>';
             return;
         }
-        adminState.payments.forEach(p => {
-            const row = `
-                <tr class="hover:bg-gray-50 border-b border-gray-100">
-                    <td class="p-4 font-bold text-gray-800">${p.name}</td>
-                    <td class="p-4"><span class="text-[10px] font-black uppercase text-gray-400">${p.type}</span></td>
-                    <td class="p-4 font-mono text-xs text-gray-600">${p.account_number || '-'}</td>
-                    <td class="p-4 text-xs font-bold text-gray-700">${p.account_name || '-'}</td>
-                    <td class="p-4 text-center">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-black ${p.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${p.is_active ? 'AKTIF' : 'MATI'}</span>
-                    </td>
-                    <td class="p-4 text-right space-x-2">
-                        <button data-action="edit-payment" data-id="${p.id}" class="text-blue-600 font-bold text-[10px] hover:underline">EDIT</button>
-                        <button data-action="delete-payment" data-id="${p.id}" class="text-red-600 font-bold text-[10px] hover:underline">HAPUS</button>
-                    </td>
-                </tr>`;
-            tbody.insertAdjacentHTML('beforeend', row);
+        AdminState.payments.forEach(p => {
+            // Map is_active 1/0 to human-readable badge (CRITICAL FIX)
+            const isActive = p.is_active === 1 || p.is_active === true || p.is_active === '1';
+            const statusBadge = isActive
+                ? '<span class="badge badge-active">● AKTIF</span>'
+                : '<span class="badge badge-inactive">● NONAKTIF</span>';
+            const qrisHtml = p.qris_image_url
+                ? `<img src="${p.qris_image_url}" style="height:36px; border-radius:6px; border:1px solid rgba(255,255,255,0.1);" title="${p.qris_image_url}">`
+                : '<span style="color:#475569; font-size:0.75rem;">—</span>';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-weight:700; color:#fff;">${p.name}</td>
+                <td><span style="font-size:0.7rem; background:rgba(0,243,255,0.08); color:var(--neon-cyan); padding:2px 8px; border-radius:99px; text-transform:uppercase;">${p.type}</span></td>
+                <td style="font-family:monospace; font-size:0.8rem; color:#94a3b8;">${p.account_number || '—'}</td>
+                <td style="font-size:0.82rem;">${p.account_name || '—'}</td>
+                <td>${qrisHtml}</td>
+                <td>${statusBadge}</td>
+                <td style="text-align:right; white-space:nowrap;">
+                    <button class="btn-sm-edit" onclick="AdminV9.editPayment(${p.id})">Edit</button>
+                    <button class="btn-danger" onclick="AdminV9.deletePayment(${p.id})">Hapus</button>
+                </td>`;
+            tbody.appendChild(tr);
         });
     },
 
     tickets() {
-        const tbody = document.getElementById('admin-table-tickets');
+        const tbody = el('table-tickets');
         if (!tbody) return;
-        tbody.innerHTML = ''; // MANDATORY CLEAR FIRST
-        adminState.tickets.forEach(t => {
-            const row = `
-                <tr class="hover:bg-gray-50 border-b border-gray-100">
-                    <td class="p-4 font-mono font-bold text-xs text-primary-500">#${t.ticket_number}</td>
-                    <td class="p-4">
-                        <p class="font-bold text-xs">${t.user_name}</p>
-                        <p class="text-[10px] text-gray-400">${t.user_email}</p>
-                    </td>
-                    <td class="p-4">
-                        <p class="font-bold text-gray-800 text-xs">${t.subject}</p>
-                        <p class="text-[10px] text-gray-400 italic line-clamp-1">${t.message}</p>
-                        ${t.admin_reply ? `<div class="mt-1 p-2 bg-gray-50 border-l-2 border-primary-500 text-[9px] text-gray-600"><b>Admin:</b> ${t.admin_reply}</div>` : ''}
-                    </td>
-                    <td class="p-4 text-center">
-                        <span class="px-2 py-0.5 rounded text-[9px] font-black ${t.status === 'open' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}">${t.status.toUpperCase()}</span>
-                    </td>
-                    <td class="p-4 text-right space-x-1">
-                        <button data-action="reply-ticket" data-id="${t.id}" data-subject="${t.subject}" class="bg-primary-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-primary-600 transition">BALAS</button>
-                        <button data-action="close-ticket" data-id="${t.id}" class="bg-gray-800 text-white px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-black transition">CLOSE</button>
-                    </td>
-                </tr>`;
-            tbody.insertAdjacentHTML('beforeend', row);
+        tbody.innerHTML = ''; // CRITICAL CLEAR — ANTI SPAM
+        if (!AdminState.tickets.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="fa-solid fa-headset"></i><br>Tidak ada tiket support</td></tr>';
+            return;
+        }
+        AdminState.tickets.forEach(t => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-family:monospace; font-weight:700; color:var(--neon-orange); font-size:0.78rem;">#${t.ticket_number || t.id}</td>
+                <td>
+                    <div style="font-weight:600; font-size:0.82rem;">${t.user_name || t.name || '—'}</div>
+                    <div style="font-size:0.7rem; color:#475569;">${t.user_email || t.email || ''}</div>
+                </td>
+                <td>
+                    <div style="font-weight:700; font-size:0.82rem; color:#e2e8f0;">${t.subject || '—'}</div>
+                    <div style="font-size:0.72rem; color:#64748b; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${t.message || ''}</div>
+                    ${t.admin_reply ? `<div style="margin-top:4px; font-size:0.7rem; color:var(--neon-cyan); padding:4px 8px; border-left:2px solid var(--neon-cyan); background:rgba(0,243,255,0.05);">↳ ${t.admin_reply}</div>` : ''}
+                </td>
+                <td>${fmt.statusBadge(t.status)}</td>
+                <td style="font-size:0.75rem; color:#64748b;">${fmt.dateShort(t.created_at)}</td>
+                <td style="text-align:right; white-space:nowrap;">
+                    <button class="btn-sm-primary" onclick="AdminV9.replyTicket('${t.id}', '${(t.subject || '').replace(/'/g,"\\'")}')">Balas</button>
+                    <button class="btn-ghost" style="font-size:0.7rem; padding:0.3rem 0.6rem;" onclick="AdminV9.closeTicket('${t.id}')">Tutup</button>
+                </td>`;
+            tbody.appendChild(tr);
         });
     },
 
     chatUsers() {
-        const list = document.getElementById('chat-user-list');
+        const list = el('chat-user-list');
         if (!list) return;
-        list.innerHTML = '';
-        adminState.chatUsers.forEach(u => {
-            const active = adminState.currentChatUserId === u.user_id;
-            const el = `
-                <div data-action="select-chat-user" data-id="${u.user_id}" data-name="${u.name}" data-email="${u.email}" 
-                     class="p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-50 transition-all ${active ? 'bg-primary-50 border-r-4 border-primary-500' : ''}">
-                    <div class="flex justify-between items-center mb-1">
-                        <p class="font-bold text-gray-800 text-sm">${u.name}</p>
-                        <span class="text-[8px] text-gray-400">${u.last_message_time ? new Date(u.last_message_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}</span>
-                    </div>
-                    <p class="text-[11px] text-gray-500 truncate font-medium">${u.last_message || 'Tidak ada pesan'}</p>
-                </div>`;
-            list.insertAdjacentHTML('beforeend', el);
+        list.innerHTML = ''; // CLEAR
+        if (!AdminState.chatUsers.length) {
+            list.innerHTML = '<div style="padding:1rem; text-align:center; color:#475569; font-size:0.78rem;">Belum ada chat</div>';
+            return;
+        }
+        AdminState.chatUsers.forEach(u => {
+            const isActive = AdminState.currentChatUserId === u.user_id;
+            const div = document.createElement('div');
+            div.className = 'chat-user-item' + (isActive ? ' active' : '');
+            div.onclick = () => AdminV9.selectChat(u.user_id, u.name || u.email);
+            div.innerHTML = `
+                <div style="font-weight:700; font-size:0.83rem; color:${isActive ? 'var(--neon-orange)':'#e2e8f0'};">${u.name || u.email}</div>
+                <div style="font-size:0.72rem; color:#475569; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${u.last_message || 'Tidak ada pesan'}</div>`;
+            list.appendChild(div);
         });
     },
 
     messages(msgs) {
-        const box = document.getElementById('chat-messages');
+        const box = el('chat-messages');
         if (!box) return;
-        box.innerHTML = '';
+        box.innerHTML = ''; // CLEAR
+        if (!msgs.length) {
+            box.innerHTML = '<div style="text-align:center; color:#475569; margin:auto; font-size:0.8rem;">Belum ada pesan</div>';
+            return;
+        }
         msgs.forEach(m => {
-            const me = m.is_admin === 1;
-            const fileHTML = m.file_url ? (m.file_url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? 
-                `<a href="${m.file_url}" target="_blank" class="block mt-2"><img src="${m.file_url}" class="max-w-[200px] rounded-lg shadow-sm border"></a>` : 
-                `<a href="${m.file_url}" target="_blank" class="flex items-center gap-2 mt-2 p-2 bg-black/5 rounded text-[10px] font-bold underline">📎 ATTACHMENT</a>`) : '';
-
-            const el = `
-                <div class="flex ${me ? 'justify-end' : 'justify-start'} mb-3">
-                    <div class="max-w-[85%] px-4 py-2.5 rounded-2xl shadow-sm text-sm ${me ? 'bg-primary-500 text-white rounded-tr-none' : 'bg-white border rounded-tl-none text-gray-800'}">
-                        ${m.message ? `<p class="leading-relaxed">${m.message}</p>` : ''}
-                        ${fileHTML}
-                        <div class="text-[8px] opacity-60 text-right mt-1 font-bold italic">${new Date(m.created_at).toLocaleTimeString()}</div>
-                    </div>
-                </div>`;
-            box.insertAdjacentHTML('beforeend', el);
+            const isAdmin = m.is_admin === 1 || m.is_admin === true;
+            const div = document.createElement('div');
+            div.className = 'chat-msg ' + (isAdmin ? 'admin' : 'user');
+            const fileHTML = m.file_url
+                ? (m.file_url.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+                    ? `<a href="${m.file_url}" target="_blank"><img src="${m.file_url}" style="max-width:160px; border-radius:8px; margin-top:6px;"></a>`
+                    : `<a href="${m.file_url}" target="_blank" style="font-size:0.75rem; color:var(--neon-cyan);">📎 Attachment</a>`)
+                : '';
+            div.innerHTML = `<div class="chat-msg-bubble">${m.message ? `<p>${m.message}</p>` : ''}${fileHTML}<div style="font-size:0.65rem; opacity:0.5; text-align:right; margin-top:4px;">${fmt.dateShort(m.created_at)}</div></div>`;
+            box.appendChild(div);
         });
         box.scrollTop = box.scrollHeight;
     },
 
     files() {
-        const tbody = document.getElementById('admin-table-files');
+        const tbody = el('table-files');
         if (!tbody) return;
-        tbody.innerHTML = ''; // MANDATORY CLEAR
-        if (!adminState.files.length) {
-            tbody.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 italic">Belum ada berkas terupload.</td></tr>';
+        tbody.innerHTML = ''; // CRITICAL CLEAR — ANTI SPAM
+        if (!AdminState.files.length) {
+            tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><i class="fa-solid fa-folder-open"></i><br>File Manager kosong</td></tr>';
             return;
         }
-        adminState.files.forEach(f => {
-            const row = `
-                <tr class="hover:bg-gray-50 border-b border-gray-100">
-                    <td class="p-4 font-bold text-gray-800 text-xs">
-                        <a href="${f.url}" target="_blank" class="hover:underline text-blue-600">${f.name}</a>
-                    </td>
-                    <td class="p-4 text-[10px] text-gray-400 font-mono">${(f.size / 1024).toFixed(1)} KB</td>
-                    <td class="p-4 text-[10px] text-gray-400">${appUtils.formatDateShort(f.created_at)}</td>
-                    <td class="p-4 text-right space-x-2">
-                        <button data-action="copy-file-link" data-url="${f.url}" class="text-primary-600 font-bold text-[10px] hover:underline">COPY LINK</button>
-                        <button data-action="delete-file" data-id="${f.name}" class="text-red-600 font-bold text-[10px] hover:underline">HAPUS</button>
-                    </td>
-                </tr>`;
-            tbody.insertAdjacentHTML('beforeend', row);
+        AdminState.files.forEach(f => {
+            const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(f.name);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        ${isImage ? `<img src="${f.url}" style="width:36px; height:36px; object-fit:cover; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">` : '<i class="fa-solid fa-file" style="font-size:1.5rem; color:#475569; width:36px; text-align:center;"></i>'}
+                        <a href="${f.url}" target="_blank" style="color:var(--neon-cyan); font-weight:600; font-size:0.83rem; text-decoration:none;">${f.name}</a>
+                    </div>
+                </td>
+                <td style="color:#64748b; font-size:0.78rem; font-family:monospace;">${fmt.size(f.size)}</td>
+                <td style="color:#64748b; font-size:0.78rem;">${fmt.dateShort(f.created_at)}</td>
+                <td style="text-align:right; white-space:nowrap;">
+                    <button class="btn-sm-edit" onclick="navigator.clipboard.writeText(window.location.origin+'${f.url}').then(()=>showToast('Link disalin!'))">Copy Link</button>
+                    <button class="btn-danger" onclick="AdminV9.deleteFile('${f.name}')">Hapus</button>
+                </td>`;
+            tbody.appendChild(tr);
         });
     }
 };
 
-// ─── DATA ACTIONS (THE ENGINE) ───────────────────────────────
-const Actions = {
+// ─────────────────────────────────────────────────────────────────
+// MAIN API ACTIONS
+// ─────────────────────────────────────────────────────────────────
+const AdminV9 = {
     async loadAll() {
-        UI.showSkeletons(['stat-revenue', 'stat-orders', 'stat-products', 'stat-pending', 'admin-table-products', 'admin-table-orders', 'admin-table-verification']);
-        
         try {
-            const [products, orders, stats, payments, tickets, waiting] = await Promise.all([
+            // Show skeleton
+            ['stat-revenue','stat-orders','stat-pending','stat-products'].forEach(id => {
+                const e = el(id);
+                if (e) e.innerHTML = '<span class="skeleton" style="display:inline-block;width:60px;height:28px;"></span>';
+            });
+
+            const [products, orders, stats, payments, tickets, waiting, files] = await Promise.all([
                 appUtils.getAllProductsAdmin(),
                 appUtils.getAllOrders(),
                 appUtils.getOrderStats(),
                 appUtils.getAllPaymentMethods(),
                 appUtils.getAllTickets(),
-                appUtils.getWaitingOrders()
+                appUtils.getWaitingOrders(),
+                appUtils.getAllAdminFiles(),
             ]);
 
-            adminState.products = products || [];
-            adminState.orders = orders || [];
-            adminState.stats = stats?.data || stats || {};
-            adminState.payments = payments || [];
-            adminState.tickets = tickets || [];
-            adminState.waitingOrders = waiting || [];
+            AdminState.products      = Array.isArray(products) ? products : [];
+            AdminState.orders        = Array.isArray(orders)   ? orders   : [];
+            AdminState.payments      = Array.isArray(payments) ? payments : [];
+            AdminState.tickets       = Array.isArray(tickets)  ? tickets  : [];
+            AdminState.waitingOrders = Array.isArray(waiting)  ? waiting  : [];
+            AdminState.files         = Array.isArray(files)    ? files    : [];
 
-            Render.dashboard();
+            // Stats can be nested in .data
+            const statsData = stats?.data || stats || {};
+            AdminState.stats = statsData;
+
+            // Update order badge
+            const ordBadge = el('badge-orders');
+            if (ordBadge) ordBadge.textContent = AdminState.orders.length;
+
+            // Render all
+            Render.stats();
+            Render.dashboardRecentOrders();
+            Render.dashboardWaiting();
             Render.products();
             Render.orders();
+            Render.verification();
             Render.payments();
             Render.tickets();
-            Render.verification();
-            await Actions.loadFiles();
+            Render.files();
+
         } catch (err) {
-            console.error('Failed to load admin data:', err);
-            appUtils.showToast('Gagal memuat data!', 'error');
+            console.error('AdminV9.loadAll error:', err);
+            showToast('Gagal memuat data admin!', 'error');
         }
     },
 
     async loadChat() {
         try {
-            adminState.chatUsers = await appUtils.getChatUsers();
+            const users = await appUtils.getChatUsers();
+            AdminState.chatUsers = users || [];
             Render.chatUsers();
-        } catch (e) { console.error('Chat error:', e); }
+        } catch(e) { console.error('loadChat error:', e); }
     },
 
-    async loadChatContent(userId) {
+    async selectChat(userId, name) {
+        AdminState.currentChatUserId = userId;
+        el('chat-active-name').textContent = name || userId;
+        Render.chatUsers();
         try {
             const msgs = await appUtils.getUserMessages(userId);
-            Render.messages(msgs);
-        } catch (e) { console.error('Chat content error:', e); }
+            Render.messages(Array.isArray(msgs) ? msgs : []);
+        } catch(e) {}
     },
 
-    async loadFiles() {
+    async sendChat() {
+        const inp = el('chat-input');
+        const msg = (inp?.value || '').trim();
+        if (!msg || !AdminState.currentChatUserId) return;
+
+        const fd = new FormData();
+        fd.append('message', msg);
+        fd.append('target_user_id', AdminState.currentChatUserId);
+        // NO manual Content-Type header — browser sets multipart boundary automatically!
+
+        await appUtils.sendMessage(fd);
+        inp.value = '';
+        await this.selectChat(AdminState.currentChatUserId, el('chat-active-name').textContent);
+    },
+
+    // ── Products ────────────────────────────────────────────────
+    openProductModal(p = null) {
+        const form = el('form-product');
+        form.reset();
+        el('fp-id').value = '';
+        el('fp-current-img').style.display = 'none';
+
+        if (p) {
+            el('modal-product-title').textContent = `Edit Produk #${p.id}`;
+            el('fp-id').value = p.id;
+            el('fp-name').value = p.name || '';
+            el('fp-category').value = p.category || 'Streaming';
+            el('fp-price').value = p.price || '';
+            el('fp-discount').value = p.discount || '0';
+            el('fp-stock').value = p.stock || '';
+            el('fp-desc').value = p.description || '';
+            try { el('fp-variants').value = JSON.parse(p.variants || '[]').join(', '); } catch { el('fp-variants').value = p.variants || ''; }
+            if (p.image_url) {
+                el('fp-img-preview').src = p.image_url;
+                el('fp-current-img').style.display = 'block';
+            }
+        } else {
+            el('modal-product-title').textContent = 'Tambah Produk Baru';
+        }
+        this.openModal('modal-product');
+    },
+
+    editProduct(id) {
+        const p = AdminState.products.find(x => String(x.id) === String(id));
+        if (p) this.openProductModal(p);
+    },
+
+    async saveProduct(e) {
+        e.preventDefault();
+        const btn = el('btn-save-product');
+        btn.textContent = 'Menyimpan...';
+        btn.disabled = true;
+
+        const id = el('fp-id').value;
+        const formData = new FormData(el('form-product'));
+        const variantStr = el('fp-variants').value;
+        const varArr = variantStr.split(',').map(v => v.trim()).filter(v => v);
+        formData.set('variants', JSON.stringify(varArr));
+        // CRITICAL: Do NOT set Content-Type manually — let browser set multipart boundary
+
         try {
-            adminState.files = await appUtils.getAllAdminFiles();
-            Render.files();
-        } catch (e) { console.error('Files load error:', e); }
-    }
+            const res = id
+                ? await appUtils.updateProduct(id, formData)
+                : await appUtils.createProduct(formData);
+            if (res?.success) {
+                showToast(id ? 'Produk berhasil diperbarui!' : 'Produk berhasil ditambahkan!', 'success');
+                this.closeModal('modal-product');
+                await this.loadAll();
+            } else {
+                showToast(res?.message || 'Gagal menyimpan produk.', 'error');
+            }
+        } catch(err) {
+            showToast('Error: ' + err.message, 'error');
+        } finally {
+            btn.textContent = 'Simpan Produk';
+            btn.disabled = false;
+        }
+    },
+
+    async deleteProduct(id, name) {
+        const res = await confirmDialog('Hapus Produk?', `"${name}" akan dihapus permanen.`);
+        if (!res.isConfirmed) return;
+        const r = await appUtils.deleteProduct(id);
+        if (r?.success) {
+            showToast('Produk dihapus!', 'success');
+            await this.loadAll();
+        } else showToast(r?.message || 'Gagal menghapus.', 'error');
+    },
+
+    // ── Payments ────────────────────────────────────────────────
+    openPaymentModal(p = null) {
+        const form = el('form-payment');
+        form.reset();
+        el('pay-id').value = '';
+        el('pay-qris-url').value = '';
+        el('pay-qris-selected').textContent = 'Belum dipilih';
+        el('pay-qris-preview').style.display = 'none';
+        el('pay-active').checked = true;
+
+        if (p) {
+            el('modal-payment-title').textContent = 'Edit Metode Pembayaran';
+            el('pay-id').value = p.id;
+            el('pay-name').value = p.name || '';
+            el('pay-type').value = p.type || 'ewallet';
+            el('pay-number').value = p.account_number || '';
+            el('pay-account-name').value = p.account_name || '';
+            el('pay-active').checked = (p.is_active === 1 || p.is_active === true || p.is_active === '1');
+            if (p.qris_image_url) {
+                el('pay-qris-url').value = p.qris_image_url;
+                el('pay-qris-selected').textContent = p.qris_image_url.split('/').pop();
+                el('pay-qris-img').src = p.qris_image_url;
+                el('pay-qris-preview').style.display = 'block';
+            }
+        } else {
+            el('modal-payment-title').textContent = 'Tambah Metode Pembayaran';
+        }
+        this.openModal('modal-payment');
+    },
+
+    editPayment(id) {
+        const p = AdminState.payments.find(x => String(x.id) === String(id));
+        if (p) this.openPaymentModal(p);
+    },
+
+    async savePayment(e) {
+        e.preventDefault();
+        const btn = el('btn-save-payment');
+        btn.textContent = 'Menyimpan...';
+        btn.disabled = true;
+
+        const id = el('pay-id').value;
+        const qrisUrl = el('pay-qris-url').value;
+
+        // Build FormData for consistent API interface
+        const formData = new FormData();
+        formData.append('name', el('pay-name').value);
+        formData.append('type', el('pay-type').value);
+        formData.append('account_number', el('pay-number').value);
+        formData.append('account_name', el('pay-account-name').value);
+        formData.append('is_active', el('pay-active').checked ? '1' : '0');
+        // Pass qris_image_url as a text field — no file re-upload if already selected from file picker
+        if (qrisUrl) formData.append('qris_image_url', qrisUrl);
+
+        try {
+            const res = id
+                ? await appUtils.updatePaymentMethod(id, formData)
+                : await appUtils.createPaymentMethod(formData);
+            if (res?.success) {
+                showToast(id ? 'Metode diperbarui!' : 'Metode ditambahkan!', 'success');
+                this.closeModal('modal-payment');
+                await this.loadAll();
+            } else {
+                showToast(res?.message || 'Gagal menyimpan.', 'error');
+            }
+        } catch(err) {
+            showToast('Error: ' + err.message, 'error');
+        } finally {
+            btn.textContent = 'Simpan';
+            btn.disabled = false;
+        }
+    },
+
+    async deletePayment(id) {
+        const res = await confirmDialog('Hapus Metode?', 'Metode pembayaran ini akan dihapus permanen.');
+        if (!res.isConfirmed) return;
+        const r = await appUtils.deletePaymentMethod(id);
+        if (r?.success) {
+            showToast('Metode dihapus!', 'success');
+            await this.loadAll();
+        } else showToast(r?.message || 'Gagal menghapus.', 'error');
+    },
+
+    // ── File Picker (Sultan) ────────────────────────────────────
+    async openFilePicker() {
+        AdminState.selectedFileUrl = null;
+        AdminState.selectedFileName = null;
+
+        // Load latest files
+        try {
+            const files = await appUtils.getAllAdminFiles();
+            AdminState.files = Array.isArray(files) ? files : [];
+        } catch(e) {}
+
+        const grid = el('file-picker-grid');
+        grid.innerHTML = '';
+
+        const imageFiles = AdminState.files.filter(f => /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(f.name));
+        if (!imageFiles.length) {
+            grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#475569; padding:2rem;">Belum ada gambar di File Manager.<br><small>Upload gambar dulu di tab File Manager.</small></div>';
+        } else {
+            imageFiles.forEach(f => {
+                const div = document.createElement('div');
+                div.className = 'file-thumb';
+                div.dataset.url = f.url;
+                div.dataset.name = f.name;
+                div.innerHTML = `<img src="${f.url}" alt="${f.name}"><div class="file-thumb-name">${f.name}</div>`;
+                div.onclick = () => {
+                    document.querySelectorAll('.file-thumb').forEach(t => t.classList.remove('selected'));
+                    div.classList.add('selected');
+                    AdminState.selectedFileUrl = f.url;
+                    AdminState.selectedFileName = f.name;
+                };
+                grid.appendChild(div);
+            });
+        }
+
+        this.closeModal('modal-payment');
+        setTimeout(() => this.openModal('modal-file-picker'), 50);
+    },
+
+    confirmFilePick() {
+        if (!AdminState.selectedFileUrl) {
+            showToast('Pilih salah satu gambar terlebih dahulu!', 'error');
+            return;
+        }
+        el('pay-qris-url').value = AdminState.selectedFileUrl;
+        el('pay-qris-selected').textContent = AdminState.selectedFileName || AdminState.selectedFileUrl;
+        el('pay-qris-img').src = AdminState.selectedFileUrl;
+        el('pay-qris-preview').style.display = 'block';
+        this.closeModal('modal-file-picker');
+        setTimeout(() => this.openModal('modal-payment'), 50);
+    },
+
+    // ── Orders ──────────────────────────────────────────────────
+    async updateStatus(orderId, status) {
+        const r = await appUtils.updateOrderStatus(orderId, status);
+        if (r?.success) {
+            showToast(`Status diperbarui: ${status}`, 'success');
+            await this.loadAll();
+        } else showToast(r?.message || 'Gagal update status.', 'error');
+    },
+
+    async confirmPayment(orderId) {
+        const res = await confirmDialog('Konfirmasi Pembayaran?', 'Pesanan akan diubah ke status PROCESSING.');
+        if (!res.isConfirmed) return;
+        await appUtils.updateOrderStatus(orderId, 'processing');
+        showToast('Pembayaran dikonfirmasi!', 'success');
+        await this.loadAll();
+    },
+
+    async openDeliveryModal(orderId) {
+        const { value: creds } = await Swal.fire({
+            title: '🚀 Kirim Produk',
+            input: 'textarea',
+            inputLabel: 'Kredensial / Link yang dikirim ke pembeli:',
+            inputPlaceholder: 'Email: xxx@gmail.com\nPassword: Secret123\nAtau link akun...',
+            showCancelButton: true,
+            confirmButtonColor: '#ff9d00',
+            confirmButtonText: 'Kirim & Selesaikan',
+            background: '#0a0e17',
+            color: '#e2e8f0',
+        });
+        if (!creds) return;
+        Swal.fire({ title: 'Memproses...', didOpen: () => Swal.showLoading(), background: '#0a0e17', color: '#e2e8f0' });
+        const r = await appUtils.deliverOrder(orderId, creds);
+        Swal.close();
+        if (r?.success) {
+            showToast('✅ Produk terkirim! Email notifikasi dikirim ke pembeli.', 'success');
+            await this.loadAll();
+        } else Swal.fire({ title: 'Gagal', text: r?.message || 'Error pengiriman', icon: 'error', background: '#0a0e17', color: '#e2e8f0' });
+    },
+
+    // ── Tickets ─────────────────────────────────────────────────
+    async replyTicket(id, subject) {
+        const { value: reply } = await Swal.fire({
+            title: `Balas Tiket`,
+            text: `Membalas: ${subject}`,
+            input: 'textarea',
+            inputPlaceholder: 'Tulis balasan Anda...',
+            showCancelButton: true,
+            confirmButtonColor: '#ff9d00',
+            background: '#0a0e17',
+            color: '#e2e8f0',
+        });
+        if (!reply) return;
+        const r = await appUtils.replyTicket(id, reply);
+        if (r?.success) { showToast('Balasan terkirim!', 'success'); await this.loadAll(); }
+        else showToast(r?.message || 'Gagal membalas.', 'error');
+    },
+
+    async closeTicket(id) {
+        const res = await confirmDialog('Tutup Tiket?', 'Tiket akan ditandai CLOSED.');
+        if (!res.isConfirmed) return;
+        await appUtils.updateTicketStatus(id, 'closed');
+        showToast('Tiket ditutup.', 'success');
+        await this.loadAll();
+    },
+
+    // ── Files ───────────────────────────────────────────────────
+    async uploadFile(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const fd = new FormData();
+        fd.append('admin_file', file);
+        // NO Content-Type header — browser sets boundary automatically!
+
+        Swal.fire({ title: 'Mengupload...', didOpen: () => Swal.showLoading(), background: '#0a0e17', color: '#e2e8f0' });
+        const r = await appUtils.uploadAdminFile(fd);
+        Swal.close();
+        input.value = '';
+        if (r?.success) {
+            showToast('✅ File berhasil diupload!', 'success');
+            await this.loadAll();
+        } else Swal.fire({ title: 'Gagal', text: r?.message, icon: 'error', background: '#0a0e17', color: '#e2e8f0' });
+    },
+
+    async deleteFile(filename) {
+        const res = await confirmDialog('Hapus File?', `"${filename}" akan dihapus permanen.`);
+        if (!res.isConfirmed) return;
+        const r = await appUtils.deleteAdminFile(filename);
+        if (r?.success) { showToast('File dihapus!', 'success'); await this.loadAll(); }
+        else showToast(r?.message || 'Gagal menghapus.', 'error');
+    },
+
+    // ── Modal Helpers ───────────────────────────────────────────
+    openModal(id) {
+        const m = el(id);
+        if (m) { m.classList.add('open'); }
+    },
+    closeModal(id) {
+        const m = el(id);
+        if (m) { m.classList.remove('open'); }
+    },
 };
 
-// ─── GLOBAL DELEGATION ────────────────────────────────────────
-document.addEventListener('click', async (e) => {
-    const btn = e.target.closest('button, [data-action]');
-    if (!btn) return;
+// Export to global
+window.AdminV9 = AdminV9;
 
-    const { action, id, name, tab } = btn.dataset;
-
-    // UI Navigation
-    if (action === 'switch-tab') switchTab(tab);
-    if (action === 'logout') appUtils.logout();
-
-    // Modals
-    if (action === 'open-product-modal') openProductModal();
-    if (action === 'close-product-modal') closeModal('modal-product');
-    if (action === 'open-payment-modal') openPaymentModal();
-    if (action === 'close-payment-modal') closeModal('modal-payment');
-    
-    // Deletions
-    if (action === 'delete-product') {
-        const res = await Swal.fire({ title: 'Hapus Produk?', text: `Hapus "${name}" permanen?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus!' });
-        if (res.isConfirmed) { await appUtils.deleteProduct(id); Actions.loadAll(); }
-    }
-    if (action === 'delete-payment') {
-        if ((await Swal.fire({ title: 'Hapus Metode?', icon: 'warning', showCancelButton: true })).isConfirmed) { await appUtils.deletePaymentMethod(id); Actions.loadAll(); }
-    }
-
-    // Edits
-    if (action === 'edit-product') {
-        const p = adminState.products.find(x => x.id === id);
-        if (p) openProductModal(p);
-    }
-    if (action === 'edit-payment') {
-        const p = adminState.payments.find(x => x.id == id);
-        if (p) openPaymentModal(p);
-    }
-
-    // Processing Flow (SweetAlert2 Premium)
-    if (action === 'verify-confirm') {
-        const res = await Swal.fire({ title: 'Konfirmasi Bayar?', text: 'Pesanan akan masuk ke tahap PROSES.', icon: 'info', showCancelButton: true, confirmButtonColor: '#f97316' });
-        if (res.isConfirmed) { await appUtils.updateOrderStatus(id, 'processing'); Actions.loadAll(); }
-    }
-
-    if (action === 'open-delivery-modal') {
-        const { value: creds } = await Swal.fire({
-            title: 'Kirim Produk & Akun',
-            input: 'textarea',
-            inputPlaceholder: 'Masukan Email:xxx Pass:xxx atau Link Data...',
-            inputLabel: 'Detail ini akan dikirim otomatis ke email pembeli.',
-            showCancelButton: true,
-            confirmButtonColor: '#f97316',
-            confirmButtonText: 'Kirim & Kirim Email'
-        });
-        if (creds) {
-            Swal.fire({ title: 'Memproses...', didOpen: () => Swal.showLoading() });
-            const deliverRes = await appUtils.deliverOrder(id, creds);
-            if (deliverRes.success) {
-                appUtils.showToast('✅ Pesanan Selesai & Email Terkirim!', 'success');
-                Actions.loadAll();
-                Swal.close();
-            } else {
-                Swal.fire('Gagal', deliverRes.message || 'Error saat pengiriman', 'error');
-            }
-        }
-    }
-
-    // Chat
-    if (action === 'select-chat-user') {
-        adminState.currentChatUserId = id;
-        document.getElementById('current-chat-name').textContent = name;
-        document.getElementById('current-chat-email').textContent = btn.dataset.email;
-        Render.chatUsers();
-        Actions.loadChatContent(id);
-    }
-    if (action === 'send-chat') sendMessageAdmin(btn);
-
-    // Tickets
-    if (action === 'reply-ticket') {
-        const { value: reply } = await Swal.fire({
-            title: 'Balas Tiket Support',
-            text: `Membalas Tiket #${btn.dataset.id} - ${btn.dataset.subject}`,
-            input: 'textarea',
-            inputPlaceholder: 'Tulis balasan Anda di sini...',
-            showCancelButton: true,
-            confirmButtonColor: '#f97316',
-            confirmButtonText: 'Kirim Balasan'
-        });
-        if (reply) {
-            const res = await appUtils.replyTicket(id, reply);
-            if (res.success) {
-                appUtils.showToast('Balasan terkirim!', 'success');
-                Actions.loadAll();
-            } else {
-                Swal.fire('Gagal', res.message, 'error');
-            }
-        }
-    }
-
-    if (action === 'close-ticket') {
-        const res = await Swal.fire({
-            title: 'Tutup Tiket?',
-            text: 'Tiket akan ditandai sebagai SELESAI.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#1f2937'
-        });
-        if (res.isConfirmed) {
-            await appUtils.updateTicketStatus(id, 'closed');
-            Actions.loadAll();
-        }
-    }
-
-    // File Management (Merged)
-    if (action === 'delete-file') {
-        const res = await Swal.fire({ title: 'Hapus Berkas?', text: `Hapus "${id}" permanen?`, icon: 'warning', showCancelButton: true });
-        if (res.isConfirmed) {
-            await appUtils.deleteAdminFile(id);
-            Actions.loadFiles();
-        }
-    }
-    if (action === 'copy-file-link') {
-        const fullUrl = window.location.origin + btn.dataset.url;
-        appUtils.copyToClipboard(fullUrl);
-        appUtils.showToast('Link disalin!', 'success');
-    }
-});
-
-// Select change listener
-document.addEventListener('change', async (e) => {
-    if (e.target.dataset.action === 'update-order-status') {
-        await appUtils.updateOrderStatus(e.target.dataset.id, e.target.value);
-        appUtils.showToast('Status diperbarui!', 'success');
-        Actions.loadAll();
-    }
-});
-
-
-
-// ─── HELPERS & FORM LOGIC ─────────────────────────────────────
-async function handleFormSubmit(e) {
-    e.preventDefault();
-    const form = e.target;
-    const btn = form.querySelector('button[type="submit"]');
-    const id = form.querySelector('[id$="-id"]')?.value;
-    
-    appUtils.setLoading(btn, true, 'Menyimpan...');
-    try {
-        const formData = new FormData(form);
-        
-        if (form.id === 'formTambahProduk') {
-            const vStr = document.getElementById('form-variants').value;
-            const vArr = vStr.split(',').map(x => x.trim()).filter(x => x);
-            formData.set('variants', JSON.stringify(vArr));
-            const res = id ? await appUtils.updateProduct(id, formData) : await appUtils.createProduct(formData);
-            if (res.success) { closeModal('modal-product'); Actions.loadAll(); }
-        } else if (form.id === 'form-payment-method') {
-            formData.set('is_active', document.getElementById('pay-active').checked ? '1' : '0');
-            const res = id ? await appUtils.updatePaymentMethod(id, formData) : await appUtils.createPaymentMethod(formData);
-            if (res.success) { closeModal('modal-payment'); Actions.loadAll(); }
-        }
-    } catch (err) { appUtils.showToast(err.message, 'error'); }
-    finally { appUtils.setLoading(btn, false); }
-}
-
-async function sendMessageAdmin(btn) {
-    const inp = document.getElementById('admin-chat-input');
-    const fileInp = document.getElementById('admin-chat-file');
-    const msg = inp.value.trim();
-    if (!msg && !fileInp.files[0]) return;
-    if (!adminState.currentChatUserId) return;
-
-    const fd = new FormData();
-    fd.append('message', msg);
-    fd.append('target_user_id', adminState.currentChatUserId);
-    if (fileInp.files[0]) fd.append('chat_file', fileInp.files[0]);
-
-    appUtils.setLoading(btn, true, '...');
-    const res = await appUtils.sendMessage(fd);
-    appUtils.setLoading(btn, false);
-
-    if (res.success) {
-        inp.value = '';
-        fileInp.value = '';
-        document.getElementById('admin-chat-preview').classList.add('hidden');
-        Actions.loadChatContent(adminState.currentChatUserId);
-        Actions.loadChat();
-    }
-}
-
+// ─────────────────────────────────────────────────────────────────
+// TAB SWITCHING
+// ─────────────────────────────────────────────────────────────────
 function switchTab(tabId) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.getElementById('tab-' + tabId).classList.add('active');
-    
-    document.querySelectorAll('.admin-tab, .admin-tab-mob').forEach(el => {
-        el.classList.remove('bg-primary-600', 'text-white', 'bg-primary-100', 'text-primary-700');
-        el.classList.add('text-gray-300', 'hover:bg-gray-800', 'bg-gray-100', 'text-gray-600');
+    // Hide all tabs
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    // Show target
+    const target = el('tab-' + tabId);
+    if (target) target.classList.add('active');
+
+    // Update sidebar nav active state
+    document.querySelectorAll('#sidebar-nav .nav-item').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.tab === tabId) btn.classList.add('active');
     });
 
-    const pcBtn = document.getElementById('btn-tab-' + tabId);
-    if (pcBtn) pcBtn.classList.add('bg-primary-600', 'text-white');
-    const mobBtn = document.getElementById('mob-tab-' + tabId);
-    if (mobBtn) mobBtn.classList.add('bg-primary-100', 'text-primary-700');
-
-    if (tabId === 'chat') Actions.loadChat();
-}
-
-function openProductModal(p = null) {
-    const form = document.getElementById('formTambahProduk');
-    const container = document.getElementById('modal-product');
-    form.reset();
-    document.getElementById('current-image-container').classList.add('hidden');
-    
-    if (p) {
-        document.getElementById('modal-product-title').textContent = 'Edit Produk #' + p.id;
-        document.getElementById('form-id').value = p.id;
-        document.getElementById('form-name').value = p.name;
-        document.getElementById('form-category').value = p.category;
-        document.getElementById('form-price').value = p.price;
-        document.getElementById('form-discount').value = p.discount;
-        document.getElementById('form-stock').value = p.stock;
-        document.getElementById('form-desc').value = p.description || '';
-        try { document.getElementById('form-variants').value = JSON.parse(p.variants).join(', '); } catch (e) { document.getElementById('form-variants').value = p.variants || ''; }
-        if (p.image_url) {
-            document.getElementById('current-image-container').classList.remove('hidden');
-            document.getElementById('current-image').src = p.image_url;
-        }
-    } else {
-        document.getElementById('modal-product-title').textContent = 'Tambah Produk Baru';
-        document.getElementById('form-id').value = '';
-    }
-    
-    container.classList.remove('hidden');
-    setTimeout(() => { container.classList.remove('opacity-0'); container.querySelector('div').classList.remove('scale-95'); }, 10);
-}
-
-function openPaymentModal(pay = null) {
-    const form = document.getElementById('form-payment-method');
-    const container = document.getElementById('modal-payment');
-    form.reset();
-    document.getElementById('current-qris-container').classList.add('hidden');
-    
-    if (pay) {
-        document.getElementById('pay-id').value = pay.id;
-        document.getElementById('pay-name').value = pay.name;
-        document.getElementById('pay-type').value = pay.type;
-        document.getElementById('pay-number').value = pay.account_number || '';
-        document.getElementById('pay-account-name').value = pay.account_name || '';
-        document.getElementById('pay-active').checked = !!pay.is_active;
-        if (pay.qris_image_url) {
-            document.getElementById('current-qris-container').classList.remove('hidden');
-            document.getElementById('current-qris-img').src = pay.qris_image_url;
-        }
-    }
-    
-    container.classList.remove('hidden');
-    setTimeout(() => { container.classList.remove('opacity-0'); container.querySelector('div').classList.remove('scale-95'); }, 10);
-}
-
-function closeModal(id) {
-    const container = document.getElementById(id);
-    container.classList.add('opacity-0');
-    container.querySelector('div').classList.add('scale-95');
-    setTimeout(() => container.classList.add('hidden'), 300);
-}
-
-// ─── INITIALIZATION ──────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-    if (!appUtils.requireAdmin()) return;
-    Actions.loadAll();
-
-    document.getElementById('formTambahProduk').onsubmit = handleFormSubmit;
-    document.getElementById('form-payment-method').onsubmit = handleFormSubmit;
-
-    // Mobile Sidebar Toggler
-    const sidebar = document.getElementById('admin-sidebar');
-    const overlay = document.getElementById('admin-sidebar-overlay');
-    const mobileTrigger = document.getElementById('admin-mobile-menu-btn');
-    const mobileClose = document.getElementById('close-admin-sidebar');
-    
-    const toggleSidebar = () => {
-        sidebar.classList.toggle('open');
-        overlay.classList.toggle('open');
+    // Update topbar title
+    const titles = {
+        dashboard: 'Dashboard', products: 'Manajemen Produk', orders: 'Semua Pesanan',
+        verification: 'Verifikasi Pembayaran', payments: 'Metode Pembayaran',
+        tickets: 'Tiket Support', chat: 'Live Chat', files: 'File Manager'
     };
+    const titleEl = el('current-tab-title');
+    if (titleEl) titleEl.textContent = titles[tabId] || tabId;
 
-    if (mobileTrigger) mobileTrigger.onclick = toggleSidebar;
-    if (mobileClose) mobileClose.onclick = toggleSidebar;
-    if (overlay) overlay.onclick = toggleSidebar;
+    // Load chat on tab switch
+    if (tabId === 'chat') AdminV9.loadChat();
+}
 
-    // File Upload Handler
-    const fileInp = document.getElementById('admin-file-input');
-    if (fileInp) {
-        fileInp.onchange = async () => {
-            const file = fileInp.files[0];
-            if (!file) return;
-            
-            const fd = new FormData();
-            fd.append('admin_file', file);
-            
-            Swal.fire({ title: 'Mengupload...', didOpen: () => Swal.showLoading() });
-            const res = await appUtils.uploadAdminFile(fd);
-            Swal.close();
-            
-            if (res.success) {
-                appUtils.showToast('✅ Berkas berhasil diupload!', 'success');
-                Actions.loadFiles();
-            } else {
-                Swal.fire('Gagal', res.message, 'error');
-            }
-            fileInp.value = ''; // Reset
-        };
+// ─────────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    // Require admin
+    if (!appUtils.requireAdmin()) return;
+
+    // Show admin name
+    const user = appUtils.getUser && appUtils.getUser();
+    if (user) {
+        const chip = el('admin-user-chip');
+        const avatar = el('admin-avatar');
+        if (chip) chip.textContent = user.name || user.email;
+        if (avatar) avatar.textContent = (user.name || user.email || 'A')[0].toUpperCase();
     }
 
-    // Chat Auto Refresh
+    // Load all data
+    AdminV9.loadAll();
+
+    // Sidebar tab buttons
+    document.querySelectorAll('#sidebar-nav .nav-item[data-tab]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            switchTab(btn.dataset.tab);
+            // Auto-close sidebar on mobile
+            if (window.innerWidth < 768) closeSidebar();
+        });
+    });
+
+    // Logout
+    const logoutBtn = el('btn-logout');
+    if (logoutBtn) logoutBtn.addEventListener('click', () => appUtils.logout());
+
+    // Open Product Modal
+    const btnProduct = el('btn-open-product-modal');
+    if (btnProduct) btnProduct.addEventListener('click', () => AdminV9.openProductModal());
+
+    // Open Payment Modal
+    const btnPayment = el('btn-open-payment-modal');
+    if (btnPayment) btnPayment.addEventListener('click', () => AdminV9.openPaymentModal());
+
+    // Hamburger menu (Mobile)
+    const hamBtn = el('hamburger-btn');
+    if (hamBtn) {
+        hamBtn.style.display = 'block';
+        hamBtn.addEventListener('click', toggleSidebar);
+    }
+    const backdrop = el('sidebar-backdrop');
+    if (backdrop) backdrop.addEventListener('click', closeSidebar);
+
+    // Auto-refresh chat every 15s
     setInterval(() => {
-        if (document.getElementById('tab-chat').classList.contains('active')) {
-            if (adminState.currentChatUserId) Actions.loadChatContent(adminState.currentChatUserId);
-            Actions.loadChat();
+        if (AdminState.currentChatUserId && el('tab-chat')?.classList.contains('active')) {
+            appUtils.getUserMessages(AdminState.currentChatUserId).then(msgs => {
+                Render.messages(Array.isArray(msgs) ? msgs : []);
+            });
         }
-    }, 12000);
+    }, 15000);
 });
+
+// ─────────────────────────────────────────────────────────────────
+// SIDEBAR MOBILE CONTROL
+// ─────────────────────────────────────────────────────────────────
+function toggleSidebar() {
+    const sidebar = el('admin-sidebar');
+    const backdrop = el('sidebar-backdrop');
+    if (sidebar.classList.contains('open')) {
+        closeSidebar();
+    } else {
+        sidebar.classList.add('open');
+        backdrop.classList.add('open');
+    }
+}
+
+function closeSidebar() {
+    el('admin-sidebar').classList.remove('open');
+    el('sidebar-backdrop').classList.remove('open');
+}

@@ -3,311 +3,693 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="RGS STORE - Marketplace produk digital premium terlengkap.">
-    <meta name="keywords" content="Netflix, Spotify, Discord Nitro, Pterodactyl">
-    <meta name="robots" content="index, follow">
-    <meta property="og:title" content="RGS STORE — Premium Digital">
-    <title>Admin Panel - RGS STORE</title>
+    <title>Admin Panel — RGS STORE V9</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="js/tailwind-config.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-    </style>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    neon: { orange: '#ff9d00', cyan: '#00f3ff', green: '#00ff88', red: '#ff3366' },
+                    dark: { 950: '#060810', 900: '#0a0e17', 800: '#111827', 700: '#1a2235', 600: '#1f2d42' }
+                },
+                fontFamily: { sans: ['Outfit', 'Inter', 'sans-serif'] },
+                boxShadow: {
+                    'neon-orange': '0 0 12px rgba(255,157,0,0.4), 0 0 24px rgba(255,157,0,0.15)',
+                    'neon-cyan':   '0 0 12px rgba(0,243,255,0.4), 0 0 24px rgba(0,243,255,0.15)',
+                    'neon-green':  '0 0 10px rgba(0,255,136,0.3)',
+                    'card':        '0 8px 32px rgba(0,0,0,0.4)'
+                }
+            }
+        }
+    };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --bg-deepest: #060810;
+            --bg-dark:    #0a0e17;
+            --bg-surface: #111827;
+            --bg-card:    #1a2235;
+            --neon-orange: #ff9d00;
+            --neon-cyan:   #00f3ff;
+            --neon-green:  #00ff88;
+            --neon-red:    #ff3366;
+            --border:      rgba(255,157,0,0.15);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg-deepest); color: #e2e8f0; font-family: 'Outfit', sans-serif; min-height: 100vh; overflow-x: hidden; }
+
+        /* ── Sidebar ─────────────────────────────── */
+        #admin-sidebar {
+            width: 260px;
+            background: var(--bg-dark);
+            border-right: 1px solid var(--border);
+            height: 100vh;
+            position: fixed;
+            top: 0; left: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 50;
+            transform: translateX(0);
+            transition: transform 0.3s ease;
+        }
+        #admin-sidebar.hidden-sidebar { transform: translateX(-100%); }
+        .sidebar-brand {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, rgba(255,157,0,0.05) 0%, transparent 100%);
+        }
+        .brand-logo {
+            font-size: 1.4rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            background: linear-gradient(90deg, var(--neon-orange), var(--neon-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .brand-sub { font-size: 0.65rem; color: var(--neon-orange); font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin-top: 2px; }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            margin: 2px 12px;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .nav-item:hover { color: #e2e8f0; background: rgba(255, 157, 0, 0.05); border-color: rgba(255,157,0,0.1); }
+        .nav-item.active {
+            color: var(--neon-orange);
+            background: rgba(255, 157, 0, 0.1);
+            border-color: rgba(255,157,0,0.25);
+            box-shadow: 0 0 12px rgba(255,157,0,0.1);
+        }
+        .nav-item i { width: 18px; text-align: center; }
+        .nav-badge {
+            margin-left: auto;
+            background: var(--neon-orange);
+            color: #000;
+            font-size: 0.6rem;
+            font-weight: 900;
+            padding: 1px 6px;
+            border-radius: 99px;
+        }
+
+        /* ── Main Content ─────────────────────────── */
+        #admin-main {
+            margin-left: 260px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left 0.3s ease;
+        }
+        #admin-topbar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: var(--bg-dark);
+            border-bottom: 1px solid var(--border);
+            padding: 0 1.5rem;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        #admin-content {
+            padding: 2rem 2rem;
+            flex: 1;
+        }
+
+        /* ── Tab System ────────────────────────────── */
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        /* ── Stat Cards ────────────────────────────── */
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: var(--accent, var(--neon-orange));
+            box-shadow: 0 0 8px var(--accent, var(--neon-orange));
+        }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+        .stat-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--accent, var(--neon-orange)); margin-bottom: 8px; }
+        .stat-value { font-size: 2rem; font-weight: 900; color: #fff; }
+        .stat-icon { position: absolute; right: 1.2rem; top: 50%; transform: translateY(-50%); font-size: 2.5rem; opacity: 0.08; }
+
+        /* ── Tables ────────────────────────────────── */
+        .admin-table-wrap {
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid rgba(255,157,0,0.1);
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+        }
+        .admin-table-wrap table { width: 100%; border-collapse: collapse; }
+        .admin-table-wrap thead tr { background: rgba(255,157,0,0.05); border-bottom: 1px solid rgba(255,157,0,0.15); }
+        .admin-table-wrap thead th { padding: 0.85rem 1rem; font-size: 0.65rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--neon-orange); text-align: left; }
+        .admin-table-wrap tbody tr { border-bottom: 1px solid rgba(255,255,255,0.03); transition: background 0.15s; }
+        .admin-table-wrap tbody tr:last-child { border-bottom: none; }
+        .admin-table-wrap tbody tr:hover { background: rgba(255,255,255,0.03); }
+        .admin-table-wrap td { padding: 0.85rem 1rem; font-size: 0.85rem; color: #cbd5e1; vertical-align: middle; }
+
+        /* ── Buttons ───────────────────────────────── */
+        .btn-neon-orange {
+            background: linear-gradient(135deg, #ff9d00, #ff6b00);
+            color: #000;
+            font-weight: 800;
+            padding: 0.6rem 1.4rem;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 0 16px rgba(255,157,0,0.35);
+            transition: all 0.2s;
+        }
+        .btn-neon-orange:hover { box-shadow: 0 0 24px rgba(255,157,0,0.6); transform: translateY(-1px); }
+        .btn-neon-cyan {
+            background: linear-gradient(135deg, #00f3ff, #0077ff);
+            color: #000;
+            font-weight: 800;
+            padding: 0.6rem 1.4rem;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 0 16px rgba(0,243,255,0.35);
+            transition: all 0.2s;
+        }
+        .btn-neon-cyan:hover { box-shadow: 0 0 24px rgba(0,243,255,0.6); transform: translateY(-1px); }
+        .btn-ghost {
+            background: rgba(255,255,255,0.05);
+            color: #94a3b8;
+            font-weight: 600;
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.08);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+        .btn-ghost:hover { color: #fff; background: rgba(255,255,255,0.08); }
+        .btn-danger {
+            background: rgba(255,51,102,0.1);
+            color: var(--neon-red);
+            font-weight: 700;
+            padding: 0.4rem 0.9rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255,51,102,0.2);
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+        .btn-danger:hover { background: rgba(255,51,102,0.2); }
+        .btn-sm-edit {
+            background: rgba(0,243,255,0.08);
+            color: var(--neon-cyan);
+            font-weight: 700;
+            padding: 0.35rem 0.75rem;
+            border-radius: 7px;
+            border: 1px solid rgba(0,243,255,0.15);
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+        .btn-sm-edit:hover { background: rgba(0,243,255,0.15); }
+        .btn-sm-primary {
+            background: rgba(255,157,0,0.1);
+            color: var(--neon-orange);
+            font-weight: 700;
+            padding: 0.35rem 0.8rem;
+            border-radius: 7px;
+            border: 1px solid rgba(255,157,0,0.2);
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+        .btn-sm-primary:hover { background: rgba(255,157,0,0.2); }
+
+        /* ── Status Badges ─────────────────────────── */
+        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+        .badge-active { background: rgba(0,255,136,0.1); color: var(--neon-green); border: 1px solid rgba(0,255,136,0.2); }
+        .badge-inactive { background: rgba(255,51,102,0.1); color: var(--neon-red); border: 1px solid rgba(255,51,102,0.2); }
+        .badge-pending { background: rgba(255,157,0,0.12); color: var(--neon-orange); border: 1px solid rgba(255,157,0,0.25); }
+        .badge-success { background: rgba(0,255,136,0.1); color: var(--neon-green); border: 1px solid rgba(0,255,136,0.2); }
+        .badge-processing { background: rgba(0,243,255,0.1); color: var(--neon-cyan); border: 1px solid rgba(0,243,255,0.2); }
+        .badge-cancelled { background: rgba(100,116,139,0.1); color: #64748b; border: 1px solid rgba(100,116,139,0.2); }
+        .badge-failed { background: rgba(255,51,102,0.1); color: var(--neon-red); border: 1px solid rgba(255,51,102,0.2); }
+        .badge-waiting { background: rgba(255,157,0,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
+
+        /* ── Modal Overlay ─────────────────────────── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(4px);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s;
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+        .modal-box {
+            background: var(--bg-dark);
+            border-radius: 20px;
+            border: 1px solid rgba(255,157,0,0.2);
+            box-shadow: 0 0 40px rgba(255,157,0,0.1), 0 25px 60px rgba(0,0,0,0.6);
+            width: 100%;
+            max-width: 680px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.95) translateY(20px);
+            transition: all 0.25s;
+        }
+        .modal-overlay.open .modal-box { transform: scale(1) translateY(0); }
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid rgba(255,157,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,157,0,0.04);
+        }
+        .modal-header h3 { font-size: 0.95rem; font-weight: 800; color: #fff; letter-spacing: 1px; text-transform: uppercase; }
+        .modal-body { padding: 1.5rem; overflow-y: auto; flex: 1; }
+        .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: flex-end; gap: 10px; }
+
+        /* ── Form Inputs ───────────────────────────── */
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; font-size: 0.7rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: #64748b; margin-bottom: 6px; }
+        .form-input {
+            width: 100%;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 0.65rem 1rem;
+            color: #e2e8f0;
+            font-size: 0.85rem;
+            font-family: 'Outfit', sans-serif;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .form-input:focus { border-color: rgba(255,157,0,0.4); box-shadow: 0 0 8px rgba(255,157,0,0.15); }
+        .form-input option { background: var(--bg-dark); color: #e2e8f0; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+        /* ── Sidebar Overlay (Mobile) ─────────────── */
+        #sidebar-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            z-index: 45;
+            display: none;
+        }
+        #sidebar-backdrop.open { display: block; }
+
+        /* ── Responsive ────────────────────────────── */
+        @media (max-width: 768px) {
+            #admin-sidebar { transform: translateX(-100%); }
+            #admin-sidebar.open { transform: translateX(0); }
+            #admin-main { margin-left: 0; }
+        }
+
+        /* ── File Picker Modal ─────────────────────── */
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .file-thumb {
+            border: 2px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+            aspect-ratio: 1;
+            position: relative;
+        }
+        .file-thumb:hover { border-color: var(--neon-orange); box-shadow: 0 0 12px rgba(255,157,0,0.3); }
+        .file-thumb.selected { border-color: var(--neon-orange); }
+        .file-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .file-thumb-name {
+            position: absolute;
+            bottom: 0;
+            left: 0; right: 0;
+            background: rgba(0,0,0,0.7);
+            font-size: 0.55rem;
+            padding: 3px 5px;
+            truncate: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        /* ── Chat ──────────────────────────────────── */
+        .chat-container { display: grid; grid-template-columns: 280px 1fr; height: 560px; gap: 0; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,157,0,0.1); }
+        .chat-sidebar { background: var(--bg-card); border-right: 1px solid rgba(255,255,255,0.05); overflow-y: auto; }
+        .chat-main { background: var(--bg-surface); display: flex; flex-direction: column; }
+        .chat-user-item { padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer; transition: all 0.15s; }
+        .chat-user-item:hover { background: rgba(255,255,255,0.04); }
+        .chat-user-item.active { background: rgba(255,157,0,0.08); border-left: 2px solid var(--neon-orange); }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 10px; }
+        .chat-msg { max-width: 75%; }
+        .chat-msg.admin { align-self: flex-end; }
+        .chat-msg-bubble { padding: 10px 14px; border-radius: 14px; font-size: 0.82rem; line-height: 1.5; }
+        .chat-msg.admin .chat-msg-bubble { background: rgba(255,157,0,0.15); color: #fff; border: 1px solid rgba(255,157,0,0.2); border-bottom-right-radius: 4px; }
+        .chat-msg.user .chat-msg-bubble { background: rgba(255,255,255,0.05); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.08); border-bottom-left-radius: 4px; }
+        .chat-input-area { padding: 1rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 10px; }
+
+        /* ── Custom Scrollbar ──────────────────────── */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,157,0,0.25); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,157,0,0.45); }
+
+        /* ── Section Header ────────────────────────── */
+        .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+        .section-title { font-size: 1.3rem; font-weight: 900; color: #fff; letter-spacing: -0.5px; }
+        .section-title span { color: var(--neon-orange); }
+        
+        /* ── Empty State ───────────────────────────── */
+        .empty-state { padding: 3rem; text-align: center; color: #475569; }
+        .empty-state i { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.4; }
+        
+        /* ── Skeleton Loading ──────────────────────── */
+        .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        
+        /* Floating WA */
+        .wa-float {
+            position: fixed;
+            bottom: 28px; right: 28px;
+            width: 54px; height: 54px;
+            background: #25D366;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+            color: #fff;
+            z-index: 9999;
+            box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .wa-float:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(37,211,102,0.6); }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-900 font-sans antialiased min-h-screen flex text-sm">
-    
-    <!-- Sidebar Left -->
-    <div id="admin-sidebar-overlay"></div>
-    <aside id="admin-sidebar" class="w-64 bg-white border-r border-slate-200 h-screen fixed hidden md:flex flex-col z-50 shadow-xl">
-        <div class="p-6 border-b border-slate-100">
-            <h1 class="text-xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-neon-orange">RGS <span class="text-slate-900">STORE</span></h1>
-            <p class="text-[10px] text-primary-600 font-bold tracking-widest uppercase">Admin Terminal V7</p>
+<body>
+
+<!-- ─── Sidebar Backdrop (Mobile) ──────────────────────── -->
+<div id="sidebar-backdrop"></div>
+
+<!-- ─── Admin Sidebar ──────────────────────────────────── -->
+<aside id="admin-sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-logo">RGS STORE</div>
+        <div class="brand-sub">Admin Terminal V9</div>
+    </div>
+    <nav id="sidebar-nav" style="flex:1; overflow-y:auto; padding: 1rem 0;">
+        <button class="nav-item active" data-tab="dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</button>
+        <button class="nav-item" data-tab="products"><i class="fa-solid fa-boxes-stacked"></i> Produk</button>
+        <button class="nav-item" data-tab="orders"><i class="fa-solid fa-receipt"></i> Pesanan <span class="nav-badge" id="badge-orders">0</span></button>
+        <button class="nav-item" data-tab="verification"><i class="fa-solid fa-check-circle"></i> Verifikasi <span class="nav-badge" id="badge-verification">0</span></button>
+        <button class="nav-item" data-tab="payments"><i class="fa-solid fa-credit-card"></i> Pembayaran</button>
+        <button class="nav-item" data-tab="tickets"><i class="fa-solid fa-headset"></i> Tiket CS</button>
+        <button class="nav-item" data-tab="chat"><i class="fa-solid fa-message"></i> Chat</button>
+        <button class="nav-item" data-tab="files"><i class="fa-solid fa-folder-open"></i> File Manager</button>
+        <div style="height:1px; background: rgba(255,255,255,0.05); margin: 8px 12px;"></div>
+        <a href="/index.html" class="nav-item" style="text-decoration:none;"><i class="fa-solid fa-store"></i> Ke Toko</a>
+        <button class="nav-item" id="btn-logout" style="color: #ff3366;"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+    </nav>
+</aside>
+
+<!-- ─── Main Area ──────────────────────────────────────── -->
+<main id="admin-main">
+
+    <!-- Topbar -->
+    <header id="admin-topbar">
+        <div style="display:flex; align-items:center; gap:14px;">
+            <button id="hamburger-btn" style="background:none;border:none;color:#94a3b8;font-size:1.2rem;cursor:pointer;display:none">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <div id="current-tab-title" style="font-size:0.9rem; font-weight:700; color:#94a3b8; letter-spacing:1px; text-transform:uppercase;">Dashboard</div>
         </div>
-        <nav class="flex-grow p-4 space-y-2 pb-24 overflow-y-auto">
-            <button data-action="switch-tab" data-tab="dashboard" id="btn-tab-dashboard" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-primary-600 text-white font-medium shadow-lg shadow-primary-500/30 transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                Dashboard
-            </button>
-            <button data-action="switch-tab" data-tab="products" id="btn-tab-products" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-50 text-slate-600 transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-                Manajemen Produk
-            </button>
-            <button data-action="switch-tab" data-tab="orders" id="btn-tab-orders" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 text-gray-300 transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                Pesanan Masuk
-            </button>
-            <button data-action="switch-tab" data-tab="payments" id="btn-tab-payments" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 text-gray-300 transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-                Info Pembayaran
-            </button>
-            <button data-action="switch-tab" data-tab="chat" id="btn-tab-chat" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 text-gray-300 transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
-                Chat Pelanggan
-            </button>
-            <button data-action="switch-tab" data-tab="tickets" id="btn-tab-tickets" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 text-gray-300 transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                Tiket Support
-            </button>
-            <button data-action="switch-tab" data-tab="verification" id="btn-tab-verification" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 text-orange-400 font-bold transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                Verifikasi Bayar
-            </button>
-            <button data-action="switch-tab" data-tab="storage" id="btn-tab-storage" class="admin-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-50 text-slate-600 transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2z"></path></svg>
-                Penyimpanan Berkas (V7)
-            </button>
-        </nav>
-        <div class="p-4 border-t border-gray-800 mt-auto">
-             <a href="index.html" class="block w-full text-center px-4 py-2 text-gray-400 hover:text-white rounded-lg transition font-medium text-xs mb-2">← Kembali ke Toko</a>
-             <button data-action="logout" class="w-full text-center px-4 py-2 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition font-medium">Logout Admin</button>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <div id="admin-user-chip" style="font-size:0.8rem; color:#64748b; font-weight:600;"></div>
+            <div style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#ff9d00,#ff6b00); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.8rem; color:#000;" id="admin-avatar">A</div>
         </div>
-    </aside>
+    </header>
 
-    <!-- Main Content Right -->
-    <main class="flex-grow flex flex-col w-full overflow-hidden md:pl-64">
-        
-        <!-- Mobile Topbar -->
-        <header class="bg-gray-900 text-white p-4 flex justify-between items-center md:hidden h-16 sticky top-0 z-40">
-            <div class="flex items-center gap-3">
-                <button id="admin-mobile-menu-btn" class="text-white"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
-                <h1 class="text-xl font-extrabold tracking-tighter text-primary-500">RGS <span class="text-white">ADMIN</span></h1>
+    <!-- Content -->
+    <div id="admin-content">
+
+        <!-- ── TAB: Dashboard ── -->
+        <div class="tab-pane active" id="tab-dashboard">
+            <div class="section-header">
+                <h2 class="section-title">Operational <span>Status</span></h2>
+                <button class="btn-ghost" onclick="AdminV9.loadAll()" style="font-size:0.75rem;"><i class="fa-solid fa-rotate-right" style="margin-right:6px;"></i>Refresh</button>
             </div>
-            <button data-action="logout" class="text-xs border border-gray-600 px-3 py-1.5 rounded hover:bg-gray-800 transition">Logout</button>
-        </header>
-        
-        <!-- Mobile Nav Tabs -->
-        <div class="flex overflow-x-auto bg-dark-800 border-b border-primary-500/10 shadow-sm md:hidden p-2 space-x-2 sticky top-16 z-30">
-            <button data-action="switch-tab" data-tab="dashboard" class="admin-tab-mob px-4 py-2 rounded bg-primary-900/50 text-primary-500 font-bold text-xs" id="mob-tab-dashboard">Dashboard</button>
-            <button data-action="switch-tab" data-tab="products" class="admin-tab-mob px-4 py-2 rounded bg-dark-700 text-gray-400 font-bold text-xs" id="mob-tab-products">Produk</button>
-            <button data-action="switch-tab" data-tab="orders" class="admin-tab-mob px-4 py-2 rounded bg-dark-700 text-gray-400 font-bold text-xs" id="mob-tab-orders">Pesanan</button>
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1.25rem; margin-bottom:2rem;">
+                <div class="stat-card" style="--accent: var(--neon-orange);">
+                    <div class="stat-label">Gross Revenue</div>
+                    <div class="stat-value" id="stat-revenue">—</div>
+                    <i class="fa-solid fa-money-bill-wave stat-icon" style="color:var(--neon-orange)"></i>
+                </div>
+                <div class="stat-card" style="--accent: var(--neon-cyan);">
+                    <div class="stat-label">Total Orders</div>
+                    <div class="stat-value" id="stat-orders">—</div>
+                    <i class="fa-solid fa-shopping-cart stat-icon" style="color:var(--neon-cyan)"></i>
+                </div>
+                <div class="stat-card" style="--accent: #a78bfa;">
+                    <div class="stat-label">Pending Orders</div>
+                    <div class="stat-value" id="stat-pending">—</div>
+                    <i class="fa-solid fa-clock stat-icon" style="color:#a78bfa"></i>
+                </div>
+                <div class="stat-card" style="--accent: var(--neon-green);">
+                    <div class="stat-label">Active Products</div>
+                    <div class="stat-value" id="stat-products">—</div>
+                    <i class="fa-solid fa-boxes-stacked stat-icon" style="color:var(--neon-green)"></i>
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem;">
+                <div class="admin-table-wrap">
+                    <div style="padding:1rem 1.25rem; border-bottom:1px solid rgba(255,157,0,0.1); font-size:0.75rem; font-weight:800; color:var(--neon-orange); letter-spacing:2px; text-transform:uppercase;">Pesanan Terbaru</div>
+                    <table><tbody id="dash-recent-orders" style="font-size:0.8rem;"></tbody></table>
+                </div>
+                <div class="admin-table-wrap">
+                    <div style="padding:1rem 1.25rem; border-bottom:1px solid rgba(255,157,0,0.1); font-size:0.75rem; font-weight:800; color:var(--neon-cyan); letter-spacing:2px; text-transform:uppercase;">Menunggu Verifikasi</div>
+                    <table><tbody id="dash-waiting-orders" style="font-size:0.8rem;"></tbody></table>
+                </div>
+            </div>
         </div>
 
-        <div class="p-4 md:p-8 overflow-y-auto flex-grow relative pb-24">
-            
-            <!-- TAB: Dashboard -->
-            <div id="tab-dashboard" class="tab-content active">
-                <h2 class="text-2xl font-black mb-6 text-slate-800">OPERATIONAL STATUS</h2>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-2xl border-b-4 border-primary-500 shadow-xl shadow-slate-200/50 hover:scale-[1.02] transition-all group">
-                        <p class="text-primary-600 text-[10px] font-black uppercase tracking-widest mb-1">Gross Revenue</p>
-                        <h3 id="stat-totalRevenue" class="text-3xl font-black text-slate-900 transition-transform">Rp 0</h3>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl border-b-4 border-neon-orange shadow-xl shadow-slate-200/50 hover:scale-[1.02] transition-all group">
-                        <p class="text-neon-orange text-[10px] font-black uppercase tracking-widest mb-1">Total Orders</p>
-                        <h3 id="stat-totalOrders" class="text-3xl font-black text-slate-900 transition-transform">0</h3>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-lg">
-                        <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Active Items</p>
-                        <h3 id="stat-activeProducts" class="text-3xl font-black text-slate-800">0</h3>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-lg">
-                        <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Support Tickets</p>
-                        <h3 id="stat-tickets" class="text-3xl font-black text-slate-800">0</h3>
-                    </div>
-                </div>
+        <!-- ── TAB: Products ── -->
+        <div class="tab-pane" id="tab-products">
+            <div class="section-header">
+                <h2 class="section-title">Manajemen <span>Produk</span></h2>
+                <button class="btn-neon-orange" id="btn-open-product-modal"><i class="fa-solid fa-plus" style="margin-right:6px;"></i>Tambah Produk</button>
             </div>
-
-            <!-- TAB: Produk -->
-            <div id="tab-products" class="tab-content">
-                <div class="flex flex-col md:flex-row justify-between mb-6">
-                    <h2 class="text-2xl font-black">Manajemen Produk</h2>
-                    <button data-action="open-product-modal" class="bg-primary-500 hover:bg-primary-600 text-black font-black py-2.5 px-6 rounded-xl shadow-lg shadow-primary-500/20 transition-all uppercase tracking-wider">+ Tambah Produk baru</button>
-                </div>
-
-                <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left min-w-[800px]">
-                            <thead class="bg-slate-50 border-b border-slate-100">
-                                <tr>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500 w-16 text-center">No</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500">Info Produk</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500">Harga Jual</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500">Diskon</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500">Stok</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500 text-right">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-table-products" class="divide-y divide-slate-50 text-slate-700"></tbody>
-                        </table>
-                    </div>
-                </div>
+            <div class="admin-table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Produk</th>
+                            <th>Harga</th>
+                            <th>Diskon</th>
+                            <th>Stok</th>
+                            <th>Status</th>
+                            <th style="text-align:right;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-products"></tbody>
+                </table>
             </div>
-
-            <!-- TAB: Pesanan -->
-            <div id="tab-orders" class="tab-content">
-                <h2 class="text-2xl font-black mb-6 text-slate-800">Daftar Pesanan Masuk</h2>
-                <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left min-w-[1000px]">
-                            <thead class="bg-slate-50 border-b border-slate-100">
-                                <tr>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500 font-bold">Order / Waktu</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500 font-bold">Pelanggan</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500 font-bold">Item</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500 font-bold">Total</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500 font-bold">Kredensial</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500 font-bold text-center">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-table-orders" class="divide-y divide-slate-50 text-slate-700"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB: Tiket -->
-            <div id="tab-tickets" class="tab-content">
-                <h2 class="text-2xl font-black mb-6 text-slate-800">Pusat Bantuan</h2>
-                <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left min-w-[1000px]">
-                            <thead class="bg-slate-50 border-b border-slate-100">
-                                <tr>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500 font-bold">Info Tiket</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500 font-bold">Pengirim</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500 font-bold">Pesan</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500 font-bold">Status</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500 font-bold">Tgl Masuk</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500 font-bold text-right">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-table-tickets" class="divide-y divide-slate-50 text-slate-700"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB: Payments -->
-            <div id="tab-payments" class="tab-content">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-slate-800">Info Metode Pembayaran</h2>
-                    <button data-action="open-payment-modal" class="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg shadow-primary-500/20 transition-all uppercase tracking-wider">+ Tambah Metode</button>
-                </div>
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left min-w-[800px]">
-                            <thead class="bg-gray-50 border-b">
-                                <tr>
-                                    <th class="p-4 font-semibold text-gray-600">Metode</th>
-                                    <th class="p-4 font-semibold text-gray-600">Tipe</th>
-                                    <th class="p-4 font-semibold text-gray-600">Nomor / Link</th>
-                                    <th class="p-4 font-semibold text-gray-600">Nama Akun</th>
-                                    <th class="p-4 font-semibold text-gray-600">Status</th>
-                                    <th class="p-4 font-semibold text-gray-600 text-right">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-table-payments" class="divide-y divide-gray-100"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB: Chat -->
-            <div id="tab-chat" class="tab-content">
-                <h2 class="text-2xl font-bold mb-6">Chat Pelanggan (In-App)</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-[600px]">
-                    <!-- User List -->
-                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-                        <div class="p-4 border-b bg-gray-50 font-bold text-gray-600">Daftar Chat</div>
-                        <div id="chat-user-list" class="flex-grow overflow-y-auto divide-y divide-gray-50"></div>
-                    </div>
-                    <!-- Chat Window -->
-                    <div class="md:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col relative">
-                        <div id="chat-window-header" class="p-4 border-b bg-gray-50 flex items-center justify-between">
-                            <span class="font-bold text-gray-700" id="current-chat-name">Pilih User untuk Chat</span>
-                            <span class="text-xs text-gray-400" id="current-chat-email"></span>
-                        </div>
-                        <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-4 bg-gray-50/30">
-                            <div class="h-full flex items-center justify-center text-gray-400 italic">Mulai percakapan...</div>
-                        </div>
-                        <div class="p-4 border-t flex flex-col gap-2 bg-white">
-                            <div id="admin-chat-preview" class="hidden px-4 py-2 border-b flex items-center justify-between bg-gray-50">
-                                <span class="text-[10px] text-primary-600 font-bold" id="admin-chat-file-name"></span>
-                                <button onclick="document.getElementById('admin-chat-file').value=''; document.getElementById('admin-chat-preview').classList.add('hidden')" class="text-red-500 text-xs font-bold">Batal</button>
-                            </div>
-                            <div class="flex gap-2">
-                                <label for="admin-chat-file" class="bg-gray-100 hover:bg-gray-200 p-2 rounded-lg cursor-pointer transition">
-                                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13"></path></svg>
-                                    <input type="file" id="admin-chat-file" class="hidden" onchange="const f=this.files[0]; if(f){ document.getElementById('admin-chat-preview').classList.remove('hidden'); document.getElementById('admin-chat-file-name').textContent=f.name; }">
-                                </label>
-                                <input type="text" id="admin-chat-input" placeholder="Tulis balasan..." class="flex-grow border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-primary-500">
-                                <button data-action="send-chat" class="bg-primary-500 text-white px-6 py-2 rounded-lg font-bold hover:bg-primary-600 transition">Kirim</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- TAB: Verification -->
-            <div id="tab-verification" class="tab-content">
-                <h2 class="text-2xl font-bold mb-6 italic text-neon-orange tracking-tight uppercase">Verifikasi Pembayaran On-site</h2>
-                <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left min-w-[900px]">
-                            <thead class="bg-slate-50 border-b border-slate-100">
-                                <tr>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500">Order # / Tgl</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500">Pelanggan</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500">Total</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500">Bukti Transfer</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500 text-right">Aksi</th>
-                                </tr>
-                            </thead>
-            <tbody id="admin-table-verification" class="divide-y divide-slate-50 text-slate-700"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB: Storage -->
-            <div id="tab-storage" class="tab-content">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-slate-800">Penyimpanan Berkas (Admin)</h2>
-                    <div class="flex gap-2">
-                        <input type="file" id="admin-file-input" class="hidden">
-                        <button onclick="document.getElementById('admin-file-input').click()" class="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg shadow-primary-500/20 transition-all uppercase tracking-wider">+ Upload Berkas</button>
-                    </div>
-                </div>
-                <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left min-w-[800px]">
-                            <thead class="bg-slate-50 border-b border-slate-100">
-                                <tr>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500 font-bold">Nama Berkas</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500 font-bold">Ukuran</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500 font-bold">Tgl Upload</th>
-                                    <th class="p-4 font-black text-[10px] uppercase text-slate-500 font-bold text-right">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-table-files" class="divide-y divide-slate-50 text-slate-700"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            
         </div>
-    </main>
 
-    <!-- Modal Form Product -->
-    <div id="modal-product" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl transform scale-95 transition-transform border border-slate-100">
-            <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-                <h3 class="font-black text-slate-800 text-xl uppercase tracking-widest">Data Produk</h3>
-                <button data-action="close-product-modal" class="text-slate-400 hover:text-primary-600 transition"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        <!-- ── TAB: Orders ── -->
+        <div class="tab-pane" id="tab-orders">
+            <div class="section-header">
+                <h2 class="section-title">Semua <span>Pesanan</span></h2>
             </div>
-            <div class="p-6 max-h-[70vh] overflow-y-auto">
-                <form id="formTambahProduk" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="hidden" id="form-id">
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-black text-slate-400 uppercase mb-1">Nama Produk</label>
-                        <input type="text" id="form-name" name="name" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 text-slate-900 outline-none transition">
+            <div class="admin-table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Invoice</th>
+                            <th>Pembeli</th>
+                            <th>Produk</th>
+                            <th>Total</th>
+                            <th>Metode</th>
+                            <th>Kredensial</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-orders"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ── TAB: Verification ── -->
+        <div class="tab-pane" id="tab-verification">
+            <div class="section-header">
+                <h2 class="section-title">Verifikasi <span>Pembayaran</span></h2>
+            </div>
+            <div class="admin-table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Invoice</th>
+                            <th>Pembeli</th>
+                            <th>Total</th>
+                            <th>Bukti Bayar</th>
+                            <th style="text-align:right;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-verification"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ── TAB: Payments ── -->
+        <div class="tab-pane" id="tab-payments">
+            <div class="section-header">
+                <h2 class="section-title">Metode <span>Pembayaran</span></h2>
+                <button class="btn-neon-orange" id="btn-open-payment-modal"><i class="fa-solid fa-plus" style="margin-right:6px;"></i>Tambah Metode</button>
+            </div>
+            <div class="admin-table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Tipe</th>
+                            <th>No. Rekening / Link</th>
+                            <th>Atas Nama</th>
+                            <th>QRIS</th>
+                            <th>Status</th>
+                            <th style="text-align:right;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-payments"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ── TAB: Tickets ── -->
+        <div class="tab-pane" id="tab-tickets">
+            <div class="section-header">
+                <h2 class="section-title">Tiket <span>Support</span></h2>
+            </div>
+            <div class="admin-table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tiket #</th>
+                            <th>Pengirim</th>
+                            <th>Subjek & Pesan</th>
+                            <th>Status</th>
+                            <th>Tgl Masuk</th>
+                            <th style="text-align:right;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-tickets"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ── TAB: Chat ── -->
+        <div class="tab-pane" id="tab-chat">
+            <div class="section-header"><h2 class="section-title">Live <span>Chat</span></h2></div>
+            <div class="chat-container">
+                <div class="chat-sidebar">
+                    <div style="padding:0.75rem 1rem; font-size:0.65rem; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:var(--neon-orange); border-bottom:1px solid rgba(255,255,255,0.05);">Daftar Percakapan</div>
+                    <div id="chat-user-list"></div>
+                </div>
+                <div class="chat-main">
+                    <div style="padding:0.85rem 1.25rem; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; align-items:center; gap:10px;">
+                        <div id="chat-active-name" style="font-weight:700; font-size:0.85rem;">Pilih percakapan...</div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-black text-slate-400 uppercase mb-1">Kategori</label>
-                        <select id="form-category" name="category" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 text-slate-900 font-bold outline-none">
+                    <div class="chat-messages" id="chat-messages">
+                        <div style="text-align:center; color:#475569; margin:auto; font-size:0.8rem;">Pilih user untuk melihat chat</div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input id="chat-input" type="text" class="form-input" placeholder="Tulis balasan..." style="flex:1;" onkeydown="if(event.key==='Enter') AdminV9.sendChat()">
+                        <button class="btn-neon-orange" onclick="AdminV9.sendChat()"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── TAB: Files ── -->
+        <div class="tab-pane" id="tab-files">
+            <div class="section-header">
+                <h2 class="section-title">File <span>Manager</span></h2>
+                <label for="file-upload-input" class="btn-neon-orange" style="cursor:pointer;"><i class="fa-solid fa-upload" style="margin-right:6px;"></i>Upload Berkas</label>
+                <input type="file" id="file-upload-input" style="display:none;" onchange="AdminV9.uploadFile(this)">
+            </div>
+            <div class="admin-table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nama File</th>
+                            <th>Ukuran</th>
+                            <th>Tgl Upload</th>
+                            <th style="text-align:right;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-files"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div><!-- /admin-content -->
+</main>
+
+<!-- ─── Modal: Product Form ──────────────────────────── -->
+<div class="modal-overlay" id="modal-product">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modal-product-title">Tambah Produk</h3>
+            <button class="btn-ghost" style="padding:0.3rem 0.6rem;" onclick="AdminV9.closeModal('modal-product')"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <form id="form-product" onsubmit="AdminV9.saveProduct(event)">
+                <input type="hidden" id="fp-id">
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column:1/-1;">
+                        <label class="form-label">Nama Produk</label>
+                        <input id="fp-name" name="name" type="text" class="form-input" required placeholder="e.g. Netflix Premium 4K">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Kategori</label>
+                        <select id="fp-category" name="category" class="form-input">
                             <option value="Streaming">Streaming</option>
                             <option value="Discord">Discord</option>
                             <option value="Hosting">Hosting</option>
@@ -317,122 +699,120 @@
                             <option value="Lainnya">Lainnya</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-xs font-black text-slate-400 uppercase mb-1">Stok</label>
-                        <input type="number" id="form-stock" name="stock" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 text-slate-900 outline-none">
+                    <div class="form-group">
+                        <label class="form-label">Stok</label>
+                        <input id="fp-stock" name="stock" type="number" class="form-input" required placeholder="0" min="0">
                     </div>
-                    <div>
-                        <label class="block text-xs font-black text-slate-400 uppercase mb-1">Harga Dasar (Rp)</label>
-                        <input type="number" id="form-price" name="price" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 text-slate-900 outline-none">
+                    <div class="form-group">
+                        <label class="form-label">Harga Dasar (Rp)</label>
+                        <input id="fp-price" name="price" type="number" class="form-input" required placeholder="50000">
                     </div>
-                    <div>
-                        <label class="block text-xs font-black text-slate-400 uppercase mb-1">Diskon (%)</label>
-                        <input type="number" id="form-discount" name="discount" value="0" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 text-slate-900 outline-none">
+                    <div class="form-group">
+                        <label class="form-label">Diskon (%)</label>
+                        <input id="fp-discount" name="discount" type="number" class="form-input" value="0" min="0" max="100">
                     </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-black text-slate-400 uppercase mb-1">Varian (Pisahkan dengan koma)</label>
-                        <input type="text" id="form-variants" placeholder="5 Diamond, 10 Diamond, dst" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 text-slate-900 outline-none">
+                    <div class="form-group" style="grid-column:1/-1;">
+                        <label class="form-label">Varian (pisahkan koma)</label>
+                        <input id="fp-variants" name="variants" type="text" class="form-input" placeholder="1 Bulan, 3 Bulan, 1 Tahun">
                     </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-black text-slate-400 uppercase mb-1">Deskripsi</label>
-                        <textarea id="form-desc" name="description" rows="3" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 text-slate-900 outline-none"></textarea>
+                    <div class="form-group" style="grid-column:1/-1;">
+                        <label class="form-label">Deskripsi</label>
+                        <textarea id="fp-desc" name="description" class="form-input" rows="3" placeholder="Deskripsi produk..."></textarea>
                     </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-black text-slate-400 uppercase mb-1">Gambar Produk</label>
-                        <input type="file" id="form-image" name="image" accept="image/*" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-400">
-                        <div id="current-image-container" class="mt-2 hidden">
-                            <p class="text-[10px] text-slate-500 mb-1">Gambar Saat Ini:</p>
-                            <img id="current-image" src="" class="h-20 rounded border border-slate-200">
-                        </div>
+                    <div class="form-group" style="grid-column:1/-1;">
+                        <label class="form-label">Gambar Produk</label>
+                        <input id="fp-image" name="image" type="file" class="form-input" accept="image/*" style="padding:0.5rem;">
+                        <div id="fp-current-img" style="margin-top:8px; display:none;"><img id="fp-img-preview" src="" style="height:60px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);"></div>
                     </div>
-                </form>
-            </div>
-            <div class="p-6 border-t border-white/10 bg-dark-700/50 flex justify-end gap-3">
-                <button type="button" data-action="close-product-modal" class="px-6 py-2.5 font-bold bg-dark-900 border border-white/10 rounded-xl text-gray-400 hover:text-white transition uppercase text-xs tracking-wider">Batal</button>
-                <button type="submit" form="formTambahProduk" id="btn-save-product" class="px-8 py-2.5 font-black bg-primary-500 text-black rounded-xl shadow-lg shadow-primary-500/20 hover:scale-105 transition-all uppercase text-xs tracking-wider">Simpan Produk</button>
-            </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-ghost" onclick="AdminV9.closeModal('modal-product')">Batal</button>
+            <button class="btn-neon-orange" type="submit" form="form-product" id="btn-save-product">Simpan Produk</button>
         </div>
     </div>
+</div>
 
-    <!-- Modal Form Payment -->
-    <div id="modal-payment" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 hidden opacity-0 transition-opacity">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg transform scale-95 transition-transform">
-            <div class="p-5 border-b flex justify-between items-center bg-gray-50 rounded-t-2xl">
-                <h3 class="font-bold text-gray-800 text-lg">Metode Pembayaran</h3>
-                <button data-action="close-payment-modal" class="text-gray-400 hover:text-red-500"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-            </div>
-            <div class="p-6">
-                <form id="form-payment-method" class="space-y-4">
-                    <input type="hidden" id="pay-id">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">Nama Metode (e.g., DANA, BCA)</label>
-                        <input type="text" id="pay-name" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+<!-- ─── Modal: Payment Method Form ────────────────────── -->
+<div class="modal-overlay" id="modal-payment">
+    <div class="modal-box" style="max-width:520px;">
+        <div class="modal-header">
+            <h3 id="modal-payment-title">Tambah Metode Pembayaran</h3>
+            <button class="btn-ghost" style="padding:0.3rem 0.6rem;" onclick="AdminV9.closeModal('modal-payment')"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <form id="form-payment" onsubmit="AdminV9.savePayment(event)">
+                <input type="hidden" id="pay-id">
+                <input type="hidden" id="pay-qris-url">
+                <div class="form-group">
+                    <label class="form-label">Nama Metode</label>
+                    <input id="pay-name" type="text" class="form-input" required placeholder="e.g. DANA, BCA, QRIS">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipe</label>
+                    <select id="pay-type" class="form-input">
+                        <option value="ewallet">E-Wallet</option>
+                        <option value="bank">Transfer Bank</option>
+                        <option value="qris">QRIS</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">No. Rekening / Link</label>
+                    <input id="pay-number" type="text" class="form-input" placeholder="0812-xxxx-xxxx">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Atas Nama</label>
+                    <input id="pay-account-name" type="text" class="form-input" placeholder="Nama pemilik rekening">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Foto QRIS</label>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <button type="button" class="btn-neon-cyan" onclick="AdminV9.openFilePicker()" style="white-space:nowrap; font-size:0.75rem;">
+                            <i class="fa-solid fa-folder-open" style="margin-right:6px;"></i>Pilih dari File Manager
+                        </button>
+                        <span id="pay-qris-selected" style="font-size:0.75rem; color:#64748b; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Belum dipilih</span>
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">Tipe</label>
-                        <select id="pay-type" class="w-full px-3 py-2 border rounded-lg focus:ring-2 bg-white">
-                            <option value="ewallet">E-Wallet</option>
-                            <option value="bank">Transfer Bank</option>
-                            <option value="qris">QRIS (Link/String)</option>
-                        </select>
+                    <div id="pay-qris-preview" style="margin-top:8px; display:none;">
+                        <img id="pay-qris-img" src="" style="height:80px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">Nomor Rekening / Link Transfer</label>
-                        <input type="text" id="pay-number" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">Upload QRIS (Opsional)</label>
-                        <input type="file" id="pay-qris-file" name="qris" accept="image/*" class="w-full px-3 py-1.5 border rounded-lg text-xs bg-white">
-                        <div id="current-qris-container" class="mt-2 hidden">
-                            <p class="text-[10px] text-gray-400 mb-1">QRIS Terpasang:</p>
-                            <img id="current-qris-img" src="" class="h-20 rounded border">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">Atas Nama</label>
-                        <input type="text" id="pay-account-name" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <input type="checkbox" id="pay-active" checked>
-                        <label for="pay-active" class="text-xs font-semibold text-gray-600">Aktifkan Metode Ini</label>
-                    </div>
-                </form>
-            </div>
-            <div class="p-4 border-t bg-gray-50 rounded-b-2xl flex justify-end gap-2">
-                <button type="button" data-action="close-payment-modal" class="px-4 py-2 font-medium bg-white border rounded-lg text-gray-600 hover:bg-gray-100 transition">Batal</button>
-                <button type="submit" form="form-payment-method" id="btn-save-payment" class="px-4 py-2 font-bold bg-primary-500 text-white rounded-lg shadow hover:bg-primary-600 transition">Simpan</button>
-            </div>
+                </div>
+                <div class="form-group" style="display:flex; align-items:center; gap:10px;">
+                    <input id="pay-active" type="checkbox" checked style="width:18px; height:18px; accent-color:var(--neon-orange);">
+                    <label for="pay-active" class="form-label" style="margin:0;">Aktifkan metode ini</label>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-ghost" onclick="AdminV9.closeModal('modal-payment')">Batal</button>
+            <button class="btn-neon-orange" type="submit" form="form-payment" id="btn-save-payment">Simpan</button>
         </div>
     </div>
+</div>
 
-    <!-- Modal Form Delivery (Kirim Produk) -->
-    <div id="modal-delivery" class="fixed inset-0 z-[10002] flex items-center justify-center p-4 bg-black/50 hidden opacity-0 transition-opacity">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg transform scale-95 transition-transform">
-            <div class="p-5 border-b flex justify-between items-center bg-gray-50 rounded-t-2xl">
-                <h3 class="font-bold text-gray-800 text-lg">Kirim Produk (Proses)</h3>
-                <button data-action="close-delivery-modal" class="text-gray-400 hover:text-red-500"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-            </div>
-            <div class="p-6">
-                <form id="form-delivery" class="space-y-4">
-                    <input type="hidden" id="delivery-order-id">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-1">Kredensial / Link Produk</label>
-                        <textarea id="delivery-credentials" rows="4" required placeholder="Masukkan username/password atau link produk yang dikirimkan ke pembeli..." class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="p-4 border-t bg-gray-50 rounded-b-2xl flex justify-end gap-2">
-                <button type="button" data-action="close-delivery-modal" class="px-4 py-2 font-medium bg-white border rounded-lg text-gray-600 hover:bg-gray-100 transition">Batal</button>
-                <button type="submit" form="form-delivery" class="px-4 py-2 font-bold bg-primary-500 text-white rounded-lg shadow hover:bg-primary-600 transition">Kirim ke Pembeli</button>
-            </div>
+<!-- ─── Modal: File Picker ─────────────────────────────── -->
+<div class="modal-overlay" id="modal-file-picker">
+    <div class="modal-box" style="max-width:620px;">
+        <div class="modal-header">
+            <h3>Pilih Gambar dari File Manager</h3>
+            <button class="btn-ghost" style="padding:0.3rem 0.6rem;" onclick="AdminV9.closeModal('modal-file-picker')"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <div id="file-picker-grid" class="file-grid"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-ghost" onclick="AdminV9.closeModal('modal-file-picker')">Batal</button>
+            <button class="btn-neon-orange" onclick="AdminV9.confirmFilePick()">Pilih File Ini</button>
         </div>
     </div>
+</div>
 
-    <script src="js/app.js"></script>
-    <script src="js/admin.js"></script>
-<!-- Floating WhatsApp -->
-<a href="https://wa.me/62882016259591" target="_blank" class="wa-float" title="WhatsApp CS">
+<!-- ─── Floating WA ─────────────────────────────────────── -->
+<a href="https://wa.me/62882016259591" target="_blank" class="wa-float" title="WhatsApp Admin">
     <i class="fa-brands fa-whatsapp"></i>
 </a>
+
+<script src="js/app.js"></script>
+<script src="js/admin.js"></script>
 </body>
 </html>

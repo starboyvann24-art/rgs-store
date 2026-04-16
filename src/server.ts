@@ -23,6 +23,7 @@ import adminRoutes from './routes/admin.routes';
 import { verifyToken, isAdmin } from './middleware/auth.middleware';
 import { errorHandler } from './middleware/error.middleware';
 import { sendResponse } from './utils/response';
+import { getOrderStats } from './controllers/order.controller';
 
 // ============================================================
 // RGS STORE — Main Server (Node.js Monolithic for cPanel)
@@ -92,7 +93,6 @@ apiRouter.use('/auth', apiLimiter, authRoutes);
 apiRouter.use('/products', productRoutes);
 apiRouter.use('/orders', apiLimiter, orderRoutes);
 apiRouter.use('/settings', settingsRoutes);
-import { getOrderStats } from './controllers/order.controller';
 
 apiRouter.use('/tickets', ticketRoutes);
 apiRouter.use('/reviews', reviewRoutes);
@@ -100,7 +100,7 @@ apiRouter.use('/payments', paymentRoutes);
 apiRouter.use('/chat', messageRoutes);
 apiRouter.use('/admin', adminRoutes);
 
-// Fix API Admin Stats Routing explicitly as requested
+// Admin Stats route — must be AFTER admin routes are mounted
 apiRouter.get('/admin/stats', verifyToken, isAdmin, getOrderStats);
 
 // Register API router under /api

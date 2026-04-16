@@ -47,9 +47,10 @@ export const getAllPaymentMethods = async (_req: AuthRequest, res: Response, nex
 export const createPaymentMethod = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { name, type, account_number, account_name, logo_url } = req.body;
-    let qris_image_url = null;
+    let qris_image_url = req.body.qris_image_url || null; // Support file-picker path
 
     if (req.file) {
+      // If a file was uploaded, use that (overrides file-picker)
       qris_image_url = `/qris/${req.file.filename}`;
     }
 

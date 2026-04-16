@@ -58,6 +58,7 @@ const message_routes_1 = __importDefault(require("./routes/message.routes"));
 const admin_routes_1 = __importDefault(require("./routes/admin.routes"));
 const auth_middleware_1 = require("./middleware/auth.middleware");
 const response_1 = require("./utils/response");
+const order_controller_1 = require("./controllers/order.controller");
 // ============================================================
 // RGS STORE — Main Server (Node.js Monolithic for cPanel)
 // Express serves both API and static frontend from /public
@@ -115,13 +116,12 @@ apiRouter.use('/auth', apiLimiter, auth_routes_1.default);
 apiRouter.use('/products', product_routes_1.default);
 apiRouter.use('/orders', apiLimiter, order_routes_1.default);
 apiRouter.use('/settings', settings_routes_1.default);
-const order_controller_1 = require("./controllers/order.controller");
 apiRouter.use('/tickets', ticket_routes_1.default);
 apiRouter.use('/reviews', review_routes_1.default);
 apiRouter.use('/payments', payment_routes_1.default);
 apiRouter.use('/chat', message_routes_1.default);
 apiRouter.use('/admin', admin_routes_1.default);
-// Fix API Admin Stats Routing explicitly as requested
+// Admin Stats route — must be AFTER admin routes are mounted
 apiRouter.get('/admin/stats', auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, order_controller_1.getOrderStats);
 // Register API router under /api
 app.use('/api', apiRouter);
