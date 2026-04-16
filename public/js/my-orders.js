@@ -157,6 +157,7 @@ window.downloadInvoice = async function(orderId, token) {
         Swal.fire({ title: 'Menyiapkan Invoice...', didOpen: () => Swal.showLoading(), background: '#0a0e17', color: '#e2e8f0' });
         const response = await fetch(`/api/orders/${orderId}/invoice`, {
             method: 'GET',
+            credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${token || localStorage.getItem('rgs_jwt')}`
             }

@@ -222,9 +222,6 @@ export const updateProfile = async (req: any, res: Response, next: NextFunction)
     const userId = req.user.id;
     const { name, whatsapp } = req.body;
     
-    // Check if file is uploaded
-    const avatarUrl = req.file ? `/avatars/${req.file.filename}` : undefined;
-
     // Get current user data
     const [rows] = await db.query<any>('SELECT * FROM users WHERE id = ? LIMIT 1', [userId]);
     const user = rows[0];
@@ -235,14 +232,13 @@ export const updateProfile = async (req: any, res: Response, next: NextFunction)
 
     const newName = name ? name.trim() : user.name;
     const newWhatsapp = whatsapp ? whatsapp.trim() : user.whatsapp;
-    const newAvatar = avatarUrl || user.avatar;
 
     await db.query(
-      'UPDATE users SET name = ?, whatsapp = ?, avatar = ? WHERE id = ?',
-      [newName, newWhatsapp, newAvatar, userId]
+      'UPDATE users SET name = ?, whatsapp = ? WHERE id = ?',
+      [newName, newWhatsapp, userId]
     );
 
-    const [updatedRows] = await db.query<any>('SELECT id, name, email, role, whatsapp, avatar FROM users WHERE id = ? LIMIT 1', [userId]);
+    const [updatedRows] = await db.query<any>('SELECT id, name, email, role, whatsapp FROM users WHERE id = ? LIMIT 1', [userId]);
 
     sendResponse(res, 200, true, 'Profil berhasil diperbarui.', {
       user: updatedRows[0]

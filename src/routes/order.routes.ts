@@ -16,7 +16,7 @@ import { verifyToken, isAdmin } from '../middleware/auth.middleware';
 import { upload } from '../middleware/upload.middleware';
 
 // ============================================================
-// RGS STORE — Order Routes v3.1
+// RGS STORE — Order Routes v3.1 (Relaxed Invoice Auth)
 // ============================================================
 
 const router: Router = Router();
@@ -50,15 +50,26 @@ router.put('/:id/status', verifyToken, isAdmin, validate(updateOrderStatusSchema
 // PUT /api/orders/:id/deliver — Ship order + set credentials (admin)
 router.put('/:id/deliver', verifyToken, isAdmin, validate(deliverOrderSchema), deliverOrder);
 
-// GET /api/orders/:id/invoice — Download PDF Invoice
-router.get('/:id/invoice', verifyToken, async (req: any, res: any) => {
+// GET /api/orders/:id/invoice — Download PDF Invoice (Relaxed Auth)
+router.get('/:id/invoice', async (req: any, res: any) => {
   try {
     const orderId = req.params.id;
-    const userId = req.user.id;
-    const role = req.user.role;
     const db2 = require('../config/database').default;
+    const jwt = require('jsonwebtoken');
 
-    // Use JOIN to fetch real product name from products table
+    // Optional Authentication
+    let userId = null;
+    let role = null;
+    try {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'rgs_super_secret_key_2026');
+        userId = decoded.id;
+        role = decoded.role;
+      }
+    } catch (e) { /* ignore invalid token, mode: public */ }
+
     const baseQuery = `
       SELECT 
         o.*,
@@ -66,20 +77,24 @@ router.get('/:id/invoice', verifyToken, async (req: any, res: any) => {
         p.price AS product_original_price
       FROM orders o
       LEFT JOIN products p ON o.product_id = p.id
-      WHERE o.id = ?
+      WHERE o.id = ? LIMIT 1
     `;
-    const adminQuery  = baseQuery + ' LIMIT 1';
-    const ownerQuery  = baseQuery + ' AND o.user_id = ? LIMIT 1';
 
-    const params: any[] = role === 'admin' ? [orderId] : [orderId, userId];
-    const query = role === 'admin' ? adminQuery : ownerQuery;
-
-    const [rows] = await db2.query(query, params);
+    const [rows] = await db2.query(baseQuery, [orderId]);
     const order = rows[0];
 
     if (!order) {
-      // Return JSON 404 — never crash/timeout
-      res.status(404).json({ success: false, message: 'Order tidak ditemukan atau Anda tidak berhak mengaksesnya.' });
+      res.status(404).json({ success: false, message: 'Order tidak valid atau tidak ditemukan.' });
+      return;
+    }
+
+    // Logic: ALLOW if ADMIN or OWNER or Status is SUCCESS/SHIPPED
+    const isSuccess = order.status === 'success' || order.status === 'shipped';
+    const isAdminUser = role === 'admin';
+    const isOwner = (userId === order.user_id);
+
+    if (!isAdminUser && !isOwner && !isSuccess) {
+      res.status(403).json({ success: false, message: 'Akses Ditolak. Silakan login atau hubungi CS.' });
       return;
     }
 
@@ -97,7 +112,6 @@ router.get('/:id/invoice', verifyToken, async (req: any, res: any) => {
       created_at:     order.created_at
     });
 
-    // Set correct PDF response headers
     res.set({
       'Content-Type':        'application/pdf',
       'Content-Disposition': `attachment; filename="Invoice-RGS-${order.order_number}.pdf"`,
@@ -110,6 +124,5 @@ router.get('/:id/invoice', verifyToken, async (req: any, res: any) => {
     res.status(500).json({ success: false, message: 'Gagal membuat invoice: ' + (err.message || 'Server error') });
   }
 });
-
 
 export default router;

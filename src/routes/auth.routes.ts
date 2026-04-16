@@ -23,18 +23,24 @@ passport.use(new GoogleStrategy({
   return done(null, profile);
 }));
 
-// ─── Passport Serialize/Deserialize (DB-backed) ──────────────
-// Store only the user ID in session, lookup from DB on each request
+// ─── Passport Serialize/Deserialize (DB-backed Sync) ─────────
 passport.serializeUser((user: any, done: any) => {
-  // The 'user' here is populated by the Google strategy callback
-  // We store only the google profile id temporarily; JWT is the real auth
   done(null, user.id || user);
 });
 
 passport.deserializeUser(async (id: any, done: any) => {
-  // We use JWT for real auth, session is only needed for OAuth handshake
-  // Just pass through the stored id
-  done(null, id);
+  try {
+    const db = require('../config/database').default;
+    const [rows] = await db.query('SELECT id, name, email, role, whatsapp FROM users WHERE id = ? LIMIT 1', [id]);
+    const user = rows[0];
+    if (user) {
+      done(null, user);
+    } else {
+      done(new Error('User not found'), null);
+    }
+  } catch (err) {
+    done(err, null);
+  }
 });
 
 
@@ -55,7 +61,7 @@ router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 
 // PUT /api/auth/profile
-router.put('/profile', verifyToken, upload.single('avatar'), updateProfile);
+router.put('/profile', verifyToken, updateProfile);
 
 // ─── Google OAuth Routes ──────────────────────────────────────
 // GET /api/auth/google — Initiate Google Login

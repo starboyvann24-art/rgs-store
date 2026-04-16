@@ -267,8 +267,8 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const res = await fetch('/api/auth/profile', {
                     method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    body: formData
+                    body: formData,
+                    credentials: 'include'
                 });
                 const data = await res.json();
                 
@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     appUtils.showToast('Profil berhasil diperbarui!', 'success');
                     // Update fresh user data to local storage
                     const fullDataRes = await fetch('/api/auth/me', {
-                        headers: { 'Authorization': `Bearer ${token}` }
+                        credentials: 'include'
                     });
                     const meData = await fullDataRes.json();
                     if (meData.success) {

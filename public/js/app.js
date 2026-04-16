@@ -30,7 +30,8 @@ const store = {
         const fetchOptions = { 
             ...options, 
             body: options.body,
-            method: options.method || 'GET'
+            method: options.method || 'GET',
+            credentials: 'include'
         };
 
         const headers = {};

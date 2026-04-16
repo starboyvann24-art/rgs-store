@@ -82,15 +82,16 @@
                     <div class="grid grid-cols-2 gap-3">
                         <label class="border-2 rounded-xl p-4 cursor-pointer hover:bg-primary-900/10 flex flex-col items-center justify-center text-center payment-option transition relative border-primary-500 bg-primary-900/20 shadow-lg shadow-primary-500/5">
                             <input type="radio" name="payment" value="QRIS" class="absolute top-2 right-2 text-primary-500 focus:ring-primary-500" required checked>
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" alt="QRIS" class="h-6 mb-1 object-contain brightness-150">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" alt="QRIS" class="h-6 mb-1 object-contain brightness-150" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <div style="display:none; font-size:1.5rem; font-weight:900; color:#ff7a00; margin-bottom:4px">QRIS</div>
                             <span class="font-black text-primary-500 text-xs uppercase">QRIS</span>
                             <span class="text-[9px] text-gray-500 mt-0.5">Scan & Pay All</span>
                         </label>
                         <label class="border-2 rounded-xl p-4 cursor-pointer hover:bg-primary-900/10 flex flex-col items-center justify-center text-center payment-option transition relative border-white/10" id="ewallet-label">
                             <input type="radio" name="payment" value="E-Wallet" class="absolute top-2 right-2 text-primary-500 focus:ring-primary-500" id="radio-ewallet">
                             <div class="flex gap-1 justify-center mb-1">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Logo_dana_blue.svg" alt="DANA" class="h-4 object-contain brightness-125">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/Logo_OVO.svg" alt="OVO" class="h-4 object-contain brightness-125">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Logo_dana_blue.svg" alt="DANA" class="h-4 object-contain brightness-125" onerror="this.onerror=null; this.src='https://placehold.co/60x20/00f3ff/ffffff?text=DANA';">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/Logo_OVO.svg" alt="OVO" class="h-4 object-contain brightness-125" onerror="this.onerror=null; this.src='https://placehold.co/60x20/d946ef/ffffff?text=OVO';">
                             </div>
                             <span class="font-black text-secondary-500 text-xs uppercase">E-Wallet</span>
                             <span class="text-[9px] text-gray-500 mt-0.5">Dana, Ovo, Spay</span>

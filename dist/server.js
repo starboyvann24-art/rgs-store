@@ -86,6 +86,19 @@ app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
 // ─── TRUST PROXY (MANDATORY for cPanel / Reverse Proxy) ─────
 // Without this, express-session cookie.secure won't work behind HTTPS proxy
 app.set('trust proxy', 1);
+// ─── CORS (MANDATORY for Cookies/Sessions) ───────────────────
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+    }
+    else {
+        next();
+    }
+});
 // ─── SESSION & PASSPORT (for Google OAuth) ───────────────────
 app.use((0, express_session_1.default)({
     secret: process.env.SESSION_SECRET || 'rgs_store_session_secret_2026',
@@ -93,8 +106,8 @@ app.use((0, express_session_1.default)({
     saveUninitialized: false,
     proxy: true,
     cookie: {
-        secure: process.env.NODE_ENV === 'production', // HTTPS only in prod
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        secure: true, // MANDATORY: HTTPS only
+        sameSite: 'none', // MANDATORY: For cross-site callback persistence
         maxAge: 24 * 60 * 60 * 1000 // 1 day
     }
 }));

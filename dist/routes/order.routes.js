@@ -7,7 +7,7 @@ const order_validation_1 = require("../validations/order.validation");
 const auth_middleware_1 = require("../middleware/auth.middleware");
 const upload_middleware_1 = require("../middleware/upload.middleware");
 // ============================================================
-// RGS STORE — Order Routes v3.1
+// RGS STORE — Order Routes v3.1 (Relaxed Invoice Auth)
 // ============================================================
 const router = (0, express_1.Router)();
 // USER ROUTES (requires auth)
@@ -30,14 +30,25 @@ router.get('/:id', auth_middleware_1.verifyToken, order_controller_1.getOrderByI
 router.put('/:id/status', auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, (0, validate_middleware_1.validate)(order_validation_1.updateOrderStatusSchema), order_controller_1.updateOrderStatus);
 // PUT /api/orders/:id/deliver — Ship order + set credentials (admin)
 router.put('/:id/deliver', auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, (0, validate_middleware_1.validate)(order_validation_1.deliverOrderSchema), order_controller_1.deliverOrder);
-// GET /api/orders/:id/invoice — Download PDF Invoice
-router.get('/:id/invoice', auth_middleware_1.verifyToken, async (req, res) => {
+// GET /api/orders/:id/invoice — Download PDF Invoice (Relaxed Auth)
+router.get('/:id/invoice', async (req, res) => {
     try {
         const orderId = req.params.id;
-        const userId = req.user.id;
-        const role = req.user.role;
         const db2 = require('../config/database').default;
-        // Use JOIN to fetch real product name from products table
+        const jwt = require('jsonwebtoken');
+        // Optional Authentication
+        let userId = null;
+        let role = null;
+        try {
+            const authHeader = req.headers.authorization;
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                const token = authHeader.split(' ')[1];
+                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'rgs_super_secret_key_2026');
+                userId = decoded.id;
+                role = decoded.role;
+            }
+        }
+        catch (e) { /* ignore invalid token, mode: public */ }
         const baseQuery = `
       SELECT 
         o.*,
@@ -45,17 +56,20 @@ router.get('/:id/invoice', auth_middleware_1.verifyToken, async (req, res) => {
         p.price AS product_original_price
       FROM orders o
       LEFT JOIN products p ON o.product_id = p.id
-      WHERE o.id = ?
+      WHERE o.id = ? LIMIT 1
     `;
-        const adminQuery = baseQuery + ' LIMIT 1';
-        const ownerQuery = baseQuery + ' AND o.user_id = ? LIMIT 1';
-        const params = role === 'admin' ? [orderId] : [orderId, userId];
-        const query = role === 'admin' ? adminQuery : ownerQuery;
-        const [rows] = await db2.query(query, params);
+        const [rows] = await db2.query(baseQuery, [orderId]);
         const order = rows[0];
         if (!order) {
-            // Return JSON 404 — never crash/timeout
-            res.status(404).json({ success: false, message: 'Order tidak ditemukan atau Anda tidak berhak mengaksesnya.' });
+            res.status(404).json({ success: false, message: 'Order tidak valid atau tidak ditemukan.' });
+            return;
+        }
+        // Logic: ALLOW if ADMIN or OWNER or Status is SUCCESS/SHIPPED
+        const isSuccess = order.status === 'success' || order.status === 'shipped';
+        const isAdminUser = role === 'admin';
+        const isOwner = (userId === order.user_id);
+        if (!isAdminUser && !isOwner && !isSuccess) {
+            res.status(403).json({ success: false, message: 'Akses Ditolak. Silakan login atau hubungi CS.' });
             return;
         }
         const { generateInvoicePDF } = require('../utils/pdf');
@@ -71,7 +85,6 @@ router.get('/:id/invoice', auth_middleware_1.verifyToken, async (req, res) => {
             status: order.status,
             created_at: order.created_at
         });
-        // Set correct PDF response headers
         res.set({
             'Content-Type': 'application/pdf',
             'Content-Disposition': `attachment; filename="Invoice-RGS-${order.order_number}.pdf"`,

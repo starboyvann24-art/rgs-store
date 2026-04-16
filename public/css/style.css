@@ -6,36 +6,36 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
-    /* Brand Colors (Cyberpunk Neon) */
-    --green:          #00f3ff; /* Neon Cyan */
-    --green-light:    #67e8f9;
-    --green-glow:     rgba(0, 243, 255, 0.35);
-    --green-soft:     rgba(0, 243, 255, 0.1);
-    --orange:         #d946ef; /* Neon Magenta */
-    --orange-light:   #f0abfc;
-    --orange-glow:    rgba(217, 70, 239, 0.35);
-    --orange-soft:    rgba(217, 70, 239, 0.1);
+    /* Brand Colors (White / Orange / Pink Neon) */
+    --green:          #ff7a00; /* Neon Orange */
+    --green-light:    #ffa04d;
+    --green-glow:     rgba(255, 122, 0, 0.35);
+    --green-soft:     rgba(255, 122, 0, 0.1);
+    --orange:         #ff007f; /* Neon Pink */
+    --orange-light:   #ff4da6;
+    --orange-glow:    rgba(255, 0, 127, 0.35);
+    --orange-soft:    rgba(255, 0, 127, 0.1);
 
-    /* Dark Backgrounds */
-    --bg-darkest:     #000000;
-    --bg-dark:        #0b0e14;
-    --bg-surface:     #111827;
-    --bg-surface2:    #1f2937;
-    --bg-glass:       rgba(0, 0, 0, 0.85);
-    --neon-green:     #00f3ff;
-    --neon-orange:    #d946ef;
+    /* Light Backgrounds */
+    --bg-darkest:     #f8fafc;
+    --bg-dark:        #ffffff;
+    --bg-surface:     #ffffff;
+    --bg-surface2:    #f1f5f9;
+    --bg-glass:       rgba(255, 255, 255, 0.95);
+    --neon-green:     #ff7a00;
+    --neon-orange:    #ff007f;
 
     /* Text */
-    --text-bright:    #ffffff;
-    --text-main:      #e2e8f0;
-    --text-dim:       #94a3b8;
-    --text-muted:     #64748b;
+    --text-bright:    #0f172a; /* Darkest */
+    --text-main:      #1e293b; /* Dark */
+    --text-dim:       #475569; /* Gray */
+    --text-muted:     #64748b; /* Lighter Gray */
 
     /* Borders */
-    --border:         rgba(0, 243, 255, 0.15);
-    --border-hover:   rgba(217, 70, 239, 0.4);
-    --border-green:   rgba(0, 243, 255, 0.3);
-    --border-orange:  rgba(217, 70, 239, 0.3);
+    --border:         rgba(0, 0, 0, 0.08);
+    --border-hover:   rgba(255, 0, 127, 0.4);
+    --border-green:   rgba(255, 122, 0, 0.3);
+    --border-orange:  rgba(255, 0, 127, 0.3);
 
     /* Radii */
     --r-xl: 20px;
@@ -44,9 +44,9 @@
     --r-sm: 6px;
 
     /* Shadows (Neon Glow) */
-    --shadow-card:   0 8px 32px rgba(0,0,0,0.5);
-    --shadow-green:  0 0 15px rgba(0,243,255,0.4), 0 0 30px rgba(0,243,255,0.2);
-    --shadow-orange: 0 0 15px rgba(217,70,239,0.4), 0 0 30px rgba(217,70,239,0.2);
+    --shadow-card:   0 8px 32px rgba(0,0,0,0.05); /* Softer shadow */
+    --shadow-green:  0 0 15px rgba(255,122,0,0.4), 0 0 30px rgba(255,122,0,0.2);
+    --shadow-orange: 0 0 15px rgba(255,0,127,0.4), 0 0 30px rgba(255,0,127,0.2);
 }
 
 /* ─── Reset & Base ────────────────────────────────────────── */

@@ -10,7 +10,6 @@ const auth_controller_1 = require("../controllers/auth.controller");
 const validate_middleware_1 = require("../middleware/validate.middleware");
 const auth_validation_1 = require("../validations/auth.validation");
 const auth_middleware_1 = require("../middleware/auth.middleware");
-const upload_middleware_1 = require("../middleware/upload.middleware");
 // ============================================================
 // RGS STORE — Auth Routes (incl. Google OAuth)
 // ============================================================
@@ -24,17 +23,25 @@ passport_1.default.use(new passport_google_oauth20_1.Strategy({
 }, (accessToken, refreshToken, profile, done) => {
     return done(null, profile);
 }));
-// ─── Passport Serialize/Deserialize (DB-backed) ──────────────
-// Store only the user ID in session, lookup from DB on each request
+// ─── Passport Serialize/Deserialize (DB-backed Sync) ─────────
 passport_1.default.serializeUser((user, done) => {
-    // The 'user' here is populated by the Google strategy callback
-    // We store only the google profile id temporarily; JWT is the real auth
     done(null, user.id || user);
 });
 passport_1.default.deserializeUser(async (id, done) => {
-    // We use JWT for real auth, session is only needed for OAuth handshake
-    // Just pass through the stored id
-    done(null, id);
+    try {
+        const db = require('../config/database').default;
+        const [rows] = await db.query('SELECT id, name, email, role, whatsapp FROM users WHERE id = ? LIMIT 1', [id]);
+        const user = rows[0];
+        if (user) {
+            done(null, user);
+        }
+        else {
+            done(new Error('User not found'), null);
+        }
+    }
+    catch (err) {
+        done(err, null);
+    }
 });
 // ─── Standard Auth Routes ─────────────────────────────────────
 // POST /api/auth/register
@@ -48,7 +55,7 @@ router.post('/forgot-password', auth_controller_1.forgotPassword);
 // POST /api/auth/reset-password
 router.post('/reset-password', auth_controller_1.resetPassword);
 // PUT /api/auth/profile
-router.put('/profile', auth_middleware_1.verifyToken, upload_middleware_1.upload.single('avatar'), auth_controller_1.updateProfile);
+router.put('/profile', auth_middleware_1.verifyToken, auth_controller_1.updateProfile);
 // ─── Google OAuth Routes ──────────────────────────────────────
 // GET /api/auth/google — Initiate Google Login
 router.get('/google', passport_1.default.authenticate('google', { scope: ['profile', 'email'] }));
