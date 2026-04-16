@@ -10,22 +10,22 @@
     <title>Keranjang - RGS STORE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = { theme: { extend: { colors: { primary: { 50:'#f0fdf4',100:'#dcfce7',500:'#22c55e',600:'#16a34a',700:'#15803d' } }, fontFamily: { sans: ['Inter','sans-serif'] } } } }
+      tailwind.config = { theme: { extend: { colors: { primary: { 50:'#ecfeff',100:'#cffafe',500:'#06b6d4',600:'#0891b2',700:'#0e7490' }, dark: { 900: '#000000', 800: '#0b0e14', 700: '#111827' } }, fontFamily: { sans: ['Outfit','Inter','sans-serif'] } } } }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+<body class="bg-black text-gray-100 font-sans antialiased">
 
     <!-- Navbar -->
-    <nav class="bg-white/80 backdrop-blur-lg shadow-sm border-b sticky top-0 z-40">
+    <nav class="bg-dark-800/80 backdrop-blur-lg shadow-lg border-b border-primary-500/10 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex items-center h-16 relative">
-                <a href="index.html" class="absolute left-0 flex items-center text-gray-500 hover:text-primary-600 font-medium transition text-sm">
+                <a href="index.html" class="absolute left-0 flex items-center text-gray-400 hover:text-primary-500 font-medium transition text-sm">
                     <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                     Kembali
                 </a>
-                <h1 class="mx-auto text-lg font-bold text-gray-800">Keranjang</h1>
+                <h1 class="mx-auto text-lg font-black text-white uppercase tracking-widest">Digital Cart</h1>
             </div>
         </div>
     </nav>
@@ -35,12 +35,12 @@
 
             <!-- Cart list -->
             <div class="w-full lg:w-8/12">
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="p-4 border-b bg-gray-50 flex justify-between items-center">
-                        <span class="font-semibold text-gray-700 text-sm" id="cart-count-txt">Keranjang (0)</span>
-                        <button onclick="clearCart()" class="text-xs font-medium text-red-500 hover:text-red-600 hidden" id="btn-clear-cart">Hapus Semua</button>
+                <div class="bg-dark-800 rounded-3xl shadow-xl border border-primary-500/10 overflow-hidden">
+                    <div class="p-4 border-b border-white/10 bg-dark-700/50 flex justify-between items-center">
+                        <span class="font-black text-primary-500 text-[10px] uppercase tracking-widest" id="cart-count-txt">MODS IN CART (0)</span>
+                        <button onclick="clearCart()" class="text-[10px] font-black text-red-500 hover:text-red-400 hidden uppercase tracking-widest" id="btn-clear-cart">Purge All</button>
                     </div>
-                    <div id="cart-list" class="divide-y divide-gray-100"></div>
+                    <div id="cart-list" class="divide-y divide-white/5"></div>
                     <div id="cart-empty" class="p-16 text-center hidden">
                         <svg class="w-20 h-20 text-gray-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                         <h3 class="text-lg font-bold text-gray-600">Keranjangmu Kosong</h3>
@@ -52,24 +52,24 @@
 
             <!-- Summary -->
             <div class="w-full lg:w-4/12 sticky top-24">
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <h3 class="font-bold text-gray-800 text-lg mb-4">Ringkasan</h3>
-                    <div class="space-y-3 mb-6 border-b pb-4 text-sm">
-                        <div class="flex justify-between text-gray-600">
-                            <span>Total (<span id="total-qty">0</span> barang)</span>
-                            <span id="total-price" class="font-medium text-gray-800">Rp 0</span>
+                <div class="bg-dark-800 rounded-3xl shadow-xl border border-primary-500/10 p-8">
+                    <h3 class="font-black text-white text-lg mb-6 uppercase tracking-widest text-sm border-b border-white/10 pb-4">Extraction Summary</h3>
+                    <div class="space-y-4 mb-6 border-b border-white/10 pb-6 text-xs text-gray-400">
+                        <div class="flex justify-between">
+                            <span>Subtotal (<span id="total-qty">0</span> items)</span>
+                            <span id="total-price" class="font-bold text-white">Rp 0</span>
                         </div>
-                        <div class="flex justify-between text-gray-600">
-                            <span>Biaya Admin</span>
-                            <span class="font-medium text-green-500">Gratis</span>
+                        <div class="flex justify-between">
+                            <span>Admin Fee</span>
+                            <span class="font-bold text-green-400 uppercase">Gratis</span>
                         </div>
                     </div>
-                    <div class="flex justify-between items-end mb-6">
-                        <span class="font-bold text-gray-800">Total Tagihan</span>
-                        <span id="grand-total" class="font-extrabold text-xl text-primary-600">Rp 0</span>
+                    <div class="flex justify-between items-end mb-8">
+                        <span class="font-black text-primary-500 text-[10px] uppercase tracking-tighter">FINAL VALUE</span>
+                        <span id="grand-total" class="font-black text-2xl text-white">Rp 0</span>
                     </div>
-                    <a href="checkout.html" id="btn-checkout" class="block w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-3.5 rounded-xl transition shadow text-center cursor-not-allowed opacity-50 pointer-events-none">
-                        Checkout Sekarang
+                    <a href="checkout.html" id="btn-checkout" class="block w-full bg-primary-500 hover:bg-primary-600 text-black font-black py-4 rounded-xl transition-all shadow-lg shadow-primary-500/20 text-center cursor-not-allowed opacity-50 pointer-events-none uppercase tracking-widest text-xs">
+                        Proceed To Checkout
                     </a>
                 </div>
             </div>

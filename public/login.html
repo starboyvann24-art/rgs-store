@@ -10,29 +10,29 @@
     <title>Login - RGS STORE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = { theme: { extend: { colors: { primary: { 50:'#fff7ed',100:'#ffedd5',500:'#f97316',600:'#ea6c10',700:'#c2410c' } }, fontFamily: { sans: ['Outfit','sans-serif'] } } } }
+      tailwind.config = { theme: { extend: { colors: { primary: { 50:'#ecfeff',100:'#cffafe',500:'#06b6d4',600:'#0891b2',700:'#0e7490' }, dark: { 900: '#000000', 800: '#0b0e14', 700: '#111827' } }, fontFamily: { sans: ['Outfit','sans-serif'] } } } }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex items-center justify-center relative overflow-hidden">
-    <div class="absolute -top-20 -right-20 w-72 h-72 bg-orange-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
-    <div class="absolute -bottom-20 -left-20 w-72 h-72 bg-orange-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
+<body class="bg-black text-gray-100 font-sans min-h-screen flex items-center justify-center relative overflow-hidden">
+    <div class="absolute -top-20 -right-20 w-72 h-72 bg-primary-900/20 rounded-full mix-blend-screen filter blur-3xl opacity-50"></div>
+    <div class="absolute -bottom-20 -left-20 w-72 h-72 bg-secondary-900/20 rounded-full mix-blend-screen filter blur-3xl opacity-50"></div>
 
-    <div class="bg-white p-8 md:p-10 rounded-3xl shadow-xl w-full max-w-md relative z-10 border border-gray-100">
+    <div class="bg-dark-800 p-8 md:p-10 rounded-3xl shadow-2xl w-full max-w-md relative z-10 border border-primary-500/10">
         <div class="text-center mb-8">
-            <a href="index.html"><h1 class="text-3xl font-extrabold text-primary-600 tracking-tight mb-2">RGS <span class="text-gray-800">STORE</span></h1></a>
-            <p class="text-sm text-gray-500">Selamat datang kembali! Silakan login.</p>
+            <a href="index.html"><h1 class="text-3xl font-black text-primary-500 tracking-tight mb-2">RGS <span class="text-white">STORE</span></h1></a>
+            <p class="text-sm text-gray-400">Selamat datang kembali! Silakan login.</p>
         </div>
 
         <form id="form-login" class="space-y-5">
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
-                <input type="email" id="login-email" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:bg-white outline-none transition" placeholder="contoh@email.com">
+                <label class="block text-sm font-semibold text-gray-400 mb-1.5">Email</label>
+                <input type="email" id="login-email" required class="w-full px-4 py-3 bg-dark-900 border border-white/10 rounded-xl focus:ring-2 focus:ring-primary-500 focus:bg-dark-900 text-white outline-none transition" placeholder="contoh@email.com">
             </div>
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Password</label>
-                <input type="password" id="login-password" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:bg-white outline-none transition" placeholder="••••••••">
+                <label class="block text-sm font-semibold text-gray-400 mb-1.5">Password</label>
+                <input type="password" id="login-password" required class="w-full px-4 py-3 bg-dark-900 border border-white/10 rounded-xl focus:ring-2 focus:ring-primary-500 focus:bg-dark-900 text-white outline-none transition" placeholder="••••••••">
             </div>
             <div class="flex justify-end">
                 <a href="#" id="forgot-password-link" class="text-xs font-semibold text-primary-600 hover:underline">Lupa Password?</a>
@@ -51,7 +51,7 @@
 
         <!-- Google Login Button -->
         <a href="/api/auth/google" id="btn-google-login"
-           class="w-full flex items-center justify-center gap-3 py-3 px-5 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:border-primary-400 hover:bg-orange-50 transition-all">
+           class="w-full flex items-center justify-center gap-3 py-3 px-5 border-2 border-white/10 rounded-xl font-semibold text-white hover:border-primary-400 hover:bg-primary-900/10 transition-all">
             <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -127,7 +127,7 @@
                 showCancelButton: true,
                 cancelButtonText: 'Batal',
                 confirmButtonText: 'Kirim Link Reset',
-                confirmButtonColor: '#f97316'
+                confirmButtonColor: '#06b6d4'
             });
             if (email) {
                 const res = await appUtils.forgotPassword(email);
@@ -141,7 +141,7 @@
         });
     </script>
 <!-- Floating WhatsApp -->
-<a href="https://wa.me/62882016259591" target="_blank" aria-label="WhatsApp CS" style="position:fixed;bottom:28px;right:28px;width:58px;height:58px;background:#25d366;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;z-index:999;box-shadow:0 4px 20px rgba(37,211,102,0.5);text-decoration:none;">
+<a href="https://wa.me/62882016259591" target="_blank" aria-label="WhatsApp CS" style="position:fixed;bottom:28px;right:28px;width:58px;height:58px;background:#25d366;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;z-index:999;box-shadow: 0 0 15px rgba(37,211,102,0.6), 0 0 30px rgba(37,211,102,0.3);text-decoration:none;">
     <svg fill="#ffffff" width="30" height="30" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.832-1.438A9.955 9.955 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.952 7.952 0 01-4.062-1.115L5 19.5l.615-2.938A7.952 7.952 0 014 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8zm4.406-5.846c-.242-.121-1.432-.707-1.654-.787-.222-.08-.384-.12-.545.12-.162.242-.627.788-.769.95-.141.162-.282.182-.524.06-.242-.12-1.021-.376-1.945-1.2-.718-.64-1.203-1.43-1.344-1.672-.141-.242-.015-.373.105-.493.11-.11.243-.283.364-.424.12-.142.162-.242.242-.404.08-.162.04-.303-.02-.424-.061-.121-.545-1.313-.748-1.797-.197-.472-.398-.407-.545-.415l-.464-.008c-.162 0-.424.06-.646.304-.222.242-.849.83-.849 2.023s.869 2.347.99 2.509c.12.162 1.713 2.615 4.15 3.667.58.251 1.032.4 1.385.512.582.185 1.112.159 1.53.097.467-.07 1.432-.585 1.634-1.15.201-.566.201-1.05.14-1.15-.06-.101-.222-.162-.460-.282z"/></svg>
 </a>
 </body>

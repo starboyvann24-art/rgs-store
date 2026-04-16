@@ -9,30 +9,32 @@
     <meta property="og:title" content="RGS STORE — Premium Digital">
     <title>Cetak Invoice - RGS STORE</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Outfit:wght@900&display=swap" rel="stylesheet">
     <style>
         @media print {
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #fff !important; color: #000 !important; padding: 0 !important; }
             .no-print { display: none !important; }
+            .invoice-box { box-shadow: none !important; border: none !important; margin: 0 !important; max-width: 100% !important; }
         }
-        body { font-family: 'Courier Prime', monospace; background: #e5e7eb; color: #000; padding: 2rem; }
+        body { font-family: 'Courier Prime', monospace; background: #000; color: #fff; padding: 2rem; }
         .invoice-box {
             max-width: 800px;
             margin: auto;
-            padding: 30px;
-            border: 1px solid #eee;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
-            background: #fff;
+            padding: 40px;
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.1);
+            background: #0b0e14;
+            border-radius: 20px;
         }
         .invoice-box table { width: 100%; line-height: inherit; text-align: left; border-collapse: collapse; }
-        .invoice-box table td { padding: 5px; vertical-align: top; }
-        .invoice-box table tr.top table td.title { font-size: 45px; line-height: 45px; color: #333; }
-        .invoice-box table tr.information table td { padding-bottom: 40px; }
-        .invoice-box table tr.heading td { background: #eee; border-bottom: 1px solid #ddd; font-weight: bold; }
-        .invoice-box table tr.details td { padding-bottom: 20px; }
-        .invoice-box table tr.item td { border-bottom: 1px solid #eee; }
+        .invoice-box table td { padding: 8px; vertical-align: top; }
+        .invoice-box table tr.top table td.title { font-size: 45px; line-height: 45px; color: #06b6d4; }
+        .invoice-box table tr.information table td { padding-bottom: 40px; color: #94a3b8; font-size: 13px; }
+        .invoice-box table tr.heading td { background: rgba(6, 182, 212, 0.1); border-bottom: 2px solid #06b6d4; font-weight: bold; color: #06b6d4; text-transform: uppercase; letter-spacing: 1px; }
+        .invoice-box table tr.details td { padding-bottom: 20px; color: #e2e8f0; }
+        .invoice-box table tr.item td { border-bottom: 1px solid rgba(255,255,255,0.05); color: #e2e8f0; }
         .invoice-box table tr.item.last td { border-bottom: none; }
-        .invoice-box table tr.total td:nth-child(2) { border-top: 2px solid #eee; font-weight: bold; }
+        .invoice-box table tr.total td:nth-child(2) { border-top: 2px solid #06b6d4; font-weight: bold; color: #06b6d4; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -104,7 +106,7 @@
                                 <table>
                                     <tr>
                                         <td class="title">
-                                            <div style="font-family: sans-serif; font-weight: 900; font-size: 2rem; color: #22c55e;">RGS <span style="color:#0f172a">STORE</span></div>
+                                            <div style="font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 2.2rem; color: #06b6d4; letter-spacing: -1px;">RGS <span style="color:#fff">STORE</span></div>
                                         </td>
                                         <td class="text-right">
                                             Invoice #: <strong>${order.order_number}</strong><br />

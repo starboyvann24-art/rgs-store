@@ -6,47 +6,47 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
-    /* Brand Colors */
-    --green:          #f97316;
-    --green-light:    #fb923c;
-    --green-glow:     rgba(249, 115, 22, 0.35);
-    --green-soft:     rgba(249, 115, 22, 0.1);
-    --orange:         #f97316;
-    --orange-light:   #fb923c;
-    --orange-glow:    rgba(249, 115, 22, 0.35);
-    --orange-soft:    rgba(249, 115, 22, 0.1);
+    /* Brand Colors (Cyberpunk Neon) */
+    --green:          #00f3ff; /* Neon Cyan */
+    --green-light:    #67e8f9;
+    --green-glow:     rgba(0, 243, 255, 0.35);
+    --green-soft:     rgba(0, 243, 255, 0.1);
+    --orange:         #d946ef; /* Neon Magenta */
+    --orange-light:   #f0abfc;
+    --orange-glow:    rgba(217, 70, 239, 0.35);
+    --orange-soft:    rgba(217, 70, 239, 0.1);
 
-    /* Light Backgrounds */
-    --bg-darkest:     #f8fafc;
-    --bg-dark:        #f1f5f9;
-    --bg-surface:     #ffffff;
-    --bg-surface2:    #e2e8f0;
-    --bg-glass:       rgba(255, 255, 255, 0.85);
-    --neon-green:     #f97316;
-    --neon-orange:    #f97316;
+    /* Dark Backgrounds */
+    --bg-darkest:     #000000;
+    --bg-dark:        #0b0e14;
+    --bg-surface:     #111827;
+    --bg-surface2:    #1f2937;
+    --bg-glass:       rgba(0, 0, 0, 0.85);
+    --neon-green:     #00f3ff;
+    --neon-orange:    #d946ef;
 
     /* Text */
-    --text-bright:    #0f172a;
-    --text-main:      #1e293b;
-    --text-dim:       #334155;
+    --text-bright:    #ffffff;
+    --text-main:      #e2e8f0;
+    --text-dim:       #94a3b8;
     --text-muted:     #64748b;
 
     /* Borders */
-    --border:         rgba(0,0,0,0.08);
-    --border-hover:   rgba(0,0,0,0.15);
-    --border-green:   rgba(249, 115, 22, 0.25);
-    --border-orange:  rgba(249, 115, 22, 0.25);
+    --border:         rgba(0, 243, 255, 0.15);
+    --border-hover:   rgba(217, 70, 239, 0.4);
+    --border-green:   rgba(0, 243, 255, 0.3);
+    --border-orange:  rgba(217, 70, 239, 0.3);
 
     /* Radii */
-    --r-xl: 24px;
-    --r-lg: 16px;
-    --r-md: 12px;
-    --r-sm: 8px;
+    --r-xl: 20px;
+    --r-lg: 12px;
+    --r-md: 8px;
+    --r-sm: 6px;
 
-    /* Shadows */
-    --shadow-card:   0 8px 32px rgba(0,0,0,0.08);
-    --shadow-green:  0 4px 20px rgba(249,115,22,0.3);
-    --shadow-orange: 0 4px 20px rgba(249,115,22,0.3);
+    /* Shadows (Neon Glow) */
+    --shadow-card:   0 8px 32px rgba(0,0,0,0.5);
+    --shadow-green:  0 0 15px rgba(0,243,255,0.4), 0 0 30px rgba(0,243,255,0.2);
+    --shadow-orange: 0 0 15px rgba(217,70,239,0.4), 0 0 30px rgba(217,70,239,0.2);
 }
 
 /* ─── Reset & Base ────────────────────────────────────────── */
@@ -161,8 +161,8 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
 .search-input::placeholder { color: var(--text-muted); }
 .search-input:focus {
     border-color: var(--green);
-    background: rgba(34,197,94,0.04);
-    box-shadow: 0 0 0 3px var(--green-glow);
+    background: rgba(0, 243, 255, 0.05);
+    box-shadow: 0 0 15px var(--green-glow);
 }
 .search-icon {
     position: absolute;
@@ -177,12 +177,14 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
 .btn-nav-login {
     background: var(--green);
     color: #000;
-    font-weight: 700;
+    font-weight: 800;
     font-size: 0.875rem;
     padding: 0.6rem 1.25rem;
     border-radius: var(--r-sm);
     box-shadow: var(--shadow-green);
     white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 .btn-nav-login:hover { background: var(--green-light); transform: translateY(-1px); }
 .btn-nav-register {
@@ -307,9 +309,9 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
     cursor: pointer;
 }
 .product-card:hover {
-    transform: translateY(-8px);
+    transform: translateY(-8px) scale(1.02);
     border-color: var(--green);
-    box-shadow: var(--shadow-card), 0 0 20px var(--green-glow);
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.3), var(--shadow-card);
 }
 .product-card-img {
     width: 100%;
@@ -404,7 +406,10 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
     align-items: center;
     gap: 8px;
 }
-.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 30px var(--green-glow); }
+.btn-primary:hover { 
+    transform: translateY(-3px); 
+    box-shadow: 0 0 20px var(--green), 0 0 40px var(--green-glow); 
+}
 
 .btn-orange {
     background: linear-gradient(135deg, var(--orange), #c2410c);
@@ -420,7 +425,10 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
     align-items: center;
     gap: 8px;
 }
-.btn-orange:hover { transform: translateY(-3px); box-shadow: 0 8px 30px var(--orange-glow); }
+.btn-orange:hover { 
+    transform: translateY(-3px); 
+    box-shadow: 0 0 20px var(--orange), 0 0 40px var(--orange-glow); 
+}
 
 .btn-ghost {
     background: transparent;
@@ -523,11 +531,11 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
     color: #fff;
     font-size: 1.6rem;
     z-index: 9999999 !important;
-    box-shadow: 0 4px 20px rgba(37,211,102,0.5);
+    box-shadow: 0 0 15px rgba(37,211,102,0.6), 0 0 30px rgba(37,211,102,0.3);
     transition: 0.3s;
     pointer-events: auto !important;
 }
-.wa-float:hover { transform: scale(1.1); box-shadow: 0 6px 30px rgba(37,211,102,0.7); }
+.wa-float:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(37,211,102,0.8); }
 
 /* ─── CS Ticket Float ─────────────────────────────────────── */
 .cs-float {
@@ -546,9 +554,9 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
     z-index: 9999999 !important;
     pointer-events: auto !important;
     cursor: pointer !important;
-    box-shadow: 0 4px 20px rgba(249,115,22,0.4);
+    box-shadow: 0 0 15px var(--orange), 0 0 30px var(--orange-glow);
     transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border: 2px solid #fff;
+    border: 2px solid var(--orange-light);
 }
 
 .cs-float:hover {

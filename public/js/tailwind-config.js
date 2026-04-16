@@ -2,9 +2,11 @@ tailwind.config = {
   theme: { 
     extend: { 
       colors: { 
-        primary: { 50: '#f0fdf4', 100: '#dcfce7', 500: '#22c55e', 600: '#16a34a', 700: '#15803d'  } 
+        primary: { 50: '#ecfeff', 100: '#cffafe', 500: '#06b6d4', 600: '#0891b2', 700: '#0e7490' },
+        secondary: { 500: '#d946ef', 600: '#c026d3', 700: '#a21caf' },
+        dark: { 900: '#000000', 800: '#0b0e14', 700: '#111827' }
       }, 
-      fontFamily: { sans: ['Inter', 'sans-serif'] } 
+      fontFamily: { sans: ['Outfit', 'Inter', 'sans-serif'] } 
     } 
   } 
 };

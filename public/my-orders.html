@@ -14,16 +14,13 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans antialiased min-h-screen">
+<body class="bg-black text-gray-100 font-sans antialiased min-h-screen">
 
     <!-- Navbar -->
-    <nav class="bg-white sticky top-0 z-50 border-b border-gray-200 shadow-sm">
+    <nav class="bg-dark-800/80 backdrop-blur-lg shadow-lg border-b border-primary-500/10 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <a href="index.html" class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center shadow-lg shadow-orange-500/20">
-                    <span class="text-white font-black text-xs">RGS</span>
-                </div>
-                <span class="font-bold text-xl tracking-tight text-gray-900">RGS<span class="text-orange-500">STORE</span></span>
+            <a href="index.html" class="flex items-center gap-2 transition hover:scale-105">
+                <h1 class="text-xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-secondary-500 uppercase">RGS <span class="text-white">STORE</span></h1>
             </a>
             <div id="nav-auth-container"></div>
         </div>
@@ -32,11 +29,11 @@
     <main class="max-w-6xl mx-auto px-4 py-12">
         <div class="flex flex-col md:flex-row items-end justify-between gap-4 mb-10">
             <div>
-                <h1 class="text-3xl md:text-4xl font-black text-gray-900">Pesanan Saya</h1>
-                <p class="text-gray-500 mt-2">Pantau status dan ambil detail produk pesanan Anda</p>
+                <h1 class="text-3xl md:text-4xl font-black text-white uppercase tracking-tight">Order <span class="text-primary-500">Archive</span></h1>
+                <p class="text-gray-500 mt-2 text-sm tracking-widest uppercase">Retrieving your digital extraction history</p>
             </div>
             <div class="flex gap-2">
-                <a href="index.html" class="px-5 py-2.5 rounded-xl bg-gray-100 border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-200 transition">Kembali Belanja</a>
+                <a href="index.html" class="px-6 py-3 rounded-xl bg-dark-800 border border-primary-500/20 text-[10px] font-black text-primary-500 hover:border-primary-500 transition uppercase tracking-widest">Back To Ops</a>
             </div>
         </div>
 
@@ -48,13 +45,13 @@
             <!-- Injected by my-orders.js -->
         </div>
 
-        <div id="orders-empty" class="hidden flex flex-col items-center justify-center py-24 bg-white rounded-2xl border border-gray-200 shadow-sm">
-            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+        <div id="orders-empty" class="hidden flex flex-col items-center justify-center py-24 bg-dark-800 rounded-3xl border border-primary-500/10 shadow-xl">
+            <div class="w-20 h-20 bg-dark-900 rounded-full flex items-center justify-center mb-6 border border-white/5">
+                <svg class="w-10 h-10 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
             </div>
-            <h3 class="text-xl font-bold text-gray-900">Belum Ada Pesanan</h3>
-            <p class="text-gray-500 mt-2 mb-8">Anda belum melakukan transaksi apapun di toko kami.</p>
-            <a href="index.html" class="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-2xl shadow-lg shadow-orange-500/20 transition-all active:scale-95">Mulai Belanja</a>
+            <h3 class="text-xl font-black text-white uppercase tracking-widest">Archive Empty</h3>
+            <p class="text-gray-600 mt-2 mb-8 text-xs uppercase tracking-tighter">No neural records found in our database.</p>
+            <a href="index.html" class="px-10 py-4 bg-primary-500 text-black font-black rounded-xl shadow-lg shadow-primary-500/20 transition-all hover:scale-105 active:scale-95 uppercase tracking-widest text-xs">Start Extraction</a>
         </div>
     </main>
 
