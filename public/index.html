@@ -65,13 +65,29 @@
         <button id="close-sidebar-btn" style="background:transparent;border:none;color:var(--text-muted);font-size:1.5rem;cursor:pointer"><i class="fa-solid fa-xmark"></i></button>
     </div>
     
-    <div class="search-wrapper mobile-search-active" style="margin-bottom:1.5rem;display:block">
+    <div class="search-wrapper mobile-search-active" style="margin-bottom:2rem;display:block">
         <i class="fa-solid fa-magnifying-glass search-icon" style="top:25px"></i>
-        <input id="mobile-search" type="text" class="search-input" placeholder="Cari produk...">
+        <input id="mobile-search" type="text" class="search-input" placeholder="Cari Netflix, Nitro, Panel...">
     </div>
 
-    <!-- Mobile Auth Menu injected here if needed, or we just rely on standard nav elements inside -->
-    <div id="mobile-nav-auth" style="display:flex;flex-direction:column;gap:10px"></div>
+    <div class="mobile-menu-links" style="display:flex;flex-direction:column;gap:1rem;margin-bottom:2rem">
+        <a href="/" class="mobile-link" style="padding:0.75rem 1rem;border-radius:12px;display:flex;align-items:center;gap:12px;font-weight:700;background:var(--bg-dark);color:var(--text-bright)">
+            <i class="fa-solid fa-house" style="color:var(--orange)"></i> Beranda
+        </a>
+        <a href="/#katalog" class="mobile-link" style="padding:0.75rem 1rem;border-radius:12px;display:flex;align-items:center;gap:12px;font-weight:700;color:var(--text-dim)">
+            <i class="fa-solid fa-bolt" style="color:var(--orange)"></i> Katalog Produk
+        </a>
+        <a href="/dashboard.html" class="mobile-link" style="padding:0.75rem 1rem;border-radius:12px;display:flex;align-items:center;gap:12px;font-weight:700;color:var(--text-dim)">
+            <i class="fa-solid fa-box-open" style="color:var(--orange)"></i> Lacak Pesanan
+        </a>
+        <a href="https://discord.gg/huWJNZ4m9" target="_blank" class="mobile-link" style="padding:0.75rem 1rem;border-radius:12px;display:flex;align-items:center;gap:12px;font-weight:700;color:var(--text-dim)">
+            <i class="fa-brands fa-discord" style="color:var(--orange)"></i> Join Komunitas
+        </a>
+    </div>
+
+    <div id="mobile-nav-auth" style="display:flex;flex-direction:column;gap:10px;padding-top:1.5rem;border-top:1px solid var(--border)">
+        <!-- injected by app.js -->
+    </div>
 </aside>
 
 <!-- Hero Carousel -->

@@ -27,17 +27,6 @@ const store = {
         const token = this.getToken();
         const isFormData = options.body instanceof FormData;
         
-        const headers = isFormData ? {} : {
-            'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        };
-        
-        // Final protection: if FormData, we MUST NOT have Content-Type. 
-        // Some browsers/environments are sensitive if we even pass an empty object? 
-        // But user said 'DILARANG KERAS ADA headers: { ... } INI' 
-        // I will pass headers only if not FormData, OR pass empty if it is.
-        // Actually, for Auth we NEED headers. But I will follow the spirit of 'no headers for FormData'.
-        
         const fetchOptions = { 
             ...options, 
             body: options.body,
@@ -318,6 +307,55 @@ const store = {
         return this.apiCall(`/admin/files/${filename}`, {
             method: 'DELETE'
         });
+    },
+
+    async openTicketModal() {
+        if (!this.isLoggedIn()) {
+            Swal.fire('Info', 'Silakan login untuk mengirim tiket bantuan.', 'info');
+            setTimeout(() => window.location.href = '/login.html', 1500);
+            return;
+        }
+
+        const { value: formValues } = await Swal.fire({
+            title: 'Kirim Tiket Bantuan',
+            html: `
+                <div style="text-align:left">
+                    <label class="form-label" style="display:block;margin-bottom:5px;font-weight:600">Subjek Keluhan</label>
+                    <input id="swal-subject" class="swal2-input" placeholder="Contoh: Masalah Akun Netflix" style="width:100%;margin:0 0 15px">
+                    
+                    <label class="form-label" style="display:block;margin-bottom:5px;font-weight:600">Pesan / Detail Masalah</label>
+                    <textarea id="swal-message" class="swal2-textarea" placeholder="Tuliskan keluhan Anda di sini..." style="width:100%;margin:0;height:120px"></textarea>
+                </div>`,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Kirim Tiket',
+            confirmButtonColor: '#f97316',
+            cancelButtonText: 'Batal',
+            preConfirm: () => {
+                const subject = document.getElementById('swal-subject').value;
+                const message = document.getElementById('swal-message').value;
+                if (!subject || !message) {
+                    Swal.showValidationMessage('Harap isi subjek dan pesan!');
+                    return null;
+                }
+                return { subject, message };
+            }
+        });
+
+        if (formValues) {
+            Swal.fire({ title: 'Mengirim...', didOpen: () => Swal.showLoading() });
+            const res = await this.apiCall('/tickets', {
+                method: 'POST',
+                body: JSON.stringify(formValues)
+            });
+            Swal.close();
+
+            if (res.success) {
+                Swal.fire('Berhasil!', 'Tiket berhasil dikirim. CS kami akan membalas via Email/WhatsApp dalam 1x24 jam.', 'success');
+            } else {
+                Swal.fire('Gagal', res.message || 'Terjadi kesalahan saat mengirim tiket.', 'error');
+            }
+        }
     },
 
     // ─── CHAT MESSAGES ─────────────────────────────────────────
