@@ -59,8 +59,8 @@ router.get('/:id/invoice', verifyToken, async (req: any, res: any) => {
     const db2 = require('../config/database').default;
 
     const query = role === 'admin'
-      ? 'SELECT o.*, p.price as original_product_price FROM orders o LEFT JOIN products p ON o.product_id = p.id WHERE o.id = ? LIMIT 1'
-      : 'SELECT o.*, p.price as original_product_price FROM orders o LEFT JOIN products p ON o.product_id = p.id WHERE o.id = ? AND o.user_id = ? LIMIT 1';
+      ? 'SELECT orders.*, products.name as product_name, products.price as original_product_price FROM orders JOIN products ON orders.product_id = products.id WHERE orders.id = ? LIMIT 1'
+      : 'SELECT orders.*, products.name as product_name, products.price as original_product_price FROM orders JOIN products ON orders.product_id = products.id WHERE orders.id = ? AND orders.user_id = ? LIMIT 1';
     const params: any[] = role === 'admin' ? [orderId] : [orderId, userId];
     const [rows] = await db2.query(query, params);
     const order = rows[0];

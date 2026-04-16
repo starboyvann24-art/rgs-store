@@ -209,10 +209,15 @@ const Render = {
 const Actions = {
     async loadAll() {
         try {
-            // Loading indicator for stats
+            // Skeleton loading indicators for stats & tables
             ['stat-revenue', 'stat-orders', 'stat-pending', 'stat-products', 'stat-tickets'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.innerHTML = '<span class="animate-pulse text-gray-300">...</span>';
+            });
+            const skelRow = `<tr><td colspan="6" class="p-4"><div class="h-10 bg-gray-200 rounded animate-pulse w-full"></div></td></tr>`;
+            ['admin-table-products', 'admin-table-orders', 'admin-table-payments', 'admin-table-tickets', 'admin-table-verification'].forEach(id => {
+                const tbody = document.getElementById(id);
+                if (tbody) tbody.innerHTML = skelRow.repeat(3);
             });
 
             const [products, orders, stats, payments, tickets, waiting] = await Promise.all([
@@ -510,20 +515,31 @@ window.closePaymentModal = () => {
     setTimeout(() => m.classList.add('hidden'), 300);
 };
 
-window.openDeliveryModal = (id) => {
-    document.getElementById('delivery-order-id').value = id;
-    document.getElementById('delivery-credentials').value = '';
-    const m = document.getElementById('modal-delivery');
-    m.classList.remove('hidden');
-    setTimeout(() => { m.classList.remove('opacity-0'); m.querySelector('div').classList.remove('scale-95'); }, 10);
+window.openDeliveryModal = async (id) => {
+    const { value: creds } = await Swal.fire({
+        title: 'Proses Kirim Pesanan',
+        input: 'textarea',
+        inputLabel: 'Masukkan kredensial/akun untuk pembeli:',
+        inputPlaceholder: 'Email: xxx\nPass: xxx\natau Link Data...',
+        showCancelButton: true,
+        confirmButtonColor: '#f97316',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Kirim Produk & Email!'
+    });
+    
+    if (creds) {
+        Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+        const res = await appUtils.deliverOrder(id, creds);
+        if (res && res.success) {
+            appUtils.showToast('✅ Produk Berhasil Dikirim!', 'success');
+            Actions.loadAll();
+        } else {
+            appUtils.showToast(res?.message || 'Gagal mengirim produk', 'error');
+        }
+    }
 };
 
-window.closeDeliveryModal = () => {
-    const m = document.getElementById('modal-delivery');
-    m.classList.add('opacity-0');
-    m.querySelector('div').classList.add('scale-95');
-    setTimeout(() => m.classList.add('hidden'), 300);
-};
+window.closeDeliveryModal = () => {};
 
 // --- INIT ---
 document.addEventListener('DOMContentLoaded', () => {

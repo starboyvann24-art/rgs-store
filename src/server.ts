@@ -79,6 +79,9 @@ app.use(['/admin', '/admin.html'], (req, res, next) => {
 // Serve all files from /public directory (HTML, CSS, JS, images)
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
+// Explicitly serve /uploads statically as failsafe for cPanel proxy routing
+app.use('/uploads', express.static(path.join(__dirname, '..', 'public', 'uploads')));
+
 // ─── API ROUTES ───────────────────────────────────────────────
 const apiRouter = express.Router();
 

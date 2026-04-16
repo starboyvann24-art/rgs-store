@@ -109,7 +109,7 @@ export function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
       doc.save();
       doc.translate(297, 420); // center of A4
       doc.rotate(-45);
-      doc.fillColor('rgba(34,197,94,0.15)'); // Green opacity
+      doc.fillColor('rgba(249,115,22,0.15)'); // Orange opacity #f97316
       doc.font('Helvetica-Bold').fontSize(110);
       doc.text('LUNAS', -250, -55, { align: 'center', width: 500 });
       doc.restore();
