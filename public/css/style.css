@@ -531,22 +531,29 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
 /* ─── CS Ticket Float ─────────────────────────────────────── */
 .cs-float {
     position: fixed;
-    bottom: 28px; right: 100px;
-    width: 58px; height: 58px;
-    background: linear-gradient(135deg, var(--orange), #c2410c);
+    bottom: 90px;
+    right: 20px;
+    width: 58px;
+    height: 58px;
+    background: linear-gradient(135deg, var(--orange), #ea580c);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
     font-size: 1.4rem;
-    z-index: 999;
-    box-shadow: var(--shadow-orange);
-    transition: 0.3s;
-    cursor: pointer;
-    border: none;
+    z-index: 9999999 !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 20px rgba(249,115,22,0.4);
+    transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 2px solid #fff;
 }
-.cs-float:hover { transform: scale(1.1); box-shadow: 0 6px 30px var(--orange-glow); }
+
+.cs-float:hover {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 8px 32px var(--orange-glow);
+}
 
 /* ─── Shimmer Skeleton ────────────────────────────────────── */
 @keyframes shimmer {
