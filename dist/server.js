@@ -94,10 +94,10 @@ app.use(passport_1.default.session());
 // Admin access is guarded client-side via admin.js requireAdmin()
 // and all admin API endpoints use verifyToken + isAdmin middleware.
 // ─── STATIC FILES (Frontend) ─────────────────────────────────
-// Serve all files from /public directory (HTML, CSS, JS, images)
-app.use(express_1.default.static(path_1.default.join(__dirname, '..', 'public')));
-// Explicitly serve /uploads statically as failsafe for cPanel proxy routing
+// Serve /uploads explicitly FIRST to prevent SPA fallback from hijacking images
 app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '..', 'public', 'uploads')));
+// Serve other static files from /public
+app.use(express_1.default.static(path_1.default.join(__dirname, '..', 'public')));
 // ─── API ROUTES ───────────────────────────────────────────────
 const apiRouter = express_1.default.Router();
 // Health check endpoint

@@ -297,25 +297,31 @@ const deliverOrder = async (req, res, next) => {
             (0, response_1.sendResponse)(res, 400, false, 'Kredensial/link produk wajib diisi.');
             return;
         }
-        const [existingRows] = await database_1.default.query('SELECT * FROM orders WHERE id = ? LIMIT 1', [orderId]);
-        const order = existingRows[0];
-        if (!order) {
-            (0, response_1.sendResponse)(res, 404, false, 'Order tidak ditemukan.');
+        // Fetch full order details including user & product for email
+        const [fullOrderRows] = await database_1.default.query(`SELECT o.*, u.name as user_name, u.email as user_email, p.name as product_name_orig 
+       FROM orders o 
+       JOIN users u ON o.user_id = u.id 
+       JOIN products p ON o.product_id = p.id 
+       WHERE o.id = ? LIMIT 1`, [orderId]);
+        const fullOrder = fullOrderRows[0];
+        if (!fullOrder) {
+            (0, response_1.sendResponse)(res, 404, false, 'Order details not found.');
             return;
         }
-        await database_1.default.query('UPDATE orders SET status = ?, credentials = ?, shipped_at = NOW() WHERE id = ?', ['shipped', credentials, orderId]);
-        const [updatedRows] = await database_1.default.query('SELECT o.*, u.email as user_email_addr, u.name as user_name_real FROM orders o JOIN users u ON o.user_id = u.id WHERE o.id = ? LIMIT 1', [orderId]);
-        const deliveredOrder = updatedRows[0];
-        // Send email to customer (non-blocking)
-        if (deliveredOrder) {
-            (0, mailer_1.sendOrderPaidEmail)(deliveredOrder.user_email_addr || deliveredOrder.user_email, deliveredOrder.user_name_real || deliveredOrder.user_name, {
-                order_number: deliveredOrder.order_number,
-                product_name: deliveredOrder.product_name,
-                total_price: deliveredOrder.total_price,
-                credentials
-            }).catch(err => console.error('⚠️  Paid email failed:', err));
+        await database_1.default.query('UPDATE orders SET status = ?, credentials = ?, shipped_at = NOW() WHERE id = ?', ['success', credentials, orderId]);
+        // Otomatis kirim EMAIL ke pembeli (V6 Requirement)
+        try {
+            await (0, mailer_1.sendOrderPaidEmail)(fullOrder.user_email, fullOrder.user_name, {
+                order_number: fullOrder.order_number,
+                product_name: fullOrder.product_name_orig || fullOrder.product_name,
+                total_price: fullOrder.total_price,
+                credentials: credentials
+            });
         }
-        (0, response_1.sendResponse)(res, 200, true, 'Pesanan telah dikirim dan kredensial disimpan.', deliveredOrder);
+        catch (emailErr) {
+            console.error('⚠️ Failed to send delivery email:', emailErr);
+        }
+        (0, response_1.sendResponse)(res, 200, true, 'Pesanan berhasil dikirim dan email notifikasi telah dikirim.', { ...fullOrder, status: 'success', credentials });
     }
     catch (error) {
         next(error);

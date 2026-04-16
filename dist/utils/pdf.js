@@ -77,14 +77,20 @@ function generateInvoicePDF(data) {
         doc.fillColor(GRAY).font('Helvetica').fontSize(9)
             .text('Terima kasih telah berbelanja di RGS STORE. Invoice ini dibuat secara otomatis oleh sistem.', 50, 368, { align: 'center', width: 495 })
             .text('Garansi: 1×24 jam setelah produk diterima. CS: wa.me/62882016259591', 50, 382, { align: 'center', width: 495 });
-        // Watermark LUNAS (Hanya jika status success/shipped)
+        // Watermark PAID / LUNAS (Hanya jika status success/shipped) - V6 Premium Stamp
         if (data.status === 'success' || data.status === 'shipped') {
             doc.save();
-            doc.translate(297, 420); // center of A4
-            doc.rotate(-45);
-            doc.fillColor('rgba(249,115,22,0.15)'); // Orange opacity #f97316
-            doc.font('Helvetica-Bold').fontSize(110);
-            doc.text('LUNAS', -250, -55, { align: 'center', width: 500 });
+            doc.translate(297, 420);
+            doc.rotate(-30);
+            // Stamp Border
+            doc.lineWidth(4);
+            doc.strokeColor(ORANGE);
+            doc.opacity(0.2);
+            doc.rect(-180, -60, 360, 100).stroke();
+            // Stamp Text
+            doc.fillColor(ORANGE);
+            doc.font('Helvetica-Bold').fontSize(60);
+            doc.text('PAID / LUNAS', -180, -40, { align: 'center', width: 360 });
             doc.restore();
         }
         doc.end();
