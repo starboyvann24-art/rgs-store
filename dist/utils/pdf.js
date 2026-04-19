@@ -79,18 +79,19 @@ function generateInvoicePDF(data) {
             .text('Garansi: 1×24 jam setelah produk diterima. CS: wa.me/62882016259591', 50, 382, { align: 'center', width: 495 });
         // Watermark PAID / LUNAS (Hanya jika status success/shipped) - V6 Premium Stamp
         if (data.status === 'success' || data.status === 'shipped') {
+            const PINK_NEON = '#ff007f';
             doc.save();
             doc.translate(297, 420);
             doc.rotate(-30);
             // Stamp Border
             doc.lineWidth(4);
-            doc.strokeColor(ORANGE);
-            doc.opacity(0.2);
+            doc.strokeColor(PINK_NEON);
+            doc.opacity(0.3);
             doc.rect(-180, -60, 360, 100).stroke();
             // Stamp Text
-            doc.fillColor(ORANGE);
+            doc.fillColor(PINK_NEON);
             doc.font('Helvetica-Bold').fontSize(60);
-            doc.text('PAID / LUNAS', -180, -40, { align: 'center', width: 360 });
+            doc.text('LUNAS', -180, -40, { align: 'center', width: 360 });
             doc.restore();
         }
         doc.end();

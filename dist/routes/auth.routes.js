@@ -65,6 +65,8 @@ router.post('/forgot-password', auth_controller_1.forgotPassword);
 router.post('/reset-password', auth_controller_1.resetPassword);
 // PUT /api/auth/profile
 router.put('/profile', auth_middleware_1.verifyToken, auth_controller_1.updateProfile);
+// GET /api/auth/logout
+router.post('/logout', auth_controller_1.logout);
 // ─── Google OAuth Routes ──────────────────────────────────────
 // Step 1 — Redirect user to Google consent screen.
 // Session is needed here to store the OAuth2 state parameter (CSRF protection).

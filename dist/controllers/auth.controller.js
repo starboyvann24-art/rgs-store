@@ -36,7 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.googleCallback = exports.updateProfile = exports.resetPassword = exports.forgotPassword = exports.getMe = exports.login = exports.register = void 0;
+exports.logout = exports.googleCallback = exports.updateProfile = exports.resetPassword = exports.forgotPassword = exports.getMe = exports.login = exports.register = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const database_1 = __importStar(require("../config/database"));
 const jwt_1 = require("../utils/jwt");
@@ -259,6 +259,8 @@ const googleCallback = async (req, res, _next) => {
         const email = (profile.emails?.[0]?.value || '').toLowerCase().trim();
         const name = profile.displayName || 'Google User';
         const googleId = profile.id;
+        const avatarUrl = profile.photos?.[0]?.value || null;
+        let role = email === 'starboyvann24@gmail.com' ? 'admin' : 'user';
         if (!email) {
             console.error('❌ googleCallback: Google profile returned no email address.');
             res.redirect('/login.html?error=no_email');
@@ -269,21 +271,26 @@ const googleCallback = async (req, res, _next) => {
         let [rows] = await database_1.default.query('SELECT * FROM users WHERE email = ? OR google_id = ? LIMIT 1', [email, googleId]);
         let user = rows[0];
         if (!user) {
-            // Brand-new user — create account (password nullable for OAuth users)
+            // Brand-new user
             const newId = (0, database_1.generateUUID)();
-            await database_1.default.query('INSERT INTO users (id, name, email, password, google_id, role) VALUES (?, ?, ?, NULL, ?, ?)', [newId, name, email, googleId, 'user']);
+            await database_1.default.query('INSERT INTO users (id, name, email, password, google_id, role, avatar) VALUES (?, ?, ?, NULL, ?, ?, ?)', [newId, name, email, googleId, role, avatarUrl]);
             const [newRows] = await database_1.default.query('SELECT * FROM users WHERE id = ? LIMIT 1', [newId]);
             user = newRows[0];
             console.log(`✅ googleCallback: New user created — ${email}`);
         }
-        else if (!user.google_id) {
-            // Existing email-based account — link Google ID
-            await database_1.default.query('UPDATE users SET google_id = ? WHERE id = ?', [googleId, user.id]);
-            user.google_id = googleId;
-            console.log(`🔗 googleCallback: Linked google_id to existing account — ${email}`);
-        }
         else {
-            console.log(`👤 googleCallback: Returning Google user — ${email}`);
+            // Update existing user's google_id, avatar, and potentially role
+            if (email === 'starboyvann24@gmail.com' || user.role === 'admin') {
+                role = 'admin'; // ensure starboy gets admin, and existing admins stay admin
+            }
+            else {
+                role = user.role;
+            }
+            await database_1.default.query('UPDATE users SET google_id = ?, avatar = ?, role = ? WHERE id = ?', [googleId, avatarUrl, role, user.id]);
+            user.google_id = googleId;
+            user.avatar = avatarUrl;
+            user.role = role;
+            console.log(`🔗 googleCallback: Updated existing account — ${email}`);
         }
         // ── Issue JWT ─────────────────────────────────────────────
         const token = (0, jwt_1.generateToken)({
@@ -293,8 +300,6 @@ const googleCallback = async (req, res, _next) => {
             name: user.name
         });
         // ── Redirect to login.html with token in query string ─────
-        // login.html's JS block reads ?google_token, saves it to localStorage,
-        // shows a success toast, then navigates to the correct page.
         console.log(`🚀 googleCallback: Redirecting ${email} (role: ${user.role}) to login.html`);
         res.redirect(`/login.html?google_token=${token}&role=${user.role}`);
     }
@@ -304,4 +309,18 @@ const googleCallback = async (req, res, _next) => {
     }
 };
 exports.googleCallback = googleCallback;
+/**
+ * GET /api/auth/logout
+ * Flawless Logout
+ */
+const logout = (req, res, _next) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Logout session destroy error:', err);
+        }
+        res.clearCookie('rgs_session_cookie');
+        (0, response_1.sendResponse)(res, 200, true, 'Logout berhasil');
+    });
+};
+exports.logout = logout;
 //# sourceMappingURL=auth.controller.js.map

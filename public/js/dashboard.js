@@ -33,7 +33,7 @@ const Render = {
                         <div class="text-right">
                             <p class="font-extrabold text-primary-600 text-lg">${appUtils.formatRupiah(o.total_price)}</p>
                             <div class="flex gap-3 justify-end mt-2">
-                                <a href="invoice.html?id=${o.id}" target="_blank" class="text-[10px] font-bold text-gray-500 hover:text-gray-800 transition"><i class="fa-solid fa-print"></i> Cetak Invoice</a>
+                                ${isDone ? `<button onclick="downloadInvoicePDF('${o.id}')" class="text-[10px] font-bold text-gray-500 hover:text-gray-800 transition"><i class="fa-solid fa-print"></i> Cetak Invoice</button>` : ''}
                                 ${isDone ? `<button data-action="open-review" data-id="${o.id}" data-pid="${o.product_id}" data-pname="${o.product_name.replace(/'/g,"\\'").replace(/"/g, '&quot;')}" class="text-[10px] font-bold text-orange-500 hover:underline">⭐️ Tulis Ulasan</button>` : ''}
                             </div>
                         </div>
@@ -295,3 +295,36 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// --- INVOICE PDF DOWNLOAD (GLOBALLY ACCESSIBLE) ---
+window.downloadInvoicePDF = async function(orderId) {
+    const token = appUtils.getToken();
+    try {
+        Swal.fire({ title: 'Menyiapkan Invoice...', didOpen: () => Swal.showLoading(), background: '#f8fafc', color: '#1e293b' });
+        const response = await fetch(`/api/orders/${orderId}/invoice`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!response.ok) {
+            let errMsg = 'Tidak dapat memuat invoice.';
+            try { const errData = await response.json(); errMsg = errData.message; } catch(e) {}
+            Swal.fire({ title: 'Gagal', text: errMsg, icon: 'error', background: '#f8fafc', color: '#1e293b' });
+            return;
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Invoice-RGS-${orderId}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        Swal.close();
+        appUtils.showToast('✅ Invoice berhasil didownload!', 'success');
+    } catch (err) {
+        console.error('Invoice download error:', err);
+        Swal.fire({ title: 'Error', text: 'Gagal mendownload invoice: ' + err.message, icon: 'error', background: '#f8fafc', color: '#1e293b' });
+    }
+};

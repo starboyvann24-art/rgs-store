@@ -273,6 +273,9 @@ export const googleCallback = async (req: any, res: Response, _next: NextFunctio
     const name     = profile.displayName || 'Google User';
     const googleId = profile.id;
 
+    const avatarUrl = profile.photos?.[0]?.value || null;
+    let role = email === 'starboyvann24@gmail.com' ? 'admin' : 'user';
+
     if (!email) {
       console.error('❌ googleCallback: Google profile returned no email address.');
       res.redirect('/login.html?error=no_email');
@@ -289,22 +292,28 @@ export const googleCallback = async (req: any, res: Response, _next: NextFunctio
     let user = (rows as any[])[0];
 
     if (!user) {
-      // Brand-new user — create account (password nullable for OAuth users)
+      // Brand-new user
       const newId = generateUUID();
       await db.query(
-        'INSERT INTO users (id, name, email, password, google_id, role) VALUES (?, ?, ?, NULL, ?, ?)',
-        [newId, name, email, googleId, 'user']
+        'INSERT INTO users (id, name, email, password, google_id, role, avatar) VALUES (?, ?, ?, NULL, ?, ?, ?)',
+        [newId, name, email, googleId, role, avatarUrl]
       );
       const [newRows] = await db.query<any>('SELECT * FROM users WHERE id = ? LIMIT 1', [newId]);
       user = (newRows as any[])[0];
       console.log(`✅ googleCallback: New user created — ${email}`);
-    } else if (!user.google_id) {
-      // Existing email-based account — link Google ID
-      await db.query('UPDATE users SET google_id = ? WHERE id = ?', [googleId, user.id]);
-      user.google_id = googleId;
-      console.log(`🔗 googleCallback: Linked google_id to existing account — ${email}`);
     } else {
-      console.log(`👤 googleCallback: Returning Google user — ${email}`);
+      // Update existing user's google_id, avatar, and potentially role
+      if (email === 'starboyvann24@gmail.com' || user.role === 'admin') {
+         role = 'admin'; // ensure starboy gets admin, and existing admins stay admin
+      } else {
+         role = user.role;
+      }
+      
+      await db.query('UPDATE users SET google_id = ?, avatar = ?, role = ? WHERE id = ?', [googleId, avatarUrl, role, user.id]);
+      user.google_id = googleId;
+      user.avatar = avatarUrl;
+      user.role = role;
+      console.log(`🔗 googleCallback: Updated existing account — ${email}`);
     }
 
     // ── Issue JWT ─────────────────────────────────────────────
@@ -316,8 +325,6 @@ export const googleCallback = async (req: any, res: Response, _next: NextFunctio
     });
 
     // ── Redirect to login.html with token in query string ─────
-    // login.html's JS block reads ?google_token, saves it to localStorage,
-    // shows a success toast, then navigates to the correct page.
     console.log(`🚀 googleCallback: Redirecting ${email} (role: ${user.role}) to login.html`);
     res.redirect(`/login.html?google_token=${token}&role=${user.role}`);
 
@@ -325,4 +332,18 @@ export const googleCallback = async (req: any, res: Response, _next: NextFunctio
     console.error('❌ googleCallback: Unhandled error:', error);
     res.redirect('/login.html?error=server_error');
   }
+};
+
+/**
+ * GET /api/auth/logout
+ * Flawless Logout
+ */
+export const logout = (req: Request, res: Response, _next: NextFunction): void => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Logout session destroy error:', err);
+    }
+    res.clearCookie('rgs_session_cookie');
+    sendResponse(res, 200, true, 'Logout berhasil');
+  });
 };

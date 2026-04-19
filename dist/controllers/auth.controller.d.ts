@@ -41,4 +41,9 @@ export declare const updateProfile: (req: any, res: Response, next: NextFunction
  *   5. login.html JS saves the token to localStorage and navigates to app
  */
 export declare const googleCallback: (req: any, res: Response, _next: NextFunction) => Promise<void>;
+/**
+ * GET /api/auth/logout
+ * Flawless Logout
+ */
+export declare const logout: (req: Request, res: Response, _next: NextFunction) => void;
 //# sourceMappingURL=auth.controller.d.ts.map

@@ -510,7 +510,9 @@ const store = {
                 navAuth.innerHTML = `
                     <div class="user-nav-group">
                         <a href="${user.role === 'admin' ? '/admin.html' : '/dashboard.html'}" class="user-nav-link">
-                            <div class="avatar-xs">${user.name[0].toUpperCase()}</div>
+                            <div class="avatar-xs" style="overflow:hidden">
+                                ${user.avatar ? `<img src="${user.avatar}" alt="avatar" style="width:100%;height:100%;object-fit:cover">` : user.name[0].toUpperCase()}
+                            </div>
                             <span>${user.name.split(' ')[0]}</span>
                         </a>
                         <button onclick="store.logout()" class="btn-logout-sm">Logout</button>
@@ -718,8 +720,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const names = ['Dimas', 'Budi', 'Rizky', 'Putra', 'Andi', 'Reza', 'Evan', 'Cahya', 'Naufal', 'Ilham'];
         const products = ['Panel Pterodactyl', 'Discord Nitro 1 Bulan', 'Netflix Premium 4K', 'Spotify Premium', 'YouTube Premium'];
         
-        // Timeout acak 3-5 menit (180000 - 300000 ms)
-        const randomTime = Math.floor(Math.random() * (300000 - 180000 + 1)) + 180000;
+        // Timeout acak 1-2 menit (60000 - 120000 ms)
+        const randomTime = Math.floor(Math.random() * (120000 - 60000 + 1)) + 60000;
         
         setTimeout(() => {
             const randomName = names[Math.floor(Math.random() * names.length)];

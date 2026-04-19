@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import { register, login, getMe, forgotPassword, resetPassword, updateProfile, googleCallback } from '../controllers/auth.controller';
+import { register, login, getMe, forgotPassword, resetPassword, updateProfile, googleCallback, logout } from '../controllers/auth.controller';
 import { validate } from '../middleware/validate.middleware';
 import { registerSchema, loginSchema } from '../validations/auth.validation';
 import { verifyToken } from '../middleware/auth.middleware';
@@ -72,6 +72,9 @@ router.post('/reset-password', resetPassword);
 
 // PUT /api/auth/profile
 router.put('/profile', verifyToken, updateProfile);
+
+// GET /api/auth/logout
+router.post('/logout', logout);
 
 // ─── Google OAuth Routes ──────────────────────────────────────
 // Step 1 — Redirect user to Google consent screen.
