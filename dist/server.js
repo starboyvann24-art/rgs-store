@@ -44,6 +44,10 @@ const helmet_1 = __importDefault(require("helmet"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const express_session_1 = __importDefault(require("express-session"));
 const passport_1 = __importDefault(require("passport"));
+const mysql2_1 = __importDefault(require("mysql2"));
+// ─── MySQL Session Store (express-mysql-session) ─────────────
+// MUST be required — not imported — for CJS interop
+const MySQLStore = require('express-mysql-session')(express_session_1.default);
 // Load .env with absolute path — wajib agar terbaca di cPanel/Phusion Passenger
 dotenv.config({ path: path_1.default.resolve(__dirname, '..', '.env') });
 const database_1 = require("./config/database");
@@ -83,8 +87,9 @@ const apiLimiter = (0, express_rate_limit_1.default)({
 });
 app.use(express_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
-// ─── TRUST PROXY (MANDATORY for cPanel / Reverse Proxy) ─────
-// Without this, express-session cookie.secure won't work behind HTTPS proxy
+// ─── TRUST PROXY ─────────────────────────────────────────────
+// MANDATORY for cPanel / Phusion Passenger / Reverse Proxy.
+// Must be declared BEFORE session middleware.
 app.set('trust proxy', 1);
 // ─── CORS (MANDATORY for Cookies/Sessions) ───────────────────
 app.use((req, res, next) => {
@@ -99,16 +104,44 @@ app.use((req, res, next) => {
         next();
     }
 });
-// ─── SESSION & PASSPORT (for Google OAuth) ───────────────────
+// ─── SESSION STORE — MySQL Backed (Anti-Amnesia) ──────────────
+// Uses a dedicated NON-PROMISE mysql2 pool (required by express-mysql-session).
+// This is separate from the app's promise pool in config/database.ts.
+const sessionDbPool = mysql2_1.default.createPool({
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '3306', 10),
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'tgevcisg_rgs_store',
+    waitForConnections: true,
+    connectionLimit: 5,
+    charset: 'utf8mb4'
+});
+const sessionStore = new MySQLStore({
+    clearExpired: true,
+    checkExpirationInterval: 900000, // Prune expired sessions every 15 min
+    expiration: 86400000, // Session max age: 24h
+    createDatabaseTable: true, // Auto-create `sessions` table if missing
+    schema: {
+        tableName: 'sessions',
+        columnNames: {
+            session_id: 'session_id',
+            expires: 'expires',
+            data: 'data'
+        }
+    }
+}, sessionDbPool);
+// ─── SESSION & PASSPORT ───────────────────────────────────────
 app.use((0, express_session_1.default)({
-    secret: process.env.SESSION_SECRET || 'rgs_store_session_secret_2026',
+    name: 'rgs_session_cookie',
+    secret: process.env.SESSION_SECRET || 'rgs_super_secret_session_2026',
+    store: sessionStore,
     resave: false,
     saveUninitialized: false,
-    proxy: true,
     cookie: {
-        secure: true, // MANDATORY: HTTPS only
-        sameSite: 'none', // MANDATORY: For cross-site callback persistence
-        maxAge: 24 * 60 * 60 * 1000 // 1 day
+        secure: false, // false = works on HTTP (cPanel). Set true only if HTTPS is forced.
+        sameSite: 'lax', // 'lax' is safe for same-site OAuth redirects on cPanel
+        maxAge: 86400000 // 24h
     }
 }));
 app.use(passport_1.default.initialize());

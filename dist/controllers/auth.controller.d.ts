@@ -31,7 +31,14 @@ export declare const resetPassword: (req: Request, res: Response, next: NextFunc
 export declare const updateProfile: (req: any, res: Response, next: NextFunction) => Promise<void>;
 /**
  * GET /api/auth/google/callback
- * Google OAuth callback - links/creates user and issues JWT
+ * Google OAuth callback — DB upsert + JWT issue + redirect to login.html
+ *
+ * Flow:
+ *   1. Google redirects here with profile in req.user (set by Passport)
+ *   2. We upsert the user in MySQL (create or link google_id)
+ *   3. Issue a JWT token
+ *   4. Redirect to /login.html?google_token=TOKEN&role=ROLE
+ *   5. login.html JS saves the token to localStorage and navigates to app
  */
 export declare const googleCallback: (req: any, res: Response, _next: NextFunction) => Promise<void>;
 //# sourceMappingURL=auth.controller.d.ts.map

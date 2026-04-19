@@ -672,6 +672,47 @@ store.saveToken = function(token) { this.setToken(token); };
 document.addEventListener('DOMContentLoaded', () => {
     store.updateNavbar();
 
+    // ─── GOOGLE TOKEN HANDLER (Universal) ─────────────────────
+    // After Google OAuth, server redirects to /login.html?google_token=TOKEN&role=ROLE
+    // This block catches it on ANY page that loads app.js, saves the token,
+    // fetches the user profile, cleans the URL, then navigates correctly.
+    const _urlParams = new URLSearchParams(window.location.search);
+    const _googleToken = _urlParams.get('google_token');
+    const _googleRole  = _urlParams.get('role');
+
+    if (_googleToken) {
+        store.setToken(_googleToken);
+
+        // Fetch real user data from DB and persist to localStorage
+        store.apiCall('/auth/me').then(res => {
+            if (res.success && res.data) {
+                store.setUser(res.data);
+            } else {
+                // Fallback: build minimal user from role so navbar renders
+                store.setUser({ name: 'User', role: _googleRole || 'user' });
+            }
+            store.updateNavbar();
+            store.showToast('✅ Login Google berhasil! Selamat datang 🎉', 'success');
+
+            // Remove ?google_token=... from the address bar WITHOUT reloading
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+
+            // Navigate to correct dashboard
+            setTimeout(() => {
+                window.location.href = (_googleRole === 'admin') ? '/admin.html' : '/index.html';
+            }, 900);
+        }).catch(() => {
+            // Network error — still save and navigate
+            store.showToast('✅ Login berhasil!', 'success');
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+            setTimeout(() => {
+                window.location.href = (_googleRole === 'admin') ? '/admin.html' : '/index.html';
+            }, 900);
+        });
+    }
+
     // --- FAKE SALES NOTIFICATION ---
     function runFakeSales() {
         const names = ['Dimas', 'Budi', 'Rizky', 'Putra', 'Andi', 'Reza', 'Evan', 'Cahya', 'Naufal', 'Ilham'];
@@ -702,3 +743,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // Mulai fake sales pertama (sedikit lebih cepat, misal 30 detik pertama)
     setTimeout(() => { runFakeSales(); }, 30000);
 });
+

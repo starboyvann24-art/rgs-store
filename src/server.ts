@@ -6,6 +6,11 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import session from 'express-session';
 import passport from 'passport';
+import mysql2 from 'mysql2';
+
+// ─── MySQL Session Store (express-mysql-session) ─────────────
+// MUST be required — not imported — for CJS interop
+const MySQLStore = require('express-mysql-session')(session);
 
 // Load .env with absolute path — wajib agar terbaca di cPanel/Phusion Passenger
 dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
@@ -55,8 +60,9 @@ const apiLimiter = rateLimit({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// ─── TRUST PROXY (MANDATORY for cPanel / Reverse Proxy) ─────
-// Without this, express-session cookie.secure won't work behind HTTPS proxy
+// ─── TRUST PROXY ─────────────────────────────────────────────
+// MANDATORY for cPanel / Phusion Passenger / Reverse Proxy.
+// Must be declared BEFORE session middleware.
 app.set('trust proxy', 1);
 
 // ─── CORS (MANDATORY for Cookies/Sessions) ───────────────────
@@ -72,16 +78,46 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-// ─── SESSION & PASSPORT (for Google OAuth) ───────────────────
+// ─── SESSION STORE — MySQL Backed (Anti-Amnesia) ──────────────
+// Uses a dedicated NON-PROMISE mysql2 pool (required by express-mysql-session).
+// This is separate from the app's promise pool in config/database.ts.
+const sessionDbPool = mysql2.createPool({
+  host:              process.env.DB_HOST     || 'localhost',
+  port:              parseInt(process.env.DB_PORT || '3306', 10),
+  user:              process.env.DB_USER     || 'root',
+  password:          process.env.DB_PASSWORD || '',
+  database:          process.env.DB_NAME     || 'tgevcisg_rgs_store',
+  waitForConnections: true,
+  connectionLimit:   5,
+  charset:           'utf8mb4'
+});
+
+const sessionStore = new MySQLStore({
+  clearExpired:            true,
+  checkExpirationInterval: 900000,   // Prune expired sessions every 15 min
+  expiration:              86400000, // Session max age: 24h
+  createDatabaseTable:     true,     // Auto-create `sessions` table if missing
+  schema: {
+    tableName: 'sessions',
+    columnNames: {
+      session_id: 'session_id',
+      expires:    'expires',
+      data:       'data'
+    }
+  }
+}, sessionDbPool);
+
+// ─── SESSION & PASSPORT ───────────────────────────────────────
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'rgs_store_session_secret_2026',
-  resave: false,
+  name:              'rgs_session_cookie',
+  secret:            process.env.SESSION_SECRET || 'rgs_super_secret_session_2026',
+  store:             sessionStore,
+  resave:            false,
   saveUninitialized: false,
-  proxy: true,
   cookie: {
-    secure: true, // MANDATORY: HTTPS only
-    sameSite: 'none', // MANDATORY: For cross-site callback persistence
-    maxAge: 24 * 60 * 60 * 1000 // 1 day
+    secure:   false,   // false = works on HTTP (cPanel). Set true only if HTTPS is forced.
+    sameSite: 'lax',  // 'lax' is safe for same-site OAuth redirects on cPanel
+    maxAge:   86400000 // 24h
   }
 }));
 app.use(passport.initialize());

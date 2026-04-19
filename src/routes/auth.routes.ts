@@ -5,7 +5,6 @@ import { register, login, getMe, forgotPassword, resetPassword, updateProfile, g
 import { validate } from '../middleware/validate.middleware';
 import { registerSchema, loginSchema } from '../validations/auth.validation';
 import { verifyToken } from '../middleware/auth.middleware';
-import { upload } from '../middleware/upload.middleware';
 
 // ============================================================
 // RGS STORE — Auth Routes (incl. Google OAuth)
@@ -13,36 +12,47 @@ import { upload } from '../middleware/upload.middleware';
 
 const router: Router = Router();
 
-// ─── Setup Passport Google Strategy ──────────────────────────
+// ─── Google Strategy ─────────────────────────────────────────
+// Credentials MUST exist in .env:
+//   GOOGLE_CLIENT_ID=your_client_id
+//   GOOGLE_CLIENT_SECRET=your_client_secret
 passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID || 'dummy_client_id_to_prevent_startup_crash',
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'dummy_client_secret',
-  callbackURL: 'https://rgs-store.my.id/api/auth/google/callback',
-  proxy: true
-}, (accessToken: any, refreshToken: any, profile: any, done: any) => {
+  clientID:     process.env.GOOGLE_CLIENT_ID     || 'REPLACE_WITH_GOOGLE_CLIENT_ID',
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'REPLACE_WITH_GOOGLE_CLIENT_SECRET',
+  callbackURL:  process.env.GOOGLE_CALLBACK_URL  || 'https://rgs-store.my.id/api/auth/google/callback',
+  proxy:        true  // Honours X-Forwarded-Proto from cPanel reverse proxy
+}, async (_accessToken: any, _refreshToken: any, profile: any, done: any) => {
+  // Pass the raw Google profile to done — googleCallback controller handles DB upsert
   return done(null, profile);
 }));
 
-// ─── Passport Serialize/Deserialize (DB-backed Sync) ─────────
+// ─── Passport Serialize / Deserialize ────────────────────────
+// serializeUser: called once after successful auth — stores DB user.id in session cookie.
+// deserializeUser: called on every subsequent request to re-hydrate req.user from DB.
 passport.serializeUser((user: any, done: any) => {
+  // 'user' here is the Google profile (raw). Store profile.id as the key.
+  // After googleCallback creates/finds the DB user and calls req.logIn(),
+  // the session holds the DB user id (set in the controller via req.logIn).
   done(null, user.id || user);
 });
 
 passport.deserializeUser(async (id: any, done: any) => {
   try {
     const db = require('../config/database').default;
-    const [rows] = await db.query('SELECT id, name, email, role, whatsapp FROM users WHERE id = ? LIMIT 1', [id]);
-    const user = rows[0];
+    const [rows] = await db.query(
+      'SELECT id, name, email, role, whatsapp, avatar FROM users WHERE id = ? LIMIT 1',
+      [id]
+    );
+    const user = (rows as any[])[0];
     if (user) {
       done(null, user);
     } else {
-      done(new Error('User not found'), null);
+      done(new Error('User not found in DB'), null);
     }
   } catch (err) {
     done(err, null);
   }
 });
-
 
 // ─── Standard Auth Routes ─────────────────────────────────────
 // POST /api/auth/register
@@ -64,12 +74,23 @@ router.post('/reset-password', resetPassword);
 router.put('/profile', verifyToken, updateProfile);
 
 // ─── Google OAuth Routes ──────────────────────────────────────
-// GET /api/auth/google — Initiate Google Login
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+// Step 1 — Redirect user to Google consent screen.
+// Session is needed here to store the OAuth2 state parameter (CSRF protection).
+router.get('/google',
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    prompt: 'select_account'  // Always show account picker
+  })
+);
 
-// GET /api/auth/google/callback — Google redirect back here
+// Step 2 — Google redirects back here with ?code=...
+// session: true — required so Passport can read&verify the state from the MySQL session.
+// On success, calls googleCallback which issues the JWT and redirects to login.html.
 router.get('/google/callback',
-  passport.authenticate('google', { session: false, failureRedirect: '/login.html?error=google_failed' }),
+  passport.authenticate('google', {
+    session:         true,
+    failureRedirect: '/login.html?error=google_failed'
+  }),
   googleCallback
 );
 

@@ -239,12 +239,20 @@ const updateProfile = async (req, res, next) => {
 exports.updateProfile = updateProfile;
 /**
  * GET /api/auth/google/callback
- * Google OAuth callback - links/creates user and issues JWT
+ * Google OAuth callback — DB upsert + JWT issue + redirect to login.html
+ *
+ * Flow:
+ *   1. Google redirects here with profile in req.user (set by Passport)
+ *   2. We upsert the user in MySQL (create or link google_id)
+ *   3. Issue a JWT token
+ *   4. Redirect to /login.html?google_token=TOKEN&role=ROLE
+ *   5. login.html JS saves the token to localStorage and navigates to app
  */
 const googleCallback = async (req, res, _next) => {
     try {
-        const profile = req.user; // populated by passport
+        const profile = req.user; // Populated by Passport GoogleStrategy
         if (!profile) {
+            console.error('❌ googleCallback: req.user is empty — Passport authentication failed silently.');
             res.redirect('/login.html?error=google_failed');
             return;
         }
@@ -252,29 +260,46 @@ const googleCallback = async (req, res, _next) => {
         const name = profile.displayName || 'Google User';
         const googleId = profile.id;
         if (!email) {
+            console.error('❌ googleCallback: Google profile returned no email address.');
             res.redirect('/login.html?error=no_email');
             return;
         }
-        // Check if user exists
+        console.log(`🔐 Google OAuth callback for: ${email} (googleId: ${googleId})`);
+        // ── Upsert user in DB ────────────────────────────────────
         let [rows] = await database_1.default.query('SELECT * FROM users WHERE email = ? OR google_id = ? LIMIT 1', [email, googleId]);
         let user = rows[0];
         if (!user) {
-            // Create new Google user (no password)
+            // Brand-new user — create account (password nullable for OAuth users)
             const newId = (0, database_1.generateUUID)();
             await database_1.default.query('INSERT INTO users (id, name, email, password, google_id, role) VALUES (?, ?, ?, NULL, ?, ?)', [newId, name, email, googleId, 'user']);
-            [rows] = await database_1.default.query('SELECT * FROM users WHERE id = ? LIMIT 1', [newId]);
-            user = rows[0];
+            const [newRows] = await database_1.default.query('SELECT * FROM users WHERE id = ? LIMIT 1', [newId]);
+            user = newRows[0];
+            console.log(`✅ googleCallback: New user created — ${email}`);
         }
         else if (!user.google_id) {
-            // Link Google ID to existing account
+            // Existing email-based account — link Google ID
             await database_1.default.query('UPDATE users SET google_id = ? WHERE id = ?', [googleId, user.id]);
+            user.google_id = googleId;
+            console.log(`🔗 googleCallback: Linked google_id to existing account — ${email}`);
         }
-        const token = (0, jwt_1.generateToken)({ id: user.id, role: user.role, email: user.email, name: user.name });
-        // Redirect to frontend with token (SPA-style with hash)
-        res.redirect(`/index.html?google_token=${token}&role=${user.role}`);
+        else {
+            console.log(`👤 googleCallback: Returning Google user — ${email}`);
+        }
+        // ── Issue JWT ─────────────────────────────────────────────
+        const token = (0, jwt_1.generateToken)({
+            id: user.id,
+            role: user.role,
+            email: user.email,
+            name: user.name
+        });
+        // ── Redirect to login.html with token in query string ─────
+        // login.html's JS block reads ?google_token, saves it to localStorage,
+        // shows a success toast, then navigates to the correct page.
+        console.log(`🚀 googleCallback: Redirecting ${email} (role: ${user.role}) to login.html`);
+        res.redirect(`/login.html?google_token=${token}&role=${user.role}`);
     }
     catch (error) {
-        console.error('Google Callback Error:', error);
+        console.error('❌ googleCallback: Unhandled error:', error);
         res.redirect('/login.html?error=server_error');
     }
 };
