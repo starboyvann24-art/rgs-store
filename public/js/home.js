@@ -102,13 +102,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // ─── CAROUSEL LOGIC ─────────────────────────────────────────
     const slides = document.querySelectorAll('.carousel-slide');
-    const dots = document.querySelectorAll('.carousel-dot');
     let currentSlide = 0;
     
     function showSlide(index) {
         slides.forEach((s, idx) => {
             s.classList.toggle('active', idx === index);
-            if (dots[idx]) dots[idx].classList.toggle('active', idx === index);
         });
     }
 
@@ -117,17 +115,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         showSlide(currentSlide);
     }
     
-    // Auto-play
-    let slideTimer = setInterval(nextSlide, 5000);
-    
-    dots.forEach((dot, idx) => {
-        dot.addEventListener('click', () => {
-            clearInterval(slideTimer);
-            currentSlide = idx;
-            showSlide(currentSlide);
-            slideTimer = setInterval(nextSlide, 5000);
-        });
-    });
+    // Auto-play 3000ms as requested
+    let slideTimer = setInterval(nextSlide, 3000);
 
     // ─── MOBILE HAMBURGER & SEARCH LOGIC ───────────────────────
     const mobileBtn = document.getElementById('mobile-menu-btn');

@@ -268,27 +268,27 @@ const googleCallback = async (req, res, _next) => {
         }
         console.log(`🔐 Google OAuth callback for: ${email} (googleId: ${googleId})`);
         // ── Upsert user in DB ────────────────────────────────────
-        let [rows] = await database_1.default.query('SELECT * FROM users WHERE email = ? OR google_id = ? LIMIT 1', [email, googleId]);
+        let [rows] = await database_1.default.query('SELECT * FROM users WHERE email = ?', [email]);
         let user = rows[0];
         if (!user) {
             // Brand-new user
             const newId = (0, database_1.generateUUID)();
-            await database_1.default.query('INSERT INTO users (id, name, email, password, google_id, role, avatar) VALUES (?, ?, ?, NULL, ?, ?, ?)', [newId, name, email, googleId, role, avatarUrl]);
+            await database_1.default.query("INSERT INTO users (id, name, email, google_id, role, avatar_url) VALUES (?, ?, ?, ?, 'user', ?)", [newId, name, email, googleId, avatarUrl]);
             const [newRows] = await database_1.default.query('SELECT * FROM users WHERE id = ? LIMIT 1', [newId]);
             user = newRows[0];
             console.log(`✅ googleCallback: New user created — ${email}`);
         }
         else {
-            // Update existing user's google_id, avatar, and potentially role
+            // Update existing user's google_id, avatar_url, and potentially role
             if (email === 'starboyvann24@gmail.com' || user.role === 'admin') {
                 role = 'admin'; // ensure starboy gets admin, and existing admins stay admin
             }
             else {
                 role = user.role;
             }
-            await database_1.default.query('UPDATE users SET google_id = ?, avatar = ?, role = ? WHERE id = ?', [googleId, avatarUrl, role, user.id]);
+            await database_1.default.query('UPDATE users SET google_id = ?, avatar_url = ?, role = ? WHERE id = ?', [googleId, avatarUrl, role, user.id]);
             user.google_id = googleId;
-            user.avatar = avatarUrl;
+            user.avatar_url = avatarUrl;
             user.role = role;
             console.log(`🔗 googleCallback: Updated existing account — ${email}`);
         }

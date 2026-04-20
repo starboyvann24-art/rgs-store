@@ -1003,3 +1003,43 @@ footer {
     }
     #admin-sidebar-overlay.open { display: block; }
 }
+
+/* =========================================
+   BRIGHT UI OVERRIDES (TEMA TERANG TOTAL)
+   ========================================= */
+body { 
+    background-color: #ffffff !important; 
+    color: #111111 !important; 
+}
+
+.card, .product-card { 
+    background-color: #ffffff !important; 
+    border: 1px solid #eeeeee !important; 
+    box-shadow: 0 4px 15px rgba(255, 0, 127, 0.1) !important; 
+}
+
+.text-muted { 
+    color: #666666 !important; 
+}
+
+/* Gradient terang untuk tombol */
+.btn-primary, .btn-orange { 
+    background: linear-gradient(135deg, #ff7a00, #ff007f) !important; 
+    color: #ffffff !important; 
+    border: none !important;
+}
+
+/* Banner CSS Fix */
+.banner-container { 
+    width: 100%; 
+    border-radius: 12px; 
+    overflow: hidden; 
+    margin-bottom: 20px; 
+}
+.banner-img { 
+    width: 100%; 
+    height: auto; 
+    aspect-ratio: 16/9; 
+    object-fit: contain; 
+    display: block; 
+}

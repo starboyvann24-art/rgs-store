@@ -31,15 +31,17 @@ passport_1.default.use(new passport_google_oauth20_1.Strategy({
 // serializeUser: called once after successful auth — stores DB user.id in session cookie.
 // deserializeUser: called on every subsequent request to re-hydrate req.user from DB.
 passport_1.default.serializeUser((user, done) => {
-    // 'user' here is the Google profile (raw). Store profile.id as the key.
-    // After googleCallback creates/finds the DB user and calls req.logIn(),
-    // the session holds the DB user id (set in the controller via req.logIn).
-    done(null, user.id || user);
+    if (user && user.id) {
+        done(null, user.id);
+    }
+    else {
+        done(null, user);
+    }
 });
 passport_1.default.deserializeUser(async (id, done) => {
     try {
         const db = require('../config/database').default;
-        const [rows] = await db.query('SELECT id, name, email, role, whatsapp, avatar FROM users WHERE id = ? LIMIT 1', [id]);
+        const [rows] = await db.query('SELECT id, name, email, role, avatar_url FROM users WHERE id = ?', [id]);
         const user = rows[0];
         if (user) {
             done(null, user);

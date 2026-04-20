@@ -286,8 +286,8 @@ export const googleCallback = async (req: any, res: Response, _next: NextFunctio
 
     // ── Upsert user in DB ────────────────────────────────────
     let [rows] = await db.query<any>(
-      'SELECT * FROM users WHERE email = ? OR google_id = ? LIMIT 1',
-      [email, googleId]
+      'SELECT * FROM users WHERE email = ?',
+      [email]
     );
     let user = (rows as any[])[0];
 
@@ -295,23 +295,23 @@ export const googleCallback = async (req: any, res: Response, _next: NextFunctio
       // Brand-new user
       const newId = generateUUID();
       await db.query(
-        'INSERT INTO users (id, name, email, password, google_id, role, avatar) VALUES (?, ?, ?, NULL, ?, ?, ?)',
-        [newId, name, email, googleId, role, avatarUrl]
+        "INSERT INTO users (id, name, email, google_id, role, avatar_url) VALUES (?, ?, ?, ?, 'user', ?)",
+        [newId, name, email, googleId, avatarUrl]
       );
       const [newRows] = await db.query<any>('SELECT * FROM users WHERE id = ? LIMIT 1', [newId]);
       user = (newRows as any[])[0];
       console.log(`✅ googleCallback: New user created — ${email}`);
     } else {
-      // Update existing user's google_id, avatar, and potentially role
+      // Update existing user's google_id, avatar_url, and potentially role
       if (email === 'starboyvann24@gmail.com' || user.role === 'admin') {
          role = 'admin'; // ensure starboy gets admin, and existing admins stay admin
       } else {
          role = user.role;
       }
       
-      await db.query('UPDATE users SET google_id = ?, avatar = ?, role = ? WHERE id = ?', [googleId, avatarUrl, role, user.id]);
+      await db.query('UPDATE users SET google_id = ?, avatar_url = ?, role = ? WHERE id = ?', [googleId, avatarUrl, role, user.id]);
       user.google_id = googleId;
-      user.avatar = avatarUrl;
+      user.avatar_url = avatarUrl;
       user.role = role;
       console.log(`🔗 googleCallback: Updated existing account — ${email}`);
     }
