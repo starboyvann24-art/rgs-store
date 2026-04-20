@@ -317,13 +317,13 @@ export const googleCallback = async (req: any, res: Response, _next: NextFunctio
       name:  user.name
     });
 
-    // ── Redirect to login.html with token in query string ─────
-    console.log(`🚀 googleCallback: Redirecting ${email} (role: ${user.role}) to login.html`);
-    res.redirect(`/login.html?google_token=${token}&role=${user.role}`);
+    // ── Redirect to Root '/' with token in query string ─────
+    console.log(`🚀 googleCallback: Redirecting ${email} (role: ${user.role}) to /`);
+    res.redirect(`/?google_token=${token}&role=${user.role}`);
 
   } catch (error) {
     console.error('❌ googleCallback: Unhandled error:', error);
-    res.redirect('/login.html?error=server_error');
+    res.redirect('/?error=server_error');
   }
 };
 

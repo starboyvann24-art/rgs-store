@@ -501,26 +501,44 @@ const store = {
             </div>`;
     },
 
-    // ─── NAVBAR ───────────────────────────────────────────────
-    updateNavbar() {
-        const user = this.getUser();
+    // ─── NAVBAR (Auth Flow V20) ───────────────────────────────
+    async updateNavbar() {
         const navAuth = document.getElementById('nav-auth-container');
-        if (navAuth) {
-            if (user) {
-                navAuth.innerHTML = `
-                    <div class="user-nav-group">
-                        <a href="${user.role === 'admin' ? '/admin.html' : '/dashboard.html'}" class="user-nav-link">
-                            <div class="avatar-xs" style="overflow:hidden">
-                                ${user.avatar ? `<img src="${user.avatar}" alt="avatar" style="width:100%;height:100%;object-fit:cover">` : user.name[0].toUpperCase()}
-                            </div>
-                            <span>${user.name.split(' ')[0]}</span>
-                        </a>
-                        <button onclick="store.logout()" class="btn-logout-sm">Logout</button>
-                    </div>`;
-            } else {
-                navAuth.innerHTML = `
-                    <a href="/login.html" class="btn-nav-login">Masuk</a>
-                    <a href="/register.html" class="btn-nav-register">Daftar</a>`;
+        if (!navAuth) return;
+
+        // Default UI: Tampilkan tombol Masuk/Daftar (Tanpa Skeleton Loader)
+        navAuth.innerHTML = `
+            <a href="/login.html" class="btn-nav-login">Masuk</a>
+            <a href="/register.html" class="btn-nav-register">Daftar</a>`;
+        
+        // Pengecekan Fetch API
+        if (this.getToken()) {
+            try {
+                const res = await fetch(`${API_BASE}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${this.getToken()}` },
+                    credentials: 'include'
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success && data.data) {
+                        const user = data.data;
+                        this.setUser(user); // Sinkronisasi manual localStorage
+                        navAuth.innerHTML = `
+                            <div class="user-nav-group">
+                                <a href="${user.role === 'admin' ? '/admin.html' : '/dashboard.html'}" class="user-nav-link">
+                                    <div class="avatar-xs" style="overflow:hidden">
+                                        ${user.avatar_url || user.avatar ? `<img src="${user.avatar_url || user.avatar}" alt="avatar" style="width:100%;height:100%;object-fit:cover">` : user.name[0].toUpperCase()}
+                                    </div>
+                                    <span>${user.name.split(' ')[0]}</span>
+                                </a>
+                                <button onclick="store.logout()" class="btn-logout-sm">Logout</button>
+                            </div>`;
+                    }
+                }
+            } catch (err) {
+                console.error('Navbar Auth Fetch Err:', err);
+                // Jika error DB / Network, biarkan tombol form masuk tetap ADA
             }
         }
         this.updateCartBadge();

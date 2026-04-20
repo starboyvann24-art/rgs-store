@@ -1059,25 +1059,39 @@ input, select {
 }
 
 /* =========================================
-   V18 EMERGENCY: PURE WHITE & RESTORE BUTTONS
+   V20 OMEGA: PURE WHITE & MOBILE FIX
    ========================================= */
-body, html, main, .main-container, .wrapper { 
-    background-color: #ffffff !important; 
-    background-image: none !important; 
+body, html, main { 
+    background: #ffffff !important; 
     color: #1a1a1a !important; 
+    font-family: 'Inter', sans-serif; 
+}
+.navbar { 
+    background: #ffffff !important; 
+    border-bottom: 1px solid #eee; 
+    z-index: 9999 !important; 
 }
 
+/* FIX TOMBOL HILANG & KEPOTONG DI HP */
 .auth-buttons { 
     display: flex !important; 
-    opacity: 1 !important; 
     visibility: visible !important; 
-    width: auto !important; 
-    height: auto !important; 
+    opacity: 1 !important; 
+    gap: 8px; 
 }
+.btn-login, .btn-register { 
+    display: inline-block !important; 
+    padding: 8px 16px !important; 
+    color: #fff !important; 
+    font-weight: bold; 
+    border-radius: 8px; 
+}
+.btn-login { background: #ff7a00 !important; }
+.btn-register { background: #ff007f !important; }
 
-.auth-buttons .btn, .btn-login, .btn-register { 
-    background-color: #ff7a00 !important; 
-    color: #ffffff !important; 
-    border: none !important;
-    display: block !important;
+@media (max-width: 768px) {
+  .navbar { flex-wrap: wrap; padding: 10px !important; }
+  .navbar-brand { max-width: 40%; }
+  .auth-buttons { max-width: 55%; justify-content: flex-end; }
+  .auth-buttons .btn { font-size: 12px !important; padding: 6px 10px !important; }
 }
