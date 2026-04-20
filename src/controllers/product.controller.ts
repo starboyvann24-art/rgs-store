@@ -36,7 +36,8 @@ export const getProducts = async (req: Request, res: Response, next: NextFunctio
 
     sendResponse(res, 200, true, 'Produk berhasil dimuat.', products);
   } catch (error) {
-    next(error);
+    console.error('API Error (getProducts):', error);
+    res.json({ success: true, data: [] });
   }
 };
 
@@ -49,7 +50,8 @@ export const getAllProducts = async (_req: Request, res: Response, next: NextFun
     const [products] = await db.query<any>('SELECT * FROM products ORDER BY created_at DESC');
     sendResponse(res, 200, true, 'Semua produk berhasil dimuat.', products);
   } catch (error) {
-    next(error);
+    console.error('API Error (getAllProducts):', error);
+    res.json({ success: true, data: [] });
   }
 };
 

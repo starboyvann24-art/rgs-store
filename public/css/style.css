@@ -1057,3 +1057,27 @@ input, select {
     object-fit: contain; 
     display: block; 
 }
+
+/* =========================================
+   V18 EMERGENCY: PURE WHITE & RESTORE BUTTONS
+   ========================================= */
+body, html, main, .main-container, .wrapper { 
+    background-color: #ffffff !important; 
+    background-image: none !important; 
+    color: #1a1a1a !important; 
+}
+
+.auth-buttons { 
+    display: flex !important; 
+    opacity: 1 !important; 
+    visibility: visible !important; 
+    width: auto !important; 
+    height: auto !important; 
+}
+
+.auth-buttons .btn, .btn-login, .btn-register { 
+    background-color: #ff7a00 !important; 
+    color: #ffffff !important; 
+    border: none !important;
+    display: block !important;
+}

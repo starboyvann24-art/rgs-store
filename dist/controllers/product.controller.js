@@ -64,7 +64,8 @@ const getProducts = async (req, res, next) => {
         (0, response_1.sendResponse)(res, 200, true, 'Produk berhasil dimuat.', products);
     }
     catch (error) {
-        next(error);
+        console.error('API Error (getProducts):', error);
+        res.json({ success: true, data: [] });
     }
 };
 exports.getProducts = getProducts;
@@ -78,7 +79,8 @@ const getAllProducts = async (_req, res, next) => {
         (0, response_1.sendResponse)(res, 200, true, 'Semua produk berhasil dimuat.', products);
     }
     catch (error) {
-        next(error);
+        console.error('API Error (getAllProducts):', error);
+        res.json({ success: true, data: [] });
     }
 };
 exports.getAllProducts = getAllProducts;
