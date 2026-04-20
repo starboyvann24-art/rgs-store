@@ -1095,3 +1095,13 @@ body, html, main {
   .auth-buttons { max-width: 55%; justify-content: flex-end; }
   .auth-buttons .btn { font-size: 12px !important; padding: 6px 10px !important; }
 }
+
+/* =========================================
+   V22: KILL PSEUDO-ELEMENT GRADIENTS
+   ========================================= */
+body::before, body::after, .wrapper::before, .wrapper::after, .main-bg::before {
+    display: none !important;
+    background: none !important;
+    opacity: 0 !important;
+}
+body { background-color: #ffffff !important; }
