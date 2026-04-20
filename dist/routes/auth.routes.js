@@ -44,14 +44,14 @@ passport_1.default.deserializeUser(async (id, done) => {
         const [rows] = await db.query('SELECT id, name, email, role, avatar_url FROM users WHERE id = ?', [id]);
         const user = rows[0];
         if (user) {
-            done(null, user);
+            return done(null, user);
         }
         else {
-            done(new Error('User not found in DB'), null);
+            return done(null, false);
         }
     }
     catch (err) {
-        done(err, null);
+        return done(err, null);
     }
 });
 // ─── Standard Auth Routes ─────────────────────────────────────

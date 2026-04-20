@@ -267,35 +267,15 @@ async function initializeDatabase() {
         catch (e) {
             // Index already exists, skip
         }
-        // ─── ADD AVATAR_URL COLUMN & RENAME OLD AVATAR COLUMN ─────
+        // ─── AUTO-FIX DATABASE SCHEMA (WAJIB) ──────────────────────
         try {
-            // For existing databases, try to rename if possible
-            await db.query('ALTER TABLE users CHANGE avatar avatar_url VARCHAR(500) DEFAULT NULL');
-            console.log('   ✓ User table schema updated (avatar to avatar_url)');
+            await db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) NULL;');
+            await db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500) NULL;');
+            await db.query('ALTER TABLE users MODIFY COLUMN password VARCHAR(255) NULL;');
+            console.log('   ✓ User table schema synced automatically (google_id, avatar_url, password_null)');
         }
         catch (e) {
-            // If it fails (maybe already renamed or doesn't exist), try to add it
-            try {
-                await db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500) DEFAULT NULL');
-            }
-            catch (err) { }
-            console.log('   ℹ️  User table schema check passed (avatar_url)');
-        }
-        // ─── ADD GOOGLE_ID COLUMN (Google Auth) ────────────────────
-        try {
-            await db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) DEFAULT NULL');
-            console.log('   ✓ User table schema verified (google_id column)');
-        }
-        catch (e) {
-            console.log('   ℹ️  google_id column check passed');
-        }
-        // ─── MAKE PASSWORD NULLABLE (Google users have no password) ─
-        try {
-            await db.query('ALTER TABLE users MODIFY COLUMN password VARCHAR(255) NULL DEFAULT NULL');
-            console.log('   ✓ User password column set to NULLABLE');
-        }
-        catch (e) {
-            console.log('   ℹ️  Password nullable check passed');
+            console.log('   ℹ️  User table schema auto-fix passed');
         }
         // Insert default data
         await db.query(INSERT_DEFAULT_SETTINGS);

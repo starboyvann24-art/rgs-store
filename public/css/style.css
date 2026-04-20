@@ -1005,21 +1005,35 @@ footer {
 }
 
 /* =========================================
-   BRIGHT UI OVERRIDES (TEMA TERANG TOTAL)
+   BRIGHT UI OVERRIDES (THE ARCHITECT BLUEPRINT V15)
    ========================================= */
-body { 
-    background-color: #ffffff !important; 
-    color: #111111 !important; 
+body, html { 
+    background: #f4f7f6 !important; 
+    color: #1a1a1a !important; 
+    font-family: 'Poppins', sans-serif; 
 }
 
-.card, .product-card { 
-    background-color: #ffffff !important; 
-    border: 1px solid #eeeeee !important; 
-    box-shadow: 0 4px 15px rgba(255, 0, 127, 0.1) !important; 
+.card, .navbar, .modal-content, .product-card { 
+    background: #ffffff !important; 
+    border: 1px solid #e1e5eb !important; 
+    border-radius: 12px; 
+    box-shadow: 0 8px 20px rgba(0,0,0,0.04) !important; 
 }
 
-.text-muted { 
-    color: #666666 !important; 
+input, select { 
+    background: #f8f9fa !important; 
+    border: 1px solid #ced4da !important; 
+    color: #1a1a1a !important; 
+    border-radius: 8px; 
+}
+
+/* Header & Mobile Navbar Fix */
+@media (max-width: 768px) { 
+    .navbar { padding: 12px 10px !important; } 
+    .navbar-brand { width: 45%; max-width: 150px; } 
+    .navbar-brand img { width: 100%; height: auto; } 
+    .auth-buttons { display: flex; gap: 8px; } 
+    .auth-buttons .btn { padding: 6px 12px !important; font-size: 13px !important; } 
 }
 
 /* Gradient terang untuk tombol */

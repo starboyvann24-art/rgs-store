@@ -46,12 +46,12 @@ passport.deserializeUser(async (id: any, done: any) => {
     );
     const user = (rows as any[])[0];
     if (user) {
-      done(null, user);
+      return done(null, user);
     } else {
-      done(new Error('User not found in DB'), null);
+      return done(null, false);
     }
   } catch (err) {
-    done(err, null);
+    return done(err, null);
   }
 });
 

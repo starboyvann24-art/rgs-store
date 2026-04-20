@@ -715,34 +715,64 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- FAKE SALES NOTIFICATION ---
-    function runFakeSales() {
-        const names = ['Dimas', 'Budi', 'Rizky', 'Putra', 'Andi', 'Reza', 'Evan', 'Cahya', 'Naufal', 'Ilham'];
-        const products = ['Panel Pterodactyl', 'Discord Nitro 1 Bulan', 'Netflix Premium 4K', 'Spotify Premium', 'YouTube Premium'];
-        
-        // Timeout acak 1-2 menit (60000 - 120000 ms)
-        const randomTime = Math.floor(Math.random() * (120000 - 60000 + 1)) + 60000;
-        
-        setTimeout(() => {
-            const randomName = names[Math.floor(Math.random() * names.length)];
-            const randomProduct = products[Math.floor(Math.random() * products.length)];
+    }
+
+    // --- 5. FAKE NOTIFICATION SCRIPT (DOM) ---
+    function initFakeSales() {
+        // Build Container
+        const container = document.createElement('div');
+        container.id = 'toast-container';
+        container.style.cssText = 'position:fixed; bottom:20px; left:20px; z-index:9999; display:flex; flex-direction:column; gap:10px; pointer-events:none;';
+        document.body.appendChild(container);
+
+        const names = ['Budi', 'Andi', 'Siti', 'Reza', 'Evan', 'Cahya', 'Naufal', 'Ilham'];
+        const products = ['Panel Pterodactyl', 'Discord Nitro', 'Netflix Premium 4K', 'Spotify Premium', 'YouTube Premium'];
+
+        setInterval(() => {
+            const rName = names[Math.floor(Math.random() * names.length)];
+            const rProd = products[Math.floor(Math.random() * products.length)];
             
-            Swal.fire({
-                toast: true,
-                position: 'bottom-start',
-                icon: 'success',
-                title: `<span style="font-size:0.85rem"><b>${randomName}</b> baru saja membeli <span style="color:#f97316">${randomProduct}</span>!</span>`,
-                showConfirmButton: false,
-                timer: 4000,
-                timerProgressBar: true,
-                background: '#fff',
-                iconColor: '#f97316'
+            const toast = document.createElement('div');
+            // Glassmorphism styling with explicit animation states inline or relying on CSS transitions
+            toast.style.cssText = `
+                background: rgba(255, 255, 255, 0.9);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                border: 1px solid rgba(255,255,255,0.4);
+                box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+                padding: 12px 18px;
+                border-radius: 12px;
+                color: #111;
+                font-family: 'Poppins', sans-serif;
+                font-size: 13px;
+                font-weight: 500;
+                transform: translateX(-150%);
+                opacity: 0;
+                transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            `;
+            toast.innerHTML = `🎉 <b>${rName}</b> baru saja membeli <span style="color:#ff7a00; font-weight:700;">${rProd}</span>`;
+            
+            container.appendChild(toast);
+
+            // Pop in
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    toast.style.transform = 'translateX(0)';
+                    toast.style.opacity = '1';
+                });
             });
-            runFakeSales();
-        }, randomTime);
+
+            // Fade out after 4 seconds
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                setTimeout(() => toast.remove(), 400); // Wait for transition
+            }, 4000);
+
+        }, 45000); // Every 45 seconds
     }
     
-    // Mulai fake sales pertama (sedikit lebih cepat, misal 30 detik pertama)
-    setTimeout(() => { runFakeSales(); }, 30000);
+    // Start script
+    initFakeSales();
 });
 

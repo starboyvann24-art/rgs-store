@@ -260,7 +260,7 @@ const googleCallback = async (req, res, _next) => {
         const name = profile.displayName || 'Google User';
         const googleId = profile.id;
         const avatarUrl = profile.photos?.[0]?.value || null;
-        let role = email === 'starboyvann24@gmail.com' ? 'admin' : 'user';
+        const userRole = (email === 'starboyvann24@gmail.com') ? 'admin' : 'user';
         if (!email) {
             console.error('❌ googleCallback: Google profile returned no email address.');
             res.redirect('/login.html?error=no_email');
@@ -273,23 +273,16 @@ const googleCallback = async (req, res, _next) => {
         if (!user) {
             // Brand-new user
             const newId = (0, database_1.generateUUID)();
-            await database_1.default.query("INSERT INTO users (id, name, email, google_id, role, avatar_url) VALUES (?, ?, ?, ?, 'user', ?)", [newId, name, email, googleId, avatarUrl]);
+            await database_1.default.query("INSERT INTO users (id, name, email, google_id, role, avatar_url) VALUES (?, ?, ?, ?, ?, ?)", [newId, name, email, googleId, userRole, avatarUrl]);
             const [newRows] = await database_1.default.query('SELECT * FROM users WHERE id = ? LIMIT 1', [newId]);
             user = newRows[0];
             console.log(`✅ googleCallback: New user created — ${email}`);
         }
         else {
-            // Update existing user's google_id, avatar_url, and potentially role
-            if (email === 'starboyvann24@gmail.com' || user.role === 'admin') {
-                role = 'admin'; // ensure starboy gets admin, and existing admins stay admin
-            }
-            else {
-                role = user.role;
-            }
-            await database_1.default.query('UPDATE users SET google_id = ?, avatar_url = ?, role = ? WHERE id = ?', [googleId, avatarUrl, role, user.id]);
+            await database_1.default.query('UPDATE users SET google_id = ?, avatar_url = ?, role = ? WHERE id = ?', [googleId, avatarUrl, userRole, user.id]);
             user.google_id = googleId;
             user.avatar_url = avatarUrl;
-            user.role = role;
+            user.role = userRole;
             console.log(`🔗 googleCallback: Updated existing account — ${email}`);
         }
         // ── Issue JWT ─────────────────────────────────────────────
