@@ -121,7 +121,7 @@ export const getMe = async (req: any, res: Response, next: NextFunction): Promis
     const userId = req.user.id;
 
     const [rows] = await db.query<any>(
-      'SELECT id, name, email, role, whatsapp, created_at FROM users WHERE id = ? LIMIT 1',
+      'SELECT id, name, email, role, whatsapp, avatar_url, google_id, created_at FROM users WHERE id = ? LIMIT 1',
       [userId]
     );
 
@@ -317,9 +317,19 @@ export const googleCallback = async (req: any, res: Response, _next: NextFunctio
       name:  user.name
     });
 
-    // ── Redirect to Root '/' with token in query string ─────
-    console.log(`🚀 googleCallback: Redirecting ${email} (role: ${user.role}) to /`);
-    res.redirect(`/?google_token=${token}&role=${user.role}`);
+    // ── Save Passport session, THEN redirect ─────────────────
+    // req.logIn ensures Passport serialises the DB user into the session.
+    // req.session.save flushes it to MySQL-store before the browser follows
+    // the redirect — critical on cPanel HTTPS where Set-Cookie can race.
+    req.logIn(user, (loginErr: Error | null) => {
+      if (loginErr) {
+        console.error('❌ googleCallback: req.logIn failed:', loginErr);
+      }
+      req.session.save(() => {
+        console.log(`🚀 googleCallback: Redirecting ${email} (role: ${user.role}) to /`);
+        res.redirect(`/?google_token=${token}&role=${user.role}`);
+      });
+    });
 
   } catch (error) {
     console.error('❌ googleCallback: Unhandled error:', error);

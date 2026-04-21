@@ -1004,147 +1004,58 @@ footer {
     #admin-sidebar-overlay.open { display: block; }
 }
 
-/* =========================================
-   BRIGHT UI OVERRIDES (THE ARCHITECT BLUEPRINT V15)
-   ========================================= */
-body, html { 
-    background: #f4f7f6 !important; 
-    color: #1a1a1a !important; 
-    font-family: 'Poppins', sans-serif; 
-}
+/* =========================================================
+   TERMINATOR FINAL MANDATE — BLACK-ON-WHITE (DEV: E_VANN)
+   Single authoritative override block. Highest cascade priority.
+   All previous override blocks are consolidated here.
+   ========================================================= */
 
-.card, .navbar, .modal-content, .product-card { 
-    background: #ffffff !important; 
-    border: 1px solid #e1e5eb !important; 
-    border-radius: 12px; 
-    box-shadow: 0 8px 20px rgba(0,0,0,0.04) !important; 
-}
-
-input, select { 
-    background: #f8f9fa !important; 
-    border: 1px solid #ced4da !important; 
-    color: #1a1a1a !important; 
-    border-radius: 8px; 
-}
-
-/* Header & Mobile Navbar Fix */
-@media (max-width: 768px) { 
-    .navbar { padding: 12px 10px !important; } 
-    .navbar-brand { width: 45%; max-width: 150px; } 
-    .navbar-brand img { width: 100%; height: auto; } 
-    .auth-buttons { display: flex; gap: 8px; } 
-    .auth-buttons .btn { padding: 6px 12px !important; font-size: 13px !important; } 
-}
-
-/* Gradient terang untuk tombol */
-.btn-primary, .btn-orange { 
-    background: linear-gradient(135deg, #ff7a00, #ff007f) !important; 
-    color: #ffffff !important; 
-    border: none !important;
-}
-
-/* Banner CSS Fix */
-.banner-container { 
-    width: 100%; 
-    border-radius: 12px; 
-    overflow: hidden; 
-    margin-bottom: 20px; 
-}
-.banner-img { 
-    width: 100%; 
-    height: auto; 
-    aspect-ratio: 16/9; 
-    object-fit: contain; 
-    display: block; 
-}
-
-/* =========================================
-   V20 OMEGA: PURE WHITE & MOBILE FIX
-   ========================================= */
-body, html, main { 
-    background: #ffffff !important; 
-    color: #1a1a1a !important; 
-    font-family: 'Inter', sans-serif; 
-}
-.navbar { 
-    background: #ffffff !important; 
-    border-bottom: 1px solid #eee; 
-    z-index: 9999 !important; 
-}
-
-/* FIX TOMBOL HILANG & KEPOTONG DI HP */
-.auth-buttons { 
-    display: flex !important; 
-    visibility: visible !important; 
-    opacity: 1 !important; 
-    gap: 8px; 
-}
-.btn-login, .btn-register { 
-    display: inline-block !important; 
-    padding: 8px 16px !important; 
-    color: #fff !important; 
-    font-weight: bold; 
-    border-radius: 8px; 
-}
-.btn-login { background: #ff7a00 !important; }
-.btn-register { background: #ff007f !important; }
-
-@media (max-width: 768px) {
-  .navbar { flex-wrap: wrap; padding: 10px !important; }
-  .navbar-brand { max-width: 40%; }
-  .auth-buttons { max-width: 55%; justify-content: flex-end; }
-  .auth-buttons .btn { font-size: 12px !important; padding: 6px 10px !important; }
-}
-
-/* =========================================
-   FINAL OVERHAUL: GLOBAL BRIGHT THEME (DEV: E_VANN)
-   Kills ALL remnants of dark mode, gradients, and blob decorations.
-   This block MUST remain at the absolute bottom — highest specificity wins.
-   ========================================= */
-
-/* 1. Nuclear white override — cover every possible container */
-body, html, main, .main-content, .wrapper, .offcanvas,
-.main-container, section, article {
+/* 1. Nuclear background white — every container */
+body, html, main, .offcanvas, .main-content,
+.wrapper, .container, .main-container,
+section, article, aside {
     background: #ffffff !important;
     background-color: #ffffff !important;
     background-image: none !important;
+    color: #000000 !important;
 }
 
-/* 2. Destroy pseudo-element gradients & blobs */
+/* 2. Kill pseudo-element blobs & gradients (preserve icon pseudo-elements) */
 body::before, body::after,
 .wrapper::before, .wrapper::after,
 .main-bg::before, .main-bg::after,
 header::before, header::after {
     display: none !important;
     background: none !important;
-    opacity: 0 !important;
+    background-image: none !important;
     content: none !important;
+    opacity: 0 !important;
 }
 
-/* 3. Force readable text on all elements */
-h1, h2, h3, h4, h5, h6, p, label,
-.nav-link, li, span:not(.badge):not(.dev-name):not(.cart-badge) {
-    color: #1a1a1a !important;
-}
-.text-muted, .text-gray-400, .text-gray-500, .text-gray-600 {
-    color: #555555 !important;
-}
-
-/* 4. Cards and form controls */
-.card, .form-control, input[type="text"], input[type="email"],
-input[type="password"], textarea, select {
-    background-color: #ffffff !important;
-    border: 1px solid #e0e0e0 !important;
-    color: #1a1a1a !important;
+/* 3. Force BLACK text on every readable element */
+p, label, h1, h2, h3, h4, h5, h6,
+.nav-link, li, td, th,
+.text-muted, .text-gray-400, .text-gray-500,
+.text-gray-600, .text-gray-700,
+span:not(.cart-badge):not(.badge):not(.dev-name):not(.marquee-inner) {
+    color: #000000 !important;
 }
 
-/* 5. Navbar always white */
-.navbar, nav, .sidebar, #mobile-sidebar {
+/* 4. Buttons — neon colours with WHITE text */
+.btn                        { color: #ffffff !important; font-weight: bold; }
+.btn-orange, .btn-primary   { background: #ff7a00 !important; color: #ffffff !important; border: none !important; }
+.btn-pink                   { background: #ff007f !important; color: #ffffff !important; border: none !important; }
+.btn-nav-login, .btn-login  { background: #ff7a00 !important; color: #ffffff !important; border-radius: 8px; padding: 8px 16px; font-weight: bold; display: inline-block !important; text-decoration: none; }
+.btn-nav-register, .btn-register { background: #ff007f !important; color: #ffffff !important; border-radius: 8px; padding: 8px 16px; font-weight: bold; display: inline-block !important; text-decoration: none; }
+
+/* 5. Navbar & sidebar always white */
+nav, .navbar, #mobile-sidebar,
+.sidebar-overlay + aside {
     background: #ffffff !important;
-    border-bottom: 1px solid #eee !important;
+    border-bottom: 1px solid #eeeeee !important;
 }
 
-/* 6. Auth buttons always visible — hard guarantee */
+/* 6. Auth button containers — never hidden */
 .auth-buttons, #nav-auth-container,
 #sidebar-auth-container {
     display: flex !important;
@@ -1152,26 +1063,25 @@ input[type="password"], textarea, select {
     opacity: 1 !important;
     gap: 8px;
 }
-.btn-nav-login, .btn-login {
-    background: #ff7a00 !important;
-    color: #ffffff !important;
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-weight: bold;
-    display: inline-block !important;
-    text-decoration: none;
+
+/* 7. Cards, form controls & inputs — white + black text */
+.card, .navbar, .modal-content, .product-card {
+    background: #ffffff !important;
+    border: 1px solid #e1e5eb !important;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.04) !important;
 }
-.btn-nav-register, .btn-register {
-    background: #ff007f !important;
-    color: #ffffff !important;
+.card, .form-control,
+input[type="text"], input[type="email"],
+input[type="password"], textarea, select, input {
+    background-color: #ffffff !important;
+    background: #f8f9fa !important;
+    border: 1px solid #d1d5db !important;
+    color: #000000 !important;
     border-radius: 8px;
-    padding: 8px 16px;
-    font-weight: bold;
-    display: inline-block !important;
-    text-decoration: none;
 }
 
-/* 7. Mobile responsive nav fix */
+/* 8. Mobile nav — buttons not clipped */
 @media (max-width: 768px) {
     .navbar { flex-wrap: wrap; padding: 10px !important; }
     .navbar-brand { max-width: 40%; }
@@ -1180,4 +1090,10 @@ input[type="password"], textarea, select {
         font-size: 12px !important;
         padding: 6px 10px !important;
     }
+    .auth-buttons .btn { padding: 6px 12px !important; font-size: 13px !important; }
 }
+
+/* 9. Banner helper */
+.banner-container { width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+.banner-img { width: 100%; height: auto; aspect-ratio: 16/9; object-fit: contain; display: block; }
+

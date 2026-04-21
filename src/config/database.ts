@@ -249,17 +249,22 @@ export async function initializeDatabase(): Promise<void> {
       // Index already exists, skip
     }
 
-    // ─── AUTO-FIX DATABASE SCHEMA (WAJIB) ──────────────────────
-    try {
-      await db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) NULL;');
-      await db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500) NULL;');
-      await db.query('ALTER TABLE users MODIFY COLUMN password VARCHAR(255) NULL;');
-      console.log('   ✓ User table schema synced automatically (google_id, avatar_url, password_null)');
-    } catch (e) {
-      console.log('   ℹ️  User table schema auto-fix passed');
+    // ─── AUTO-INTEGRITY: DATABASE SCHEMA ──────────────────────
+    // Each ALTER runs independently — one failure never blocks the others.
+    const schemaFixes: Array<[string, string]> = [
+      ["ALTER TABLE users MODIFY COLUMN password VARCHAR(255) NULL",                  "password nullable"],
+      ["ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) NULL",     "google_id column"],
+      ["ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500) NULL",    "avatar_url column"],
+      ["ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'user'", "role column"],
+    ];
+    for (const [sql, label] of schemaFixes) {
+      try {
+        await db.query(sql);
+        console.log(`   ✓ Schema fix OK: ${label}`);
+      } catch (_e) {
+        console.log(`   ℹ️  Schema fix skipped (already applied): ${label}`);
+      }
     }
-
-
 
     // Insert default data
     await db.query(INSERT_DEFAULT_SETTINGS);

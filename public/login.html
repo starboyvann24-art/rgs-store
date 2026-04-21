@@ -15,41 +15,41 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body class="bg-white text-gray-100 font-sans min-h-screen flex items-center justify-center relative overflow-hidden">
+<body class="font-sans min-h-screen flex items-center justify-center relative overflow-hidden" style="background:#ffffff !important; color:#000000 !important;">
 
-    <div class="-800 p-8 md:p-10 rounded-3xl shadow-2xl w-full max-w-md relative z-10 border border-primary-500/10">
+    <div class="p-8 md:p-10 rounded-3xl shadow-2xl w-full max-w-md relative z-10 border" style="background:#ffffff; border:1px solid #e0e0e0; color:#000000;">
         <div class="text-center mb-8">
-            <a href="index.html"><h1 class="text-3xl font-black text-primary-500 tracking-tight mb-2">RGS <span class="">STORE</span></h1></a>
-            <p class="text-sm text-gray-400">Selamat datang kembali! Silakan login.</p>
+            <a href="index.html"><h1 class="text-3xl font-black tracking-tight mb-2" style="color:#ff7a00;">RGS <span style="color:#000000;">STORE</span></h1></a>
+            <p class="text-sm" style="color:#555555;">Selamat datang kembali! Silakan login.</p>
         </div>
 
         <form id="form-login" class="space-y-5">
             <div>
-                <label class="block text-sm font-semibold text-gray-400 mb-1.5">Email</label>
-                <input type="email" id="login-email" required class="w-full px-4 py-3 -900 border border-white/10 rounded-xl focus:ring-2 focus:ring-primary-500 focus:-900  outline-none transition" placeholder="contoh@email.com">
+                <label class="block text-sm font-semibold mb-1.5" style="color:#000000;">Email</label>
+                <input type="email" id="login-email" required class="w-full px-4 py-3 rounded-xl outline-none transition" style="background:#f8f9fa; border:1px solid #d1d5db; color:#000000;" placeholder="contoh@email.com">
             </div>
             <div>
-                <label class="block text-sm font-semibold text-gray-400 mb-1.5">Password</label>
-                <input type="password" id="login-password" required class="w-full px-4 py-3 -900 border border-white/10 rounded-xl focus:ring-2 focus:ring-primary-500 focus:-900  outline-none transition" placeholder="••••••••">
+                <label class="block text-sm font-semibold mb-1.5" style="color:#000000;">Password</label>
+                <input type="password" id="login-password" required class="w-full px-4 py-3 rounded-xl outline-none transition" style="background:#f8f9fa; border:1px solid #d1d5db; color:#000000;" placeholder="••••••••">
             </div>
             <div class="flex justify-end">
-                <a href="#" id="forgot-password-link" class="text-xs font-semibold text-primary-600 hover:underline">Lupa Password?</a>
+                <a href="#" id="forgot-password-link" class="text-xs font-semibold hover:underline" style="color:#ff7a00;">Lupa Password?</a>
             </div>
-            <button type="submit" id="btn-submit" class="w-full bg-primary-500  font-bold py-3.5 rounded-xl shadow hover:bg-primary-600 hover:-translate-y-0.5 hover:shadow-lg transition-all">
+            <button type="submit" id="btn-submit" class="w-full font-bold py-3.5 rounded-xl shadow transition-all" style="background:#ff7a00; color:#ffffff;">
                 Masuk Sekarang
             </button>
         </form>
 
         <!-- Divider -->
         <div class="flex items-center gap-3 my-5">
-            <div class="flex-1 h-px bg-gray-200"></div>
-            <span class="text-xs text-gray-400 font-semibold">ATAU</span>
-            <div class="flex-1 h-px bg-gray-200"></div>
+            <div class="flex-1 h-px" style="background:#e0e0e0;"></div>
+            <span class="text-xs font-semibold" style="color:#555555;">ATAU</span>
+            <div class="flex-1 h-px" style="background:#e0e0e0;"></div>
         </div>
 
         <!-- Google Login Button -->
         <a href="/api/auth/google" id="btn-google-login"
-           class="w-full flex items-center justify-center gap-3 py-3 px-5 border-2 border-white/10 rounded-xl font-semibold  hover:border-primary-400 hover:bg-primary-900/10 transition-all">
+           class="w-full flex items-center justify-center gap-3 py-3 px-5 rounded-xl font-semibold transition-all" style="border:2px solid #e0e0e0; color:#000000; background:#ffffff;">
             <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -59,7 +59,7 @@
             Login dengan Google
         </a>
 
-        <p class="mt-6 text-center text-sm text-gray-500">Belum punya akun? <a href="register.html" class="text-primary-600 hover:underline font-bold">Daftar disini</a></p>
+        <p class="mt-6 text-center text-sm" style="color:#555555;">Belum punya akun? <a href="register.html" class="font-bold hover:underline" style="color:#ff7a00;">Daftar disini</a></p>
     </div>
 
     <script src="js/app.js"></script>

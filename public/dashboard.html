@@ -13,16 +13,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body class="bg-white text-gray-100 font-sans antialiased min-h-screen flex flex-col">
+<body class="font-sans antialiased min-h-screen flex flex-col" style="background:#ffffff !important; color:#000000 !important;">
 
     <!-- Navbar -->
-    <nav class="-800/80 backdrop-blur-lg shadow-lg border-b border-primary-500/10 sticky top-0 z-40">
+    <nav style="background:#ffffff; border-bottom:1px solid #eeeeee; position:sticky; top:0; z-index:40; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between items-center h-16">
-                <a href="index.html" class="text-2xl font-black text-primary-500 tracking-tighter uppercase transition hover:scale-105">RGS <span class="">STORE</span></a>
+                <a href="index.html" class="text-2xl font-black tracking-tighter uppercase transition hover:scale-105" style="color:#ff7a00;">RGS <span style="color:#000000;">STORE</span></a>
                 <div class="flex items-center gap-4">
-                    <span id="user-greeting" class="font-bold text-gray-400 text-sm hidden md:inline tracking-wider uppercase">User Terminal</span>
-                    <button data-action="logout" class="text-[10px] font-black text-red-400 hover:text-red-300 px-4 py-2 rounded-xl border border-red-500/20 hover:border-red-500/50 bg-red-500/5 transition uppercase tracking-widest">Logout</button>
+                    <span id="user-greeting" class="font-bold text-sm hidden md:inline tracking-wider uppercase" style="color:#555555;">User Terminal</span>
+                    <button data-action="logout" class="text-xs font-black px-4 py-2 rounded-xl border transition uppercase tracking-widest" style="color:#ef4444; border-color:rgba(239,68,68,0.3); background:rgba(239,68,68,0.05);">Logout</button>
                 </div>
             </div>
         </div>
@@ -33,11 +33,11 @@
 
             <!-- Sidebar -->
             <div class="w-full lg:w-1/4">
-                <div class="-800 rounded-3xl shadow-xl border border-primary-500/10 overflow-hidden sticky top-24">
-                    <div class="p-8 border-b border-white/10 text-center -700/50">
-                        <div class="w-20 h-20 rounded-full bg-primary-500/10 border-2 border-primary-500 text-primary-500 mx-auto flex items-center justify-center text-2xl font-black mb-4 shadow-lg shadow-primary-500/20" id="user-avatar">U</div>
-                        <h2 class="font-black  text-lg uppercase tracking-tight" id="user-fullname">User</h2>
-                        <p class="text-[10px] text-primary-500 font-bold tracking-widest uppercase opacity-70" id="user-email-text">-</p>
+                <div class="rounded-3xl shadow-sm border border-gray-200 overflow-hidden sticky top-24" style="background:#ffffff;">
+                    <div class="p-8 text-center" style="border-bottom:1px solid #f0f0f0;">
+                        <div class="w-20 h-20 rounded-full mx-auto flex items-center justify-center text-2xl font-black mb-4 shadow-lg overflow-hidden" style="background:#fff3e0; border:2px solid #ff7a00; color:#ff7a00;" id="user-avatar">U</div>
+                        <h2 class="font-black text-lg uppercase tracking-tight" style="color:#000000;" id="user-fullname">User</h2>
+                        <p class="text-xs font-bold tracking-widest uppercase" style="color:#ff7a00; opacity:0.8;" id="user-email-text">-</p>
                     </div>
                     <ul class="p-3 space-y-1">
                         <li>
@@ -67,14 +67,14 @@
                 
                 <!-- TAB: Orders -->
                 <div id="tab-orders" class="tab-content block">
-                    <div class="-800 rounded-3xl shadow-xl border border-primary-500/10 p-6 md:p-8">
-                        <h2 class="text-2xl font-black  mb-6 border-b border-white/10 pb-4 uppercase tracking-widest">Digital Inventory</h2>
+                    <div class="rounded-3xl shadow-sm border border-gray-200 p-6 md:p-8" style="background:#ffffff;">
+                        <h2 class="text-2xl font-black mb-6 pb-4 uppercase tracking-widest" style="color:#000000; border-bottom:1px solid #e5e7eb;">Pesanan Saya</h2>
                         <div id="orders-container" class="space-y-4"></div>
                         <div id="orders-empty" class="text-center py-16 hidden">
-                            <svg class="w-20 h-20 text-dark-700 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                            <h3 class="text-lg font-black text-gray-500 uppercase">Archive Empty</h3>
-                            <p class="text-gray-600 mt-1 mb-8 text-xs tracking-wider">No active digital licenses found.</p>
-                            <a href="index.html" class="inline-block px-8 py-3 bg-primary-500 text-black font-black rounded-xl shadow-lg shadow-primary-500/20 hover:scale-105 transition uppercase tracking-widest text-xs">Access Catalog</a>
+                            <svg class="w-20 h-20 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:#d1d5db;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            <h3 class="text-lg font-black uppercase" style="color:#888888;">Belum Ada Pesanan</h3>
+                            <p class="mt-1 mb-8 text-xs tracking-wider" style="color:#888888;">Belum ada produk digital yang dipesan.</p>
+                            <a href="index.html" class="inline-block px-8 py-3 font-black rounded-xl shadow-lg transition uppercase tracking-widest text-xs" style="background:#ff7a00; color:#ffffff;">Lihat Katalog</a>
                         </div>
                     </div>
                 </div>
@@ -153,9 +153,9 @@
     </main>
 
     <!-- Footer -->
-    <footer class="mt-16 bg-black border-t border-white/5 py-12">
+    <footer class="mt-16 py-12" style="background:#f8f9fa; border-top:1px solid #e5e7eb;">
         <div class="max-w-7xl mx-auto px-4 text-center">
-            <p class="text-[10px] text-gray-600 font-black uppercase tracking-[0.2em]">Dev by <span class="text-primary-500">E_vann</span> | RGS STORE Â© 2026</p>
+            <p class="text-xs font-black uppercase tracking-widest" style="color:#888888;">Dev by <span style="color:#ff7a00;">E_vann</span> | RGS STORE © 2026</p>
         </div>
     </footer>
 

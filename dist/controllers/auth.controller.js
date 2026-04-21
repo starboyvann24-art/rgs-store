@@ -137,7 +137,7 @@ exports.login = login;
 const getMe = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const [rows] = await database_1.default.query('SELECT id, name, email, role, whatsapp, created_at FROM users WHERE id = ? LIMIT 1', [userId]);
+        const [rows] = await database_1.default.query('SELECT id, name, email, role, whatsapp, avatar_url, google_id, created_at FROM users WHERE id = ? LIMIT 1', [userId]);
         const user = rows[0];
         if (!user) {
             (0, response_1.sendResponse)(res, 404, false, 'User tidak ditemukan.');
@@ -292,9 +292,19 @@ const googleCallback = async (req, res, _next) => {
             email: user.email,
             name: user.name
         });
-        // ── Redirect to Root '/' with token in query string ─────
-        console.log(`🚀 googleCallback: Redirecting ${email} (role: ${user.role}) to /`);
-        res.redirect(`/?google_token=${token}&role=${user.role}`);
+        // ── Save Passport session, THEN redirect ─────────────────
+        // req.logIn ensures Passport serialises the DB user into the session.
+        // req.session.save flushes it to MySQL-store before the browser follows
+        // the redirect — critical on cPanel HTTPS where Set-Cookie can race.
+        req.logIn(user, (loginErr) => {
+            if (loginErr) {
+                console.error('❌ googleCallback: req.logIn failed:', loginErr);
+            }
+            req.session.save(() => {
+                console.log(`🚀 googleCallback: Redirecting ${email} (role: ${user.role}) to /`);
+                res.redirect(`/?google_token=${token}&role=${user.role}`);
+            });
+        });
     }
     catch (error) {
         console.error('❌ googleCallback: Unhandled error:', error);

@@ -501,63 +501,68 @@ const store = {
             </div>`;
     },
 
-    // ─── NAVBAR (Auth Flow V22) ───────────────────────────────
+    // ─── NAVBAR (Auth Flow TERMINATOR) ───────────────────────
     async updateNavbar() {
-        const navAuth = document.getElementById('nav-auth-container');
-        const sidebarAuth = document.getElementById('sidebar-auth-container');
-        const sidebarProfile = document.getElementById('sidebar-profile-container');
+        const navAuth       = document.getElementById('nav-auth-container');
+        const sidebarAuth   = document.getElementById('sidebar-auth-container');
+        const sidebarProfile= document.getElementById('sidebar-profile-container');
+        const avatarWrapper = document.getElementById('user-profile-avatar');
+        const avatarImg     = document.getElementById('user-avatar-img');
 
-        // Default UI: Tampilkan tombol Masuk/Daftar (Tanpa Skeleton Loader)
-        if (navAuth) {
-            navAuth.innerHTML = `
-                <a href="/login.html" class="btn-nav-login">Masuk</a>
-                <a href="/register.html" class="btn-nav-register">Daftar</a>`;
-        }
-        if (sidebarAuth) {
-            sidebarAuth.style.display = 'flex';
-        }
-        if (sidebarProfile) {
-            sidebarProfile.style.display = 'none';
-        }
-        
-        // Pengecekan Fetch API
+        // 🔲 Default: Tombol Masuk/Daftar visible, avatar hidden
+        if (navAuth)       navAuth.innerHTML = `<a href="/login.html" class="btn-nav-login">Masuk</a><a href="/register.html" class="btn-nav-register">Daftar</a>`;
+        if (sidebarAuth)   sidebarAuth.style.display   = 'flex';
+        if (sidebarProfile)sidebarProfile.style.display = 'none';
+        if (avatarWrapper) avatarWrapper.style.display  = 'none';
+
+        // 🔑 Jika ada token, cek ke server
         if (this.getToken()) {
             try {
                 const res = await fetch(`${API_BASE}/auth/me`, {
                     headers: { 'Authorization': `Bearer ${this.getToken()}` },
                     credentials: 'include'
                 });
-                
+
                 if (res.ok) {
                     const data = await res.json();
                     if (data.success && data.data) {
                         const user = data.data;
-                        this.setUser(user); // Sinkronisasi manual localStorage
-                        
-                        const dashboardUrl = user.role === 'admin' ? '/admin.html' : '/dashboard.html';
-                        const avatarHtml = user.avatar_url || user.avatar 
-                            ? `<img src="${user.avatar_url || user.avatar}" alt="avatar" style="width:100%;height:100%;object-fit:cover">` 
-                            : user.name[0].toUpperCase();
+                        this.setUser(user);
 
+                        const dashboardUrl = user.role === 'admin' ? '/admin.html' : '/dashboard.html';
+                        const avatarSrc    = user.avatar_url || user.avatar || '';
+                        const initials     = user.name ? user.name[0].toUpperCase() : 'U';
+                        const avatarHtml   = avatarSrc
+                            ? `<img src="${avatarSrc}" alt="avatar" style="width:100%;height:100%;object-fit:cover">`
+                            : initials;
+
+                        // 📌 Update top navbar
                         if (navAuth) {
                             navAuth.innerHTML = `
                                 <div class="user-nav-group">
                                     <a href="${dashboardUrl}" class="user-nav-link">
-                                        <div class="avatar-xs" style="overflow:hidden">
-                                            ${avatarHtml}
-                                        </div>
+                                        <div class="avatar-xs" style="overflow:hidden">${avatarHtml}</div>
                                         <span>${user.name.split(' ')[0]}</span>
                                     </a>
                                     <button onclick="store.logout()" class="btn-logout-sm">Logout</button>
                                 </div>`;
                         }
 
+                        // 📌 Update avatar header slot
+                        if (avatarWrapper && avatarImg) {
+                            if (avatarSrc) {
+                                avatarImg.src = avatarSrc;
+                                avatarWrapper.style.display = 'flex';
+                            }
+                        }
+
+                        // 📌 Update sidebar
                         if (sidebarAuth && sidebarProfile) {
-                            sidebarAuth.style.display = 'none';
+                            sidebarAuth.style.display    = 'none';
                             sidebarProfile.style.display = 'block';
                             sidebarProfile.innerHTML = `
                                 <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;background:#f8f9fa;padding:12px;border-radius:12px">
-                                    <div style="width:40px;height:40px;border-radius:50%;overflow:hidden;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold">
+                                    <div style="width:40px;height:40px;border-radius:50%;overflow:hidden;background:#ff7a00;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px">
                                         ${avatarHtml}
                                     </div>
                                     <div>
@@ -565,15 +570,14 @@ const store = {
                                         <div style="font-size:11px;color:#666">${user.email}</div>
                                     </div>
                                 </div>
-                                <a href="${dashboardUrl}" class="btn w-100 text-center" style="background:#e2e8f0;color:#1e293b;border-radius:8px;font-weight:bold;padding:10px;margin-bottom:8px;display:block">Dashboard</a>
-                                <button onclick="store.logout()" class="btn w-100 text-center" style="background:#ef4444;color:#fff;border-radius:8px;font-weight:bold;padding:10px;border:none">Logout</button>
-                            `;
+                                <a href="${dashboardUrl}" style="background:#e2e8f0;color:#1e293b;border-radius:8px;font-weight:bold;padding:10px;margin-bottom:8px;display:block;text-align:center;text-decoration:none">Dashboard</a>
+                                <button onclick="store.logout()" style="background:#ef4444;color:#fff;border-radius:8px;font-weight:bold;padding:10px;border:none;width:100%;cursor:pointer">Logout</button>`;
                         }
                     }
                 }
             } catch (err) {
                 console.error('Navbar Auth Fetch Err:', err);
-                // Jika error DB / Network, biarkan tombol form masuk tetap ADA (kondisi default)
+                // Jika gagal network — tombol Masuk/Daftar tetap tampil (kondisi default)
             }
         }
         this.updateCartBadge();

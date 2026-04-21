@@ -115,9 +115,9 @@ app.use(session({
   resave:            false,
   saveUninitialized: false,
   cookie: {
-    secure:   false,   // false = works on HTTP (cPanel). Set true only if HTTPS is forced.
-    sameSite: 'lax',  // 'lax' is safe for same-site OAuth redirects on cPanel
-    maxAge:   86400000 // 24h
+    secure:   process.env.NODE_ENV === 'production', // true in prod (HTTPS), false locally
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge:   24 * 60 * 60 * 1000 // 24h
   }
 }));
 app.use(passport.initialize());
