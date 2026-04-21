@@ -1097,11 +1097,87 @@ body, html, main {
 }
 
 /* =========================================
-   V22: KILL PSEUDO-ELEMENT GRADIENTS
+   FINAL OVERHAUL: GLOBAL BRIGHT THEME (DEV: E_VANN)
+   Kills ALL remnants of dark mode, gradients, and blob decorations.
+   This block MUST remain at the absolute bottom — highest specificity wins.
    ========================================= */
-body::before, body::after, .wrapper::before, .wrapper::after, .main-bg::before {
+
+/* 1. Nuclear white override — cover every possible container */
+body, html, main, .main-content, .wrapper, .offcanvas,
+.main-container, section, article {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+}
+
+/* 2. Destroy pseudo-element gradients & blobs */
+body::before, body::after,
+.wrapper::before, .wrapper::after,
+.main-bg::before, .main-bg::after,
+header::before, header::after {
     display: none !important;
     background: none !important;
     opacity: 0 !important;
+    content: none !important;
 }
-body { background-color: #ffffff !important; }
+
+/* 3. Force readable text on all elements */
+h1, h2, h3, h4, h5, h6, p, label,
+.nav-link, li, span:not(.badge):not(.dev-name):not(.cart-badge) {
+    color: #1a1a1a !important;
+}
+.text-muted, .text-gray-400, .text-gray-500, .text-gray-600 {
+    color: #555555 !important;
+}
+
+/* 4. Cards and form controls */
+.card, .form-control, input[type="text"], input[type="email"],
+input[type="password"], textarea, select {
+    background-color: #ffffff !important;
+    border: 1px solid #e0e0e0 !important;
+    color: #1a1a1a !important;
+}
+
+/* 5. Navbar always white */
+.navbar, nav, .sidebar, #mobile-sidebar {
+    background: #ffffff !important;
+    border-bottom: 1px solid #eee !important;
+}
+
+/* 6. Auth buttons always visible — hard guarantee */
+.auth-buttons, #nav-auth-container,
+#sidebar-auth-container {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    gap: 8px;
+}
+.btn-nav-login, .btn-login {
+    background: #ff7a00 !important;
+    color: #ffffff !important;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: bold;
+    display: inline-block !important;
+    text-decoration: none;
+}
+.btn-nav-register, .btn-register {
+    background: #ff007f !important;
+    color: #ffffff !important;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: bold;
+    display: inline-block !important;
+    text-decoration: none;
+}
+
+/* 7. Mobile responsive nav fix */
+@media (max-width: 768px) {
+    .navbar { flex-wrap: wrap; padding: 10px !important; }
+    .navbar-brand { max-width: 40%; }
+    #nav-auth-container { max-width: 55%; justify-content: flex-end; }
+    .btn-nav-login, .btn-nav-register {
+        font-size: 12px !important;
+        padding: 6px 10px !important;
+    }
+}
