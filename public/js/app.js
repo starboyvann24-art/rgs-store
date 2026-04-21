@@ -724,23 +724,23 @@ store.configureNavbar = function() {
     return this.updateNavbar();
 };
 
-// saveToken alias (used by Google OAuth redirect handler)
+// saveToken alias (used by Discord OAuth redirect handler)
 store.saveToken = function(token) { this.setToken(token); };
 
 // Auto-run on every page
 document.addEventListener('DOMContentLoaded', () => {
     store.updateNavbar();
 
-    // ─── GOOGLE TOKEN HANDLER (Universal) ─────────────────────
-    // After Google OAuth, server redirects to /login.html?google_token=TOKEN&role=ROLE
+    // ─── DISCORD TOKEN HANDLER (Universal) ─────────────────────
+    // After Discord OAuth, server redirects to /?discord_token=TOKEN&role=ROLE
     // This block catches it on ANY page that loads app.js, saves the token,
     // fetches the user profile, cleans the URL, then navigates correctly.
     const _urlParams = new URLSearchParams(window.location.search);
-    const _googleToken = _urlParams.get('google_token');
-    const _googleRole  = _urlParams.get('role');
+    const _discordToken = _urlParams.get('discord_token');
+    const _discordRole  = _urlParams.get('role');
 
-    if (_googleToken) {
-        store.setToken(_googleToken);
+    if (_discordToken) {
+        store.setToken(_discordToken);
 
         // Fetch real user data from DB and persist to localStorage
         store.apiCall('/auth/me').then(res => {
@@ -748,18 +748,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 store.setUser(res.data);
             } else {
                 // Fallback: build minimal user from role so navbar renders
-                store.setUser({ name: 'User', role: _googleRole || 'user' });
+                store.setUser({ name: 'User', role: _discordRole || 'user' });
             }
             store.updateNavbar();
-            store.showToast('✅ Login Google berhasil! Selamat datang 🎉', 'success');
+            store.showToast('✅ Login Discord berhasil! Selamat datang 🎉', 'success');
 
-            // Remove ?google_token=... from the address bar WITHOUT reloading
+            // Remove ?discord_token=... from the address bar WITHOUT reloading
             const cleanUrl = window.location.pathname;
             window.history.replaceState({}, document.title, cleanUrl);
 
             // Navigate to correct dashboard
             setTimeout(() => {
-                window.location.href = (_googleRole === 'admin') ? '/admin.html' : '/index.html';
+                window.location.href = (_discordRole === 'admin') ? '/admin.html' : '/index.html';
             }, 900);
         }).catch(() => {
             // Network error — still save and navigate
@@ -767,7 +767,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const cleanUrl = window.location.pathname;
             window.history.replaceState({}, document.title, cleanUrl);
             setTimeout(() => {
-                window.location.href = (_googleRole === 'admin') ? '/admin.html' : '/index.html';
+                window.location.href = (_discordRole === 'admin') ? '/admin.html' : '/index.html';
             }, 900);
         });
     }

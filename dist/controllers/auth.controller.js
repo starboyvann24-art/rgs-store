@@ -36,7 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logout = exports.googleCallback = exports.updateProfile = exports.resetPassword = exports.forgotPassword = exports.getMe = exports.login = exports.register = void 0;
+exports.logout = exports.updateProfile = exports.resetPassword = exports.forgotPassword = exports.getMe = exports.login = exports.register = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const database_1 = __importStar(require("../config/database"));
 const jwt_1 = require("../utils/jwt");
@@ -237,81 +237,6 @@ const updateProfile = async (req, res, next) => {
     }
 };
 exports.updateProfile = updateProfile;
-/**
- * GET /api/auth/google/callback
- * Google OAuth callback — DB upsert + JWT issue + redirect to login.html
- *
- * Flow:
- *   1. Google redirects here with profile in req.user (set by Passport)
- *   2. We upsert the user in MySQL (create or link google_id)
- *   3. Issue a JWT token
- *   4. Redirect to /login.html?google_token=TOKEN&role=ROLE
- *   5. login.html JS saves the token to localStorage and navigates to app
- */
-const googleCallback = async (req, res, _next) => {
-    try {
-        const profile = req.user; // Populated by Passport GoogleStrategy
-        if (!profile) {
-            console.error('❌ googleCallback: req.user is empty — Passport authentication failed silently.');
-            res.redirect('/login.html?error=google_failed');
-            return;
-        }
-        const email = (profile.emails?.[0]?.value || '').toLowerCase().trim();
-        const name = profile.displayName || 'Google User';
-        const googleId = profile.id;
-        const avatarUrl = profile.photos?.[0]?.value || null;
-        const userRole = (email === 'starboyvann24@gmail.com') ? 'admin' : 'user';
-        if (!email) {
-            console.error('❌ googleCallback: Google profile returned no email address.');
-            res.redirect('/login.html?error=no_email');
-            return;
-        }
-        console.log(`🔐 Google OAuth callback for: ${email} (googleId: ${googleId})`);
-        // ── Upsert user in DB ────────────────────────────────────
-        let [rows] = await database_1.default.query('SELECT * FROM users WHERE email = ?', [email]);
-        let user = rows[0];
-        if (!user) {
-            // Brand-new user
-            const newId = (0, database_1.generateUUID)();
-            await database_1.default.query("INSERT INTO users (id, name, email, google_id, role, avatar_url) VALUES (?, ?, ?, ?, ?, ?)", [newId, name, email, googleId, userRole, avatarUrl]);
-            const [newRows] = await database_1.default.query('SELECT * FROM users WHERE id = ? LIMIT 1', [newId]);
-            user = newRows[0];
-            console.log(`✅ googleCallback: New user created — ${email}`);
-        }
-        else {
-            await database_1.default.query('UPDATE users SET google_id = ?, avatar_url = ?, role = ? WHERE id = ?', [googleId, avatarUrl, userRole, user.id]);
-            user.google_id = googleId;
-            user.avatar_url = avatarUrl;
-            user.role = userRole;
-            console.log(`🔗 googleCallback: Updated existing account — ${email}`);
-        }
-        // ── Issue JWT ─────────────────────────────────────────────
-        const token = (0, jwt_1.generateToken)({
-            id: user.id,
-            role: user.role,
-            email: user.email,
-            name: user.name
-        });
-        // ── Save Passport session, THEN redirect ─────────────────
-        // req.logIn ensures Passport serialises the DB user into the session.
-        // req.session.save flushes it to MySQL-store before the browser follows
-        // the redirect — critical on cPanel HTTPS where Set-Cookie can race.
-        req.logIn(user, (loginErr) => {
-            if (loginErr) {
-                console.error('❌ googleCallback: req.logIn failed:', loginErr);
-            }
-            req.session.save(() => {
-                console.log(`🚀 googleCallback: Redirecting ${email} (role: ${user.role}) to /`);
-                res.redirect(`/?google_token=${token}&role=${user.role}`);
-            });
-        });
-    }
-    catch (error) {
-        console.error('❌ googleCallback: Unhandled error:', error);
-        res.redirect('/?error=server_error');
-    }
-};
-exports.googleCallback = googleCallback;
 /**
  * GET /api/auth/logout
  * Flawless Logout

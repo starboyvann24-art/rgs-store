@@ -1,34 +1,18 @@
 import { Router } from 'express';
 import passport from 'passport';
-import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import { register, login, getMe, forgotPassword, resetPassword, updateProfile, googleCallback, logout } from '../controllers/auth.controller';
+import { register, login, getMe, forgotPassword, resetPassword, updateProfile, logout } from '../controllers/auth.controller';
 import { validate } from '../middleware/validate.middleware';
 import { registerSchema, loginSchema } from '../validations/auth.validation';
 import { verifyToken } from '../middleware/auth.middleware';
 
 // ============================================================
-// RGS STORE — Auth Routes (incl. Google OAuth)
+// RGS STORE — Auth Routes (Manual + Discord OAuth)
 // ============================================================
 
 const router: Router = Router();
 
-// ─── Google Strategy ─────────────────────────────────────────
-// Credentials MUST exist in .env:
-//   GOOGLE_CLIENT_ID=your_client_id
-//   GOOGLE_CLIENT_SECRET=your_client_secret
-passport.use(new GoogleStrategy({
-  clientID:     process.env.GOOGLE_CLIENT_ID     || 'REPLACE_WITH_GOOGLE_CLIENT_ID',
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'REPLACE_WITH_GOOGLE_CLIENT_SECRET',
-  callbackURL:  process.env.GOOGLE_CALLBACK_URL  || 'https://rgs-store.my.id/api/auth/google/callback',
-  proxy:        true  // Honours X-Forwarded-Proto from cPanel reverse proxy
-}, async (_accessToken: any, _refreshToken: any, profile: any, done: any) => {
-  // Pass the raw Google profile to done — googleCallback controller handles DB upsert
-  return done(null, profile);
-}));
-
 // ─── Passport Serialize / Deserialize ────────────────────────
-// serializeUser: called once after successful auth — stores DB user.id in session cookie.
-// deserializeUser: called on every subsequent request to re-hydrate req.user from DB.
+// Used by Discord OAuth session flow.
 passport.serializeUser((user: any, done: any) => {
   if (user && user.id) {
     done(null, user.id);
@@ -74,28 +58,7 @@ router.post('/reset-password', resetPassword);
 // PUT /api/auth/profile
 router.put('/profile', verifyToken, updateProfile);
 
-// GET /api/auth/logout
+// POST /api/auth/logout
 router.post('/logout', logout);
-
-// ─── Google OAuth Routes ──────────────────────────────────────
-// Step 1 — Redirect user to Google consent screen.
-// Session is needed here to store the OAuth2 state parameter (CSRF protection).
-router.get('/google',
-  passport.authenticate('google', {
-    scope: ['profile', 'email'],
-    prompt: 'select_account'  // Always show account picker
-  })
-);
-
-// Step 2 — Google redirects back here with ?code=...
-// session: true — required so Passport can read&verify the state from the MySQL session.
-// On success, calls googleCallback which issues the JWT and redirects to login.html.
-router.get('/google/callback',
-  passport.authenticate('google', {
-    session:         true,
-    failureRedirect: '/login.html?error=google_failed'
-  }),
-  googleCallback
-);
 
 export default router;

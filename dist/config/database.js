@@ -271,7 +271,6 @@ async function initializeDatabase() {
         // Each ALTER runs independently — one failure never blocks the others.
         const schemaFixes = [
             ["ALTER TABLE users MODIFY COLUMN password VARCHAR(255) NULL", "password nullable"],
-            ["ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) NULL", "google_id column"],
             ["ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500) NULL", "avatar_url column"],
             ["ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'user'", "role column"],
         ];
