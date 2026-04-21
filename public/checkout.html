@@ -3,105 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Checkout aman di RGS STORE - Marketplace produk digital premium terlengkap.">
-    <meta name="keywords" content="Netflix, Spotify, Discord Nitro, Pterodactyl, checkout">
-    <meta name="robots" content="noindex, follow">
-    <meta property="og:title" content="Checkout — RGS STORE">
+    <meta name="description" content="Checkout aman di RGS STORE - Premium Digital Marketplace.">
     <title>Checkout - RGS STORE</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = { theme: { extend: { colors: { primary: { 50:'#ecfeff',100:'#cffafe',500:'#06b6d4',600:'#0891b2',700:'#0e7490' }, dark: { 900: '#000000', 800: '#0b0e14', 700: '#111827' } }, fontFamily: { sans: ['Outfit','sans-serif'] } } } }
-    </script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { font-family: 'Outfit', sans-serif; background-color: #ffffff; color: #000000; }
+        .glass-card { background: #ffffff; border: 1px solid #f1f5f9; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border-radius: 24px; transition: all 0.3s ease; }
+        .glass-card:hover { border-color: #e2e8f0; transform: translateY(-2px); }
+        .btn-pay { background: #ff7a00; color: #ffffff; font-weight: 800; transition: all 0.3s; }
+        .btn-pay:hover { background: #e66e00; transform: scale(1.02); box-shadow: 0 10px 25px rgba(255, 122, 0, 0.2); }
+        .form-input { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px 16px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; }
+        .form-input:focus { border-color: #ff7a00; background: #ffffff; outline: none; box-shadow: 0 0 0 4px rgba(255,122,0,0.1); }
+        .payment-label { border: 2px solid #f1f5f9; border-radius: 20px; transition: all 0.2s; cursor: pointer; position: relative; overflow: hidden; }
+        .payment-label:hover { border-color: #ff7a00; background: #fffaf5; }
+        input[name="payment"]:checked + .payment-content { border-color: #ff7a00; background: #fffaf5; }
+        .badge-step { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: #fff3e0; color: #ff7a00; border-radius: 50%; font-size: 0.75rem; font-weight: 900; margin-right: 12px; }
+    </style>
 </head>
-<body class="font-sans antialiased" style="background:#ffffff !important; color:#000000 !important;">
+<body class="antialiased">
 
     <!-- Navbar -->
-    <nav style="background:#ffffff; border-bottom:1px solid #eeeeee; position:sticky; top:0; z-index:40; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex items-center h-16 relative">
-                <a href="index.html" class="absolute left-0 flex items-center font-medium transition text-sm" style="color:#555555;">
-                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                    Kembali
-                </a>
-                <h1 class="mx-auto text-lg font-black uppercase tracking-widest" style="color:#000000;">Digital Checkout</h1>
-            </div>
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2 group">
+                <i class="fa-solid fa-chevron-left text-xs text-gray-400 group-hover:text-orange-500 transition"></i>
+                <span class="text-sm font-bold text-gray-500">Kembali Belanja</span>
+            </a>
+            <span class="text-lg font-black uppercase tracking-widest italic">RGS <span class="text-orange-500">CHECKOUT</span></span>
+            <div class="w-20"></div> <!-- Spacer -->
         </div>
     </nav>
 
-    <!-- Loading State -->
-    <div id="checkout-loading" class="max-w-4xl mx-auto px-4 py-20 text-center">
-        <svg class="animate-spin h-10 w-10 mx-auto mb-4" fill="none" viewBox="0 0 24 24" style="color:#ff7a00;">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-        </svg>
-        <p class="text-sm" style="color:#555555;">Memuat data checkout...</p>
+    <div id="checkout-loading" class="max-w-4xl mx-auto px-4 py-32 text-center">
+        <div class="w-12 h-12 border-4 border-gray-100 border-t-orange-500 rounded-full animate-spin mx-auto"></div>
+        <p class="mt-4 text-xs font-black uppercase tracking-widest text-gray-400">Securely loading transaction data...</p>
     </div>
 
-    <!-- Main Content (hidden until loaded) -->
-    <main id="checkout-content" class="max-w-4xl mx-auto px-4 py-8 hidden">
-        <form id="form-checkout" class="flex flex-col md:flex-row gap-8 items-start">
-            <div class="w-full md:w-2/3 space-y-6">
-
-                <!-- Data Penerima -->
-                <div class="rounded-2xl shadow-sm border border-gray-200 p-6" style="background:#ffffff;">
-                    <h3 class="font-black text-lg mb-4 flex items-center uppercase tracking-wider" style="color:#000000;">
-                        <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black mr-2" style="background:#fff3e0; color:#ff7a00;">1</span>
-                        Data Penerima
+    <main id="checkout-content" class="max-w-5xl mx-auto px-4 py-12 hidden">
+        <form id="form-checkout" class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            
+            <div class="lg:col-span-2 space-y-8">
+                <!-- STEP 1: Akun -->
+                <div class="glass-card p-8">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-gray-500 mb-8 flex items-center">
+                        <span class="badge-step">1</span> Detail Pengiriman
                     </h3>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-black uppercase mb-1" style="color:#000000;">Nama Lengkap</label>
-                            <input type="text" id="co-name" readonly class="w-full px-4 py-3 rounded-xl outline-none" style="background:#f8f9fa; border:1px solid #d1d5db; color:#555555;">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Username</label>
+                            <input type="text" id="co-name" readonly class="w-full form-input text-gray-500" value="Loading...">
                         </div>
-                        <div>
-                            <label class="block text-xs font-black uppercase mb-1" style="color:#000000;">Email <span class="text-xs font-normal" style="color:#ff7a00; opacity:0.8;">(Lisensi dikirim ke email ini)</span></label>
-                            <input type="email" id="co-email" readonly class="w-full px-4 py-3 rounded-xl outline-none" style="background:#f8f9fa; border:1px solid #d1d5db; color:#555555;">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Email Destinasi</label>
+                            <input type="email" id="co-email" readonly class="w-full form-input text-gray-500" value="Loading...">
                         </div>
                     </div>
                 </div>
 
-                <!-- Produk -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <h3 class="font-bold text-gray-800 text-lg mb-4 flex items-center">
-                        <span class="w-7 h-7 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-bold mr-2">2</span>
-                        Detail Produk
+                <!-- STEP 2: Produk -->
+                <div class="glass-card p-8">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-gray-500 mb-8 flex items-center">
+                        <span class="badge-step">2</span> Item List
                     </h3>
-                    <div id="checkout-product-detail" class="flex flex-col gap-2">
+                    <div id="checkout-product-detail" class="divide-y divide-gray-50">
                         <!-- Injected -->
                     </div>
                 </div>
-                <!-- Metode Pembayaran -->
-                <div class="rounded-2xl shadow-sm border border-gray-200 p-6" style="background:#ffffff;">
-                    <h3 class="font-black text-lg mb-4 flex items-center uppercase tracking-wider" style="color:#000000;">
-                        <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black mr-2" style="background:#fff3e0; color:#ff7a00;">3</span>
-                        Pilih Pembayaran
+
+                <!-- STEP 3: Pembayaran -->
+                <div class="glass-card p-8">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-gray-500 mb-8 flex items-center">
+                        <span class="badge-step">3</span> Metode Pembayaran
                     </h3>
-                    <div class="grid grid-cols-2 gap-3">
-                        <label class="border-2 rounded-xl p-4 cursor-pointer flex flex-col items-center justify-center text-center payment-option transition relative" style="border-color:#ff7a00; background:#fff8f0;">
-                            <input type="radio" name="payment" value="QRIS" class="absolute top-2 right-2" required checked>
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" alt="QRIS" class="h-6 mb-1 object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                            <div style="display:none; font-size:1.5rem; font-weight:900; color:#ff7a00; margin-bottom:4px">QRIS</div>
-                            <span class="font-black text-xs uppercase" style="color:#ff7a00;">QRIS</span>
-                            <span class="text-xs mt-0.5" style="color:#888888;">Scan & Pay All</span>
-                        </label>
-                        <label class="border-2 rounded-xl p-4 cursor-pointer flex flex-col items-center justify-center text-center payment-option transition relative" style="border-color:#d1d5db; background:#ffffff;" id="ewallet-label">
-                            <input type="radio" name="payment" value="E-Wallet" class="absolute top-2 right-2" id="radio-ewallet">
-                            <div class="flex gap-2 justify-center mb-1 flex-wrap items-center">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Logo_dana_blue.svg" alt="DANA" class="h-4 object-contain" onerror="this.onerror=null; this.src='https://placehold.co/60x20/0ea5e9/ffffff?text=DANA&font=Montserrat';">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/Logo_OVO.svg" alt="OVO" class="h-4 object-contain" onerror="this.onerror=null; this.src='https://placehold.co/60x20/4c1d95/ffffff?text=OVO&font=Montserrat';">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Gopay_logo.svg" alt="GoPay" class="h-4 object-contain" onerror="this.onerror=null; this.src='https://placehold.co/60x20/16a34a/ffffff?text=GOPAY&font=Montserrat';">
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="payment-label">
+                            <input type="radio" name="payment" value="QRIS" class="hidden" checked>
+                            <div class="payment-content p-6 text-center h-full border-2 border-transparent rounded-[18px]">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" class="h-6 mx-auto mb-3" alt="QRIS">
+                                <p class="text-xs font-black uppercase tracking-widest">QRIS (All In One)</p>
+                                <p class="text-[10px] text-gray-400 font-bold mt-1">DANA, OVO, ShopeePay, Bank</p>
                             </div>
-                            <span class="font-black text-xs uppercase mt-1" style="color:#000000;">E-Wallet</span>
-                            <span class="text-xs mt-0.5" style="color:#888888;">Dana, Ovo, GoPay</span>
+                        </label>
+
+                        <label class="payment-label" id="ewallet-label">
+                            <input type="radio" name="payment" value="E-Wallet" class="hidden" id="radio-ewallet">
+                            <div class="payment-content p-6 text-center h-full border-2 border-transparent rounded-[18px]">
+                                <div class="flex justify-center gap-2 mb-3">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Logo_dana_blue.svg" class="h-3" alt="DANA">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/Logo_OVO.svg" class="h-3" alt="OVO">
+                                </div>
+                                <p class="text-xs font-black uppercase tracking-widest">Manual E-Wallet</p>
+                                <p class="text-[10px] text-gray-400 font-bold mt-1">Pilih layanan spesifik</p>
+                            </div>
                         </label>
                     </div>
-                    <!-- E-Wallet Sub-Dropdown -->
-                    <div id="ewallet-dropdown-wrapper" class="mt-4 hidden animate-fade-in">
-                        <label class="block text-xs font-black uppercase mb-1" style="color:#000000;">Pilih Aplikasi E-Wallet</label>
-                        <select id="ewallet-select" class="w-full px-4 py-3 rounded-xl outline-none transition text-sm font-bold" style="background:#f8f9fa; border:1px solid #d1d5db; color:#000000;">
-                            <option value="">-- Pilih E-Wallet --</option>
+
+                    <div id="ewallet-dropdown-wrapper" class="mt-6 hidden">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1 mb-2 block">Spesifik E-Wallet</label>
+                        <select id="ewallet-select" class="w-full form-input">
+                            <option value="">-- Pilih Layanan --</option>
                             <option value="DANA">DANA</option>
                             <option value="OVO">OVO</option>
                             <option value="GoPay">GoPay</option>
@@ -111,28 +114,48 @@
                 </div>
             </div>
 
+            <!-- Sidebar -->
+            <div class="lg:col-span-1 sticky top-24">
+                <div class="glass-card p-8 border-orange-100">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-black mb-6 pb-4 border-b border-gray-50">Summary</h3>
+                    
+                    <div class="space-y-4 mb-8">
+                        <div class="flex justify-between text-xs font-bold text-gray-400">
+                            <span>Subtotal</span>
+                            <span id="co-subtotal" class="text-black">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between text-xs font-bold text-gray-400">
+                            <span>Biaya Admin</span>
+                            <span class="text-green-500 uppercase tracking-widest">Free</span>
+                        </div>
+                    </div>
 
-            <!-- Summary Sidebar -->
-            <div class="w-full md:w-1/3 sticky top-24">
-                <div class="rounded-2xl shadow-sm border border-gray-200 p-6" style="background:#ffffff;">
-                    <h3 class="font-black mb-4 pb-3 uppercase tracking-widest text-sm" style="color:#000000; border-bottom:1px solid #e5e7eb;">Summary</h3>
-                    <div class="space-y-2 mb-4 text-xs" style="color:#555555;">
-                        <div class="flex justify-between"><span>Subtotal</span><span id="co-subtotal" class="font-bold" style="color:#000000;">Rp 0</span></div>
-                        <div class="flex justify-between"><span>Admin Fee</span><span class="font-bold" style="color:#16a34a;">FREE</span></div>
+                    <div class="bg-gray-50 rounded-3xl p-6 mb-8 text-center border border-gray-100">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Total yang harus dibayar</p>
+                        <h2 id="co-total" class="text-3xl font-black text-black">Rp 0</h2>
                     </div>
-                    <div class="flex flex-col mb-6 p-4 rounded-xl" style="background:#fff8f0; border:1px solid rgba(255,122,0,0.2);">
-                        <span class="text-xs mb-1 font-black uppercase tracking-tighter" style="color:#ff7a00;">TOTAL PAYABLE</span>
-                        <span id="co-total" class="font-black text-2xl" style="color:#000000;">Rp 0</span>
-                    </div>
-                    <p class="text-xs mb-4 text-center leading-relaxed" style="color:#888888;">Dengan klik bayar, Anda setuju dengan Syarat & Ketentuan Layanan.</p>
-                    <button type="submit" id="btn-pay" class="w-full font-black py-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 uppercase tracking-widest text-xs" style="background:#ff7a00; color:#ffffff;">
-                        Bayar Sekarang
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+
+                    <button type="submit" id="btn-pay" class="w-full btn-pay py-5 rounded-2xl flex items-center justify-center gap-3 uppercase tracking-widest text-xs">
+                        Proses Pembayaran <i class="fa-solid fa-shield-check"></i>
                     </button>
+
+                    <div class="mt-6 flex items-center justify-center gap-2 text-gray-400 text-[10px] font-bold uppercase tracking-widest">
+                        <i class="fa-solid fa-lock text-green-500"></i> Encrypted Transaction
+                    </div>
+                </div>
+
+                <div class="mt-6 p-5 rounded-3xl bg-blue-50 border border-blue-100 flex gap-3">
+                    <i class="fa-solid fa-circle-info text-blue-500 mt-1"></i>
+                    <p class="text-[10px] text-blue-700 font-medium leading-relaxed">Pastikan email aktif karena lisensi produk digital akan dikirimkan langsung ke email tersebut.</p>
                 </div>
             </div>
+
         </form>
     </main>
+
+    <footer class="py-12 border-t border-gray-50 text-center">
+        <p class="text-[10px] font-black uppercase tracking-widest text-gray-300">RGS STORE Digital Fulfillment System © 2026</p>
+    </footer>
 
     <script src="js/app.js"></script>
     <script>
@@ -156,7 +179,7 @@
                     totalPrice = price;
                 } else {
                     const cart = appUtils.getCart();
-                    if (cart.length === 0) { window.location.href = 'cart.html'; return; }
+                    if (cart.length === 0) { window.location.href = 'index.html'; return; }
                     checkoutItems = cart.map(item => ({
                         product_id: item.id, name: item.name,
                         price: parseInt(item.price), qty: parseInt(item.qty), variant: item.variant || null
@@ -171,12 +194,12 @@
                 detailContainer.innerHTML = '';
                 checkoutItems.forEach(item => {
                     detailContainer.insertAdjacentHTML('beforeend', `
-                        <div class="flex items-center gap-4 py-3 border-b border-gray-50 last:border-0 w-full">
+                        <div class="flex items-center gap-4 py-6 last:pb-0">
                             <div class="flex-grow">
-                                <p class="font-semibold text-gray-800 text-sm">${item.name}</p>
-                                <p class="text-[10px] text-gray-400">Qty: ${item.qty}${item.variant ? ` • Varian: ${item.variant}` : ''}</p>
+                                <p class="font-black text-black text-sm uppercase tracking-tight">${item.name}</p>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Quantitas: ${item.qty}${item.variant ? ` • Varian: ${item.variant}` : ''}</p>
                             </div>
-                            <p class="font-bold text-gray-700 text-sm whitespace-nowrap">${appUtils.formatRupiah(item.price * item.qty)}</p>
+                            <p class="font-black text-black text-sm">${appUtils.formatRupiah(item.price * item.qty)}</p>
                         </div>
                     `);
                 });
@@ -190,10 +213,10 @@
             } catch (err) {
                 console.error('Checkout Load Error:', err);
                 document.getElementById('checkout-loading').innerHTML = `
-                    <div class="p-6 bg-red-50 border border-red-100 rounded-2xl">
-                        <p class="text-red-500 font-bold">Terjadi Kesalahan</p>
-                        <p class="text-red-400 text-xs mt-1">${err.message || 'Gagal memuat data.'}</p>
-                        <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-orange-500  rounded-lg text-sm">Coba Lagi 🔄</button>
+                    <div class="p-8 border border-red-100 bg-red-50 rounded-3xl inline-block">
+                        <p class="text-red-500 font-black uppercase text-xs tracking-widest mb-1">Fatal Error</p>
+                        <p class="text-red-800 text-sm font-medium">${err.message || 'Gagal sinkronisasi data.'}</p>
+                        <button onclick="location.reload()" class="mt-6 px-6 py-3 bg-red-500 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-red-200">Reload Terminal</button>
                     </div>`;
                 return;
             }
@@ -202,20 +225,10 @@
             const paymentRadios = document.querySelectorAll('input[name="payment"]');
             paymentRadios.forEach(radio => {
                 radio.addEventListener('change', () => {
-                    document.querySelectorAll('.payment-option').forEach(el => {
-                        el.classList.remove('border-primary-500', 'bg-primary-50', 'bg-orange-50');
-                        el.classList.add('border-gray-200');
-                    });
-                    if (radio.checked) {
-                        radio.parentElement.classList.add('border-primary-500', 'bg-orange-50');
-                        radio.parentElement.classList.remove('border-gray-200');
-                    }
-
-                    // Show/hide E-Wallet dropdown
                     const ewalletWrapper = document.getElementById('ewallet-dropdown-wrapper');
                     if (radio.id === 'radio-ewallet' && radio.checked) {
                         ewalletWrapper.classList.remove('hidden');
-                    } else if (radio.id !== 'radio-ewallet') {
+                    } else {
                         ewalletWrapper.classList.add('hidden');
                         document.getElementById('ewallet-select').value = '';
                     }
@@ -229,27 +242,28 @@
                 let selectedMethod = document.querySelector('input[name="payment"]:checked')?.value;
 
                 if (!selectedMethod) {
-                    appUtils.showToast('Silakan pilih metode pembayaran.', 'error');
+                    appUtils.showToast('Pilih metode pembayaran!', 'error');
                     return;
                 }
 
-                // If E-Wallet selected, get sub-type
                 if (selectedMethod === 'E-Wallet') {
                     const ewalletType = document.getElementById('ewallet-select').value;
                     if (!ewalletType) {
-                        Swal.fire('Pilih E-Wallet', 'Silakan pilih salah satu layanan e-wallet (DANA, OVO, dll).', 'warning');
+                        Swal.fire({
+                             title: 'Detail Dibutuhkan',
+                             text: 'Silakan pilih spesifik e-wallet untuk pembayaran manual.',
+                             icon: 'warning',
+                             confirmButtonColor: '#ff7a00',
+                             background: '#ffffff',
+                             color: '#000000'
+                        });
                         return;
                     }
                     selectedMethod = `E-Wallet (${ewalletType})`;
                 }
 
-                if (checkoutItems.length === 0 || isNaN(totalPrice) || totalPrice <= 0) {
-                    appUtils.showToast('Gagal memproses data belanja. Silakan coba lagi.', 'error');
-                    return;
-                }
-
                 try {
-                    appUtils.setLoading(btn, true, 'Memproses...');
+                    appUtils.setLoading(btn, true, 'Processing...');
                     const payload = {
                         customer_name: user.name,
                         customer_email: user.email,
@@ -260,28 +274,23 @@
 
                     const result = await appUtils.createOrder(payload);
                     if (result.success) {
-                        appUtils.showToast('Pesanan berhasil dibuat! 🔥', 'success');
+                        appUtils.showToast('Order Linked Successfully! 🔥', 'success');
                         if (!productId) appUtils.saveCart([]);
                         setTimeout(() => {
                             window.location.href = result.data?.order?.id
                                 ? `payment.html?order_id=${result.data.order.id}`
-                                : 'my-orders.html';
-                        }, 1200);
+                                : 'dashboard.html';
+                        }, 1000);
                     } else {
-                        appUtils.showToast(result.message || 'Gagal membuat pesanan.', 'error');
+                        appUtils.showToast(result.message || 'Gagal memproses pesanan.', 'error');
                         appUtils.setLoading(btn, false);
                     }
                 } catch (err) {
-                    console.error('Order Error:', err);
-                    appUtils.showToast('Koneksi terputus. Coba lagi.', 'error');
+                    appUtils.showToast('Network error, please retry.', 'error');
                     appUtils.setLoading(btn, false);
                 }
             });
         });
     </script>
-<!-- Floating WhatsApp -->
-<a href="https://wa.me/62882016259591" target="_blank" class="wa-float" title="WhatsApp CS">
-    <i class="fa-brands fa-whatsapp"></i>
-</a>
 </body>
 </html>

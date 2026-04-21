@@ -6,47 +6,43 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
-    /* Brand Colors (White / Orange / Pink Neon) */
-    --green:          #ff7a00; /* Neon Orange */
-    --green-light:    #ffa04d;
-    --green-glow:     rgba(255, 122, 0, 0.35);
-    --green-soft:     rgba(255, 122, 0, 0.1);
-    --orange:         #ff007f; /* Neon Pink */
-    --orange-light:   #ff4da6;
-    --orange-glow:    rgba(255, 0, 127, 0.35);
-    --orange-soft:    rgba(255, 0, 127, 0.1);
+    /* Brand Colors (Pure Orange / Black / White) */
+    --primary:        #ff7a00;
+    --primary-light:  #ffa04d;
+    --primary-glow:   rgba(255, 122, 0, 0.1);
+    --primary-soft:   rgba(255, 122, 0, 0.05);
+    
+    /* Secondary (Discord Blurple - for buttons/logos only) */
+    --discord:        #5865f2;
+    --discord-glow:   rgba(88, 101, 242, 0.1);
 
-    /* Light Backgrounds */
-    --bg-darkest:     #f8fafc;
+    /* Light Backgrounds - ABSOLUTE WHITE SYSTEM */
+    --bg-darkest:     #ffffff;
     --bg-dark:        #ffffff;
     --bg-surface:     #ffffff;
-    --bg-surface2:    #f1f5f9;
-    --bg-glass:       rgba(255, 255, 255, 0.95);
+    --bg-surface2:    #f8fafc;
+    --bg-glass:       rgba(255, 255, 255, 0.98);
+    
+    /* Legacy Sync */
     --neon-green:     #ff7a00;
-    --neon-orange:    #ff007f;
+    --neon-orange:    #ff7a00;
+    --green:          #ff7a00;
+    --orange:         #ff7a00;
 
-    /* Text */
-    --text-bright:    #0f172a; /* Darkest */
-    --text-main:      #1e293b; /* Dark */
-    --text-dim:       #475569; /* Gray */
-    --text-muted:     #64748b; /* Lighter Gray */
+    /* Text - PURE BLACK SYSTEM */
+    --text-bright:    #000000;
+    --text-main:      #000000;
+    --text-dim:       #0d1117;
+    --text-muted:     #64748b;
 
     /* Borders */
-    --border:         rgba(0, 0, 0, 0.08);
-    --border-hover:   rgba(255, 0, 127, 0.4);
-    --border-green:   rgba(255, 122, 0, 0.3);
-    --border-orange:  rgba(255, 0, 127, 0.3);
+    --border:         #e2e8f0;
+    --border-hover:   #cbd5e1;
+    --border-primary: rgba(255, 122, 0, 0.2);
 
-    /* Radii */
-    --r-xl: 20px;
-    --r-lg: 12px;
-    --r-md: 8px;
-    --r-sm: 6px;
-
-    /* Shadows (Neon Glow) */
-    --shadow-card:   0 8px 32px rgba(0,0,0,0.05); /* Softer shadow */
-    --shadow-green:  0 0 15px rgba(255,122,0,0.4), 0 0 30px rgba(255,122,0,0.2);
-    --shadow-orange: 0 0 15px rgba(255,0,127,0.4), 0 0 30px rgba(255,0,127,0.2);
+    /* Shadows */
+    --shadow-card:    0 4px 20px rgba(0, 0, 0, 0.04);
+    --shadow-glow:    0 0 20px rgba(255, 122, 0, 0.1);
 }
 
 /* ─── Reset & Base ────────────────────────────────────────── */

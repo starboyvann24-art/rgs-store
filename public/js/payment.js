@@ -36,21 +36,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 3. Render Order Info
         const infoContainer = document.getElementById('order-info');
         infoContainer.innerHTML = `
-            <div class="flex justify-between text-sm">
-                <span class="text-slate-500">Invoice</span>
-                <span class="font-mono text-white">#${order.order_number}</span>
+            <div class="flex justify-between items-center text-xs font-bold uppercase tracking-widest">
+                <span class="text-gray-400">Order ID</span>
+                <span class="text-black">#${order.order_number}</span>
             </div>
-            <div class="flex justify-between text-sm">
-                <span class="text-slate-500">Produk</span>
-                <span class="text-white text-right font-medium">${order.product_name}</span>
+            <div class="flex justify-between items-center text-sm font-bold">
+                <span class="text-gray-400 uppercase text-[10px] tracking-widest">Produk</span>
+                <span class="text-black text-right">${order.product_name}</span>
             </div>
-            <div class="flex justify-between text-sm">
-                <span class="text-slate-500">Jumlah</span>
-                <span class="text-white">${order.qty} Item</span>
+            <div class="flex justify-between items-center text-sm font-bold">
+                <span class="text-gray-400 uppercase text-[10px] tracking-widest">Jumlah</span>
+                <span class="text-black">${order.qty} Item</span>
             </div>
-            <div class="flex justify-between text-sm">
-                <span class="text-slate-500">Metode Terpilih</span>
-                <span class="px-2 py-0.5 bg-orange-500/10 text-orange-500 rounded text-[10px] font-bold uppercase">${order.payment_method}</span>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-400 uppercase text-[10px] font-bold tracking-widest">Metode</span>
+                <span class="px-2 py-1 bg-orange-50 text-orange-500 rounded-lg text-[10px] font-black uppercase tracking-tighter border border-orange-100">${order.payment_method}</span>
             </div>
         `;
 
@@ -67,29 +67,35 @@ document.addEventListener('DOMContentLoaded', async () => {
             let detailHtml = '';
             if (selectedMethod.type === 'qris' && selectedMethod.qris_image_url) {
                 detailHtml = `
-                    <div class="flex flex-col items-center gap-4 bg-white p-6 rounded-3xl shadow-inner">
-                        <img src="${selectedMethod.qris_image_url}" alt="QRIS" 
-                             style="width: 100%; max-width: 350px; object-fit: contain; margin: 0 auto; padding: 0;"
-                             onerror="this.onerror=null; this.src='https://placehold.co/350x350/ff7a00/ffffff?text=SCAN+QRIS';">
-                        <p class="text-slate-900 text-xs font-black uppercase tracking-widest">Scanning Terminal Active</p>
+                    <div class="flex flex-col items-center gap-5 p-6 bg-gray-50 rounded-3xl border border-gray-100">
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                             <img src="${selectedMethod.qris_image_url}" alt="QRIS" 
+                                 class="w-full max-w-[280px] mx-auto object-contain"
+                                 onerror="this.onerror=null; this.src='https://placehold.co/350x350/ffffff/ff7a00?text=SCAN+QRIS&font=Outfit';">
+                        </div>
+                        <p class="text-black text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                             <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Terminal Aktif
+                        </p>
                     </div>
                 `;
             } else {
                 detailHtml = `
-                    <div class="bg-white/5 p-4 rounded-2xl border border-white/5 space-y-3">
-                        <div class="flex items-center gap-3">
-                            <img src="${selectedMethod.logo_url || 'https://via.placeholder.com/40'}" 
-                                 class="w-10 h-10 rounded-lg object-contain bg-white"
-                                 onerror="this.onerror=null; this.src='https://placehold.co/40x40/ff007f/ffffff?text=${selectedMethod.name.substring(0,2).toUpperCase()}';">
+                    <div class="bg-gray-50 p-6 rounded-3xl border border-gray-100 space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center p-2 border border-gray-100">
+                                <img src="${selectedMethod.logo_url || 'https://via.placeholder.com/40'}" 
+                                     class="w-full h-full object-contain"
+                                     onerror="this.onerror=null; this.src='https://placehold.co/80x80/ffffff/ff7a00?text=${selectedMethod.name.substring(0,2).toUpperCase()}&font=Outfit';">
+                            </div>
                             <div>
-                                <p class="text-white font-bold">${selectedMethod.name}</p>
-                                <p class="text-xs text-slate-400 font-mono">${selectedMethod.account_name}</p>
+                                <p class="text-black font-black text-sm uppercase tracking-tight">${selectedMethod.name}</p>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${selectedMethod.account_name}</p>
                             </div>
                         </div>
-                        <div class="flex items-center justify-between bg-black/30 p-3 rounded-xl border border-white/5">
-                            <span class="text-lg font-mono font-bold text-white tracking-widest">${selectedMethod.account_number}</span>
-                            <button onclick="store.copyToClipboard('${selectedMethod.account_number}')" class="text-orange-500 hover:text-orange-400 transition p-1">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                        <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-gray-100">
+                            <span class="text-xl font-black text-black tracking-widest">${selectedMethod.account_number}</span>
+                            <button onclick="store.copyToClipboard('${selectedMethod.account_number}')" class="text-orange-500 hover:scale-110 transition p-2">
+                                <i class="fa-solid fa-copy"></i>
                             </button>
                         </div>
                     </div>

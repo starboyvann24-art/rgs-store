@@ -16,13 +16,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body>
-<!-- Glow blobs -->
-<div class="glow-blob blob-green"></div>
-<div class="glow-blob blob-orange"></div>
+<body style="background:#ffffff !important; color:#000000 !important;">
 
 <!-- Marquee Banner -->
-<div class="marquee-bar">
+<div class="marquee-bar" style="background:#ff7a00; color:#ffffff;">
     <span class="marquee-inner">
         🔥 FLASH SALE: Potongan Harga Spesial Panel Pterodactyl & Discord Nitro Minggu Ini! 🔥 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         🎉 Garansi Replace 1×24 Jam untuk Semua Produk! &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -32,17 +29,17 @@
 </div>
 
 <!-- Navbar -->
-<nav class="navbar-premium">
+<nav class="navbar-premium" style="background:#ffffff; border-bottom:1px solid #e5e7eb;">
     <div class="nav-container">
-        <a href="/" class="logo-brand">RGS <span>STORE</span></a>
+        <a href="/" class="logo-brand" style="color:#ff7a00;">RGS <span style="color:#000000;">STORE</span></a>
 
         <div class="search-wrapper">
-            <i class="fa-solid fa-magnifying-glass search-icon"></i>
-            <input id="main-search" type="text" class="search-input" placeholder="Cari Netflix, Spotify, Discord Nitro...">
+            <i class="fa-solid fa-magnifying-glass search-icon" style="color:#94a3b8;"></i>
+            <input id="main-search" type="text" class="search-input" placeholder="Cari Netflix, Spotify, Discord Nitro..." style="background:#f9fafb; border:1px solid #d1d5db; color:#000000;">
         </div>
 
         <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
-            <a href="/cart.html" class="btn-cart-icon">
+            <a href="/cart.html" class="btn-cart-icon" style="background:#f9fafb; border:1px solid #d1d5db; color:#000000;">
                 <i class="fa-solid fa-bag-shopping"></i>
                 <span class="cart-badge" id="cart-count">0</span>
             </a>
@@ -53,7 +50,7 @@
             <div id="nav-auth-container" style="display:flex;align-items:center;gap:8px">
                 <!-- injected by app.js -->
             </div>
-            <button class="hamburger-btn" id="mobile-menu-btn">
+            <button class="hamburger-btn" id="mobile-menu-btn" style="color:#000000;">
                 <i class="fa-solid fa-bars"></i>
             </button>
         </div>
@@ -62,67 +59,69 @@
 
 <!-- Mobile Sidebar Overlay -->
 <div class="sidebar-overlay" id="mobile-sidebar-overlay"></div>
-<aside class="sidebar" id="mobile-sidebar">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;border-bottom:1px solid var(--border);padding-bottom:1rem">
-        <div class="logo-brand text-xl">RGS <span>STORE</span></div>
-        <button id="close-sidebar-btn" style="background:transparent;border:none;color:var(--text-muted);font-size:1.5rem;cursor:pointer"><i class="fa-solid fa-xmark"></i></button>
+<aside class="sidebar" id="mobile-sidebar" style="background:#ffffff; color:#000000; border-right:1px solid #e5e7eb;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;border-bottom:1px solid #e5e7eb;padding-bottom:1rem">
+        <div class="logo-brand text-xl" style="color:#ff7a00;">RGS <span style="color:#000000;">STORE</span></div>
+        <button id="close-sidebar-btn" style="background:transparent;border:none;color:#000000;font-size:1.5rem;cursor:pointer"><i class="fa-solid fa-xmark"></i></button>
     </div>
     
     <div class="search-wrapper mobile-search-active" style="margin-bottom:2rem;display:block">
-        <i class="fa-solid fa-magnifying-glass search-icon" style="top:25px"></i>
-        <input id="mobile-search" type="text" class="search-input" placeholder="Cari Netflix, Nitro, Panel...">
+        <i class="fa-solid fa-magnifying-glass search-icon" style="top:25px; color:#94a3b8;"></i>
+        <input id="mobile-search" type="text" class="search-input" placeholder="Cari Netflix, Nitro, Panel..." style="background:#f9fafb; border:1px solid #d1d5db; color:#000000;">
     </div>
 
     <div class="mobile-menu-links" style="display:flex;flex-direction:column;gap:1rem;margin-bottom:2rem">
-        <a href="/" class="mobile-link" style="padding:0.75rem 1rem;border-radius:12px;display:flex;align-items:center;gap:12px;font-weight:700;background:var(--);color:var(--text-bright)">
-            <i class="fa-solid fa-house" style="color:var(--orange)"></i> Beranda
+        <a href="/" class="mobile-link" style="padding:0.75rem 1rem;border-radius:12px;display:flex;align-items:center;gap:12px;font-weight:700;color:#000000;">
+            <i class="fa-solid fa-house" style="color:#ff7a00;"></i> Beranda
         </a>
-        <a href="/#katalog" class="mobile-link" style="padding:0.75rem 1rem;border-radius:12px;display:flex;align-items:center;gap:12px;font-weight:700;color:var(--text-dim)">
-            <i class="fa-solid fa-bolt" style="color:var(--orange)"></i> Katalog Produk
+        <a href="/#katalog" class="mobile-link" style="padding:0.75rem 1rem;border-radius:12px;display:flex;align-items:center;gap:12px;font-weight:700;color:#000000;">
+            <i class="fa-solid fa-bolt" style="color:#ff7a00;"></i> Katalog Produk
         </a>
-        <a href="/dashboard.html" class="mobile-link" style="padding:0.75rem 1rem;border-radius:12px;display:flex;align-items:center;gap:12px;font-weight:700;color:var(--text-dim)">
-            <i class="fa-solid fa-box-open" style="color:var(--orange)"></i> Lacak Pesanan
+        <a href="/dashboard.html" class="mobile-link" style="padding:0.75rem 1rem;border-radius:12px;display:flex;align-items:center;gap:12px;font-weight:700;color:#000000;">
+            <i class="fa-solid fa-box-open" style="color:#ff7a00;"></i> Lacak Pesanan
         </a>
-        <a href="https://discord.gg/huWJNZ4m9" target="_blank" class="mobile-link" style="padding:0.75rem 1rem;border-radius:12px;display:flex;align-items:center;gap:12px;font-weight:700;color:var(--text-dim)">
-            <i class="fa-brands fa-discord" style="color:var(--orange)"></i> Join Komunitas
+        <a href="https://discord.gg/huWJNZ4m9" target="_blank" class="mobile-link" style="padding:0.75rem 1rem;border-radius:12px;display:flex;align-items:center;gap:12px;font-weight:700;color:#000000;">
+            <i class="fa-brands fa-discord" style="color:#ff7a00;"></i> Join Komunitas
         </a>
     </div>
 
-    <hr class="my-3">
-    <div class="sidebar-auth-buttons d-flex flex-column gap-2 px-3 pb-3" id="sidebar-auth-container">
-        <a href="/login.html" class="btn btn-orange-neon w-100 text-center" style="background: #ff7a00; color: #fff; border-radius: 8px; font-weight: bold; padding: 10px;">Masuk</a>
-        <a href="/register.html" class="btn btn-pink-neon w-100 text-center" style="background: #ff007f; color: #fff; border-radius: 8px; font-weight: bold; padding: 10px;">Daftar</a>
+    <hr style="border:0; height:1px; background:#e5e7eb; margin:1rem 0;">
+    <!-- Auth Container (Vertikal) -->
+    <div class="sidebar-auth-buttons" style="display:flex; flex-direction:column; gap:0.75rem; padding:0 1rem;" id="sidebar-auth-container">
+        <a href="/login.html" class="btn" style="background:#ff7a00; color:#ffffff; border-radius:12px; font-weight:800; padding:12px; text-align:center;">Masuk</a>
+        <a href="/register.html" class="btn" style="background:#ffffff; color:#ff7a00; border:2px solid #ff7a00; border-radius:12px; font-weight:800; padding:12px; text-align:center;">Daftar</a>
     </div>
-    <div id="sidebar-profile-container" class="px-3 pb-3" style="display: none;">
+    <div id="sidebar-profile-container" style="padding:0 1rem; display:none;">
+        <!-- Injected by app.js: Profile & Logout buttons -->
     </div>
 </aside>
 
 <!-- Hero Carousel -->
-<header style="padding:4rem 1.5rem 3rem;text-align:center;background:radial-gradient(ellipse at top, rgba(0,243,255,0.1) 0%, transparent 60%), radial-gradient(ellipse at bottom, rgba(217,70,239,0.1) 0%, transparent 60%);border-bottom:1px solid var(--border);position:relative;z-index:10">
-    <div class="carousel-container" style="max-width:900px;margin:0 auto;aspect-ratio:16/9;background:#000;box-shadow:var(--shadow-card);border-radius:var(--r-xl);overflow:hidden;">
-        <div class="carousel-slide active" style="width:100%;height:100%;position:relative;background:linear-gradient(135deg, #ff007f 0%, #ff7a00 100%);">
+<header style="padding:4rem 1.5rem 3rem;text-align:center;background:#ffffff;border-bottom:1px solid #e5e7eb;position:relative;z-index:10">
+    <div class="carousel-container" style="max-width:900px;margin:0 auto;aspect-ratio:16/9;background:#f9fafb;box-shadow:0 10px 30px rgba(0,0,0,0.05);border-radius:24px;overflow:hidden;border:1px solid #e5e7eb;">
+        <div class="carousel-slide active" style="width:100%;height:100%;position:relative;background:#ff7a00;">
             <div style="position:absolute;inset:0;display:flex;flex-direction:row;justify-content:center;align-items:center;padding:2rem;gap:2rem">
                 <div style="text-align:left;max-width:500px">
-                    <div style="background:#fff;color:#ff007f;font-weight:900;padding:6px 16px;border-radius:99px;font-size:0.85rem;margin-bottom:1rem;display:inline-block;box-shadow:0 0 15px rgba(255,255,255,0.5)">GRAND OPENING PROMO</div>
-                    <h2 style="font-size:clamp(1.8rem, 5vw, 3.5rem);font-weight:900;color:#fff;margin-bottom:0.5rem;text-shadow:0 4px 20px rgba(0,0,0,0.2);line-height:1.1">RGS <span style="color:#0f172a">STORE</span></h2>
-                    <p style="color:#f8fafc;font-size:clamp(1rem, 2vw, 1.25rem);text-shadow:0 2px 10px rgba(0,0,0,0.1)">Marketplace Produk Digital Premium<br>Harga Grosir & Eceran Termurah</p>
+                    <div style="background:#ffffff;color:#ff7a00;font-weight:900;padding:6px 16px;border-radius:99px;font-size:0.85rem;margin-bottom:1rem;display:inline-block;">GRAND OPENING PROMO</div>
+                    <h2 style="font-size:clamp(1.8rem, 5vw, 3.5rem);font-weight:900;color:#ffffff;margin-bottom:0.5rem;line-height:1.1">RGS <span style="color:#000000;">STORE</span></h2>
+                    <p style="color:#ffffff;font-size:clamp(1rem, 2vw, 1.25rem);">Marketplace Produk Digital Premium<br>Harga Grosir & Eceran Termurah</p>
                 </div>
             </div>
         </div>
-        <div class="carousel-slide" style="width:100%;height:100%;position:relative;background:linear-gradient(45deg, #0f172a 0%, #1e293b 100%);">
+        <div class="carousel-slide" style="width:100%;height:100%;position:relative;background:#000000;">
             <div style="position:absolute;inset:0;display:flex;flex-direction:row;justify-content:center;align-items:center;padding:2rem;gap:2rem">
                 <div style="text-align:center;max-width:500px">
-                    <div style="background:#ff7a00;color:#fff;font-weight:900;padding:6px 16px;border-radius:99px;font-size:0.85rem;margin-bottom:1rem;display:inline-block;box-shadow:0 0 15px rgba(255,122,0,0.5)">DISCORD NITRO</div>
-                    <h2 style="font-size:clamp(1.5rem, 4vw, 3rem);font-weight:900;color:#fff;margin-bottom:0.5rem;text-shadow:0 4px 20px rgba(0,0,0,0.5)">Upgrade Sekarang</h2>
+                    <div style="background:#ff7a00;color:#ffffff;font-weight:900;padding:6px 16px;border-radius:99px;font-size:0.85rem;margin-bottom:1rem;display:inline-block;">DISCORD NITRO</div>
+                    <h2 style="font-size:clamp(1.5rem, 4vw, 3rem);font-weight:900;color:#ffffff;margin-bottom:0.5rem;">Upgrade Sekarang</h2>
                     <p style="color:#94a3b8;font-size:clamp(0.9rem, 2vw, 1.1rem);">Kustomisasi profil tanpa batas dengan fitur premium terbaik.</p>
                 </div>
             </div>
         </div>
-        <div class="carousel-slide" style="width:100%;height:100%;position:relative;background:linear-gradient(135deg, #e2e8f0 0%, #ffffff 100%);">
+        <div class="carousel-slide" style="width:100%;height:100%;position:relative;background:#f1f5f9;">
             <div style="position:absolute;inset:0;display:flex;flex-direction:row;justify-content:center;align-items:center;padding:2rem;gap:2rem">
                 <div style="text-align:center;max-width:500px">
-                    <div style="background:#ff007f;color:#fff;font-weight:900;padding:6px 16px;border-radius:99px;font-size:0.85rem;margin-bottom:1rem;display:inline-block;box-shadow:0 0 15px rgba(255,0,127,0.5)">NONSTOP ENTERTAINMENT</div>
-                    <h2 style="font-size:clamp(1.5rem, 4vw, 3rem);font-weight:900;color:#0f172a;margin-bottom:0.5rem;">Streaming Puas</h2>
+                    <div style="background:#ff007f;color:#ffffff;font-weight:900;padding:6px 16px;border-radius:99px;font-size:0.85rem;margin-bottom:1rem;display:inline-block;">NONSTOP ENTERTAINMENT</div>
+                    <h2 style="font-size:clamp(1.5rem, 4vw, 3rem);font-weight:900;color:#1e293b;margin-bottom:0.5rem;">Streaming Puas</h2>
                     <p style="color:#475569;font-size:clamp(0.9rem, 2vw, 1.1rem);">Netflix, Spotify, & YouTube Premium dijamin paling murah!</p>
                 </div>
             </div>
@@ -131,10 +130,10 @@
     </div>
     
     <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:2.5rem">
-        <a href="#katalog" class="btn-primary">
+        <a href="#katalog" class="btn" style="background:#ff7a00; color:#ffffff; padding:0.875rem 2rem; border-radius:12px; font-weight:800; display:inline-flex; align-items:center; gap:8px;">
             <i class="fa-solid fa-bolt"></i> Belanja Sekarang
         </a>
-        <a href="https://discord.gg/huWJNZ4m9" target="_blank" class="btn-orange">
+        <a href="https://discord.gg/huWJNZ4m9" target="_blank" class="btn" style="background:#5865f2; color:#ffffff; padding:0.875rem 2rem; border-radius:12px; font-weight:800; display:inline-flex; align-items:center; gap:8px;">
             <i class="fa-brands fa-discord"></i> Join Discord
         </a>
     </div>
@@ -249,45 +248,45 @@
 </section>
 
 <!-- Footer -->
-<footer>
-    <div class="footer-grid">
+<footer style="background:#ffffff; border-top:1px solid #e5e7eb; padding:3.5rem 1.5rem 2rem;">
+    <div class="footer-grid" style="color:#000000;">
         <div>
-            <div class="footer-logo">RGS STORE</div>
-            <p class="footer-desc">Platform marketplace digital terpercaya sejak 2021. Ribuan transaksi sukses dengan garansi purna jual 24 jam.</p>
+            <div class="footer-logo" style="color:#ff7a00; font-weight:900; font-size:1.5rem;">RGS STORE</div>
+            <p class="footer-desc" style="color:#64748b;">Platform marketplace digital terpercaya sejak 2021. Ribuan transaksi sukses dengan garansi purna jual 24 jam.</p>
             <div class="footer-social">
-                <a href="https://wa.me/62882016259591" target="_blank" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
-                <a href="https://discord.gg/huWJNZ4m9" target="_blank" title="Discord"><i class="fa-brands fa-discord"></i></a>
+                <a href="https://wa.me/6288210340359" target="_blank" title="WhatsApp" style="color:#000000;"><i class="fa-brands fa-whatsapp"></i></a>
+                <a href="https://discord.gg/huWJNZ4m9" target="_blank" title="Discord" style="color:#000000;"><i class="fa-brands fa-discord"></i></a>
             </div>
         </div>
         <div class="footer-col">
-            <h5>Produk</h5>
+            <h5 style="font-weight:900;">Produk</h5>
             <ul>
-                <li><a href="/?category=Streaming">Streaming (Netflix, Spotify)</a></li>
-                <li><a href="/?category=Discord">Discord Nitro</a></li>
-                <li><a href="/?category=Hosting">Panel Pterodactyl</a></li>
-                <li><a href="/?category=Gaming">Voucher Game</a></li>
+                <li><a href="/?category=Streaming" style="color:#64748b;">Streaming (Netflix, Spotify)</a></li>
+                <li><a href="/?category=Discord" style="color:#64748b;">Discord Nitro</a></li>
+                <li><a href="/?category=Hosting" style="color:#64748b;">Panel Pterodactyl</a></li>
+                <li><a href="/?category=Gaming" style="color:#64748b;">Voucher Game</a></li>
             </ul>
         </div>
         <div class="footer-col">
-            <h5>Bantuan</h5>
+            <h5 style="font-weight:900;">Bantuan</h5>
             <ul>
-                <li><a href="/tos.html">Syarat & Garansi</a></li>
-                <li><a href="/tos.html#faq">FAQ</a></li>
-                <li><a href="/dashboard.html">Cek Pesanan Saya</a></li>
-                <li><a href="https://wa.me/62882016259591" target="_blank">Hubungi Admin</a></li>
+                <li><a href="/tos.html" style="color:#64748b;">Syarat & Garansi</a></li>
+                <li><a href="/tos.html#faq" style="color:#64748b;">FAQ</a></li>
+                <li><a href="/dashboard.html" style="color:#64748b;">Cek Pesanan Saya</a></li>
+                <li><a href="https://wa.me/6288210340359" target="_blank" style="color:#64748b;">Hubungi Admin</a></li>
             </ul>
         </div>
         <div class="footer-col">
-            <h5>Kontak</h5>
-            <ul>
-                <li>📱 WA: 0882-0162-59591</li>
+            <h5 style="font-weight:900;">Kontak</h5>
+            <ul style="color:#64748b;">
+                <li>📱 WA: 0882-1034-0359</li>
                 <li>💬 Discord: discord.gg/huWJNZ4m9</li>
                 <li>⏰ Jam: 09.00 – 22.00 WIB</li>
             </ul>
         </div>
     </div>
-    <div class="footer-bottom">
-        <span class="dev-credit">Dev by <span class="dev-name cursor-pointer">E_vann</span> | RGS STORE © 2026</span>
+    <div class="footer-bottom" style="border-top:1px solid #e5e7eb; padding-top:1.5rem; color:#64748b;">
+        <span class="dev-credit">Dev by <span class="dev-name" style="font-weight:900; color:#000000;">E_vann</span> | RGS STORE © 2026</span>
     </div>
 </footer>
 

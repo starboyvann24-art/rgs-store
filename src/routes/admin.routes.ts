@@ -4,6 +4,7 @@ import {
   uploadFile,
   deleteFile
 } from '../controllers/admin.file.controller';
+import { getDiscordUsers, deleteUser } from '../controllers/admin.user.controller';
 import { verifyToken, isAdmin } from '../middleware/auth.middleware';
 import { upload } from '../middleware/upload.middleware';
 
@@ -15,13 +16,12 @@ import { upload } from '../middleware/upload.middleware';
 const router: Router = Router();
 
 // FILE STORAGE ROUTES
-// GET /api/admin/files — List all admin files
 router.get('/files', verifyToken, isAdmin, getAllFiles);
-
-// POST /api/admin/files — Upload file to admin storage
 router.post('/files', verifyToken, isAdmin, upload.single('admin_file'), uploadFile);
-
-// DELETE /api/admin/files/:filename — Delete a file
 router.delete('/files/:filename', verifyToken, isAdmin, deleteFile);
+
+// USER MANAGEMENT ROUTES
+router.get('/users/discord', verifyToken, isAdmin, getDiscordUsers);
+router.delete('/users/:id', verifyToken, isAdmin, deleteUser);
 
 export default router;

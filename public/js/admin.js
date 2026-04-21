@@ -16,6 +16,7 @@ const AdminState = {
     tickets:       [],
     files:         [],
     chatUsers:     [],
+    discordUsers:  [],
     stats:         {},
     currentChatUserId: null,
     selectedFileUrl: null,
@@ -73,11 +74,11 @@ function confirmDialog(title, text) {
         title, text,
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#ff9d00',
-        cancelButtonColor: '#1a2235',
+        confirmButtonColor: '#ff7a00',
+        cancelButtonColor: '#94a3b8',
         confirmButtonText: 'Ya, Lanjutkan!',
-        background: '#0a0e17',
-        color: '#e2e8f0'
+        background: '#ffffff',
+        color: '#000000'
     });
 }
 
@@ -377,6 +378,33 @@ const Render = {
                 </td>`;
             tbody.appendChild(tr);
         });
+    },
+
+    discordUsers() {
+        const tbody = el('table-discord-users');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (!AdminState.discordUsers.length) {
+            tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="fa-brands fa-discord"></i><br>Belum ada user Discord terhubung</td></tr>';
+            return;
+        }
+        AdminState.discordUsers.forEach(u => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img src="${u.avatar_url || 'https://cdn.discordapp.com/embed/avatars/0.png'}" style="width:32px; height:32px; border-radius:50%; border:1px solid #e5e7eb;">
+                        <div style="font-weight:700; color:#111;">${u.name}</div>
+                    </div>
+                </td>
+                <td style="color:#555;">${u.email}</td>
+                <td style="font-family:monospace; font-size:0.8rem; color:#ff7a00;">${u.discord_id}</td>
+                <td><span class="badge ${u.role === 'admin' ? 'badge-processing' : 'badge-pending'}">${u.role.toUpperCase()}</span></td>
+                <td style="text-align:right;">
+                    <button class="btn-danger" onclick="AdminV9.deleteDiscordUser('${u.id}', '${u.name.replace(/'/g,"\\'")}')">Hapus</button>
+                </td>`;
+            tbody.appendChild(tr);
+        });
     }
 };
 
@@ -392,7 +420,7 @@ const AdminV9 = {
                 if (e) e.innerHTML = '<span class="skeleton" style="display:inline-block;width:60px;height:28px;"></span>';
             });
 
-            const [products, orders, stats, payments, tickets, waiting, files] = await Promise.all([
+            const [products, orders, stats, payments, tickets, waiting, adminFiles, discordUsers] = await Promise.all([
                 appUtils.getAllProductsAdmin(),
                 appUtils.getAllOrders(),
                 appUtils.getOrderStats(),
@@ -400,14 +428,16 @@ const AdminV9 = {
                 appUtils.getAllTickets(),
                 appUtils.getWaitingOrders(),
                 appUtils.getAllAdminFiles(),
+                appUtils.getDiscordUsers()
             ]);
 
-            AdminState.products      = Array.isArray(products) ? products : [];
-            AdminState.orders        = Array.isArray(orders)   ? orders   : [];
-            AdminState.payments      = Array.isArray(payments) ? payments : [];
-            AdminState.tickets       = Array.isArray(tickets)  ? tickets  : [];
-            AdminState.waitingOrders = Array.isArray(waiting)  ? waiting  : [];
-            AdminState.files         = Array.isArray(files)    ? files    : [];
+            AdminState.products      = Array.isArray(products)   ? products   : [];
+            AdminState.orders        = Array.isArray(orders)     ? orders     : [];
+            AdminState.payments      = Array.isArray(payments)   ? payments   : [];
+            AdminState.tickets       = Array.isArray(tickets)    ? tickets    : [];
+            AdminState.waitingOrders = Array.isArray(waiting)    ? waiting    : [];
+            AdminState.adminFiles    = Array.isArray(adminFiles) ? adminFiles : [];
+            AdminState.discordUsers  = Array.isArray(discordUsers) ? discordUsers : [];
 
             // Stats can be nested in .data
             const statsData = stats?.data || stats || {};
@@ -427,6 +457,7 @@ const AdminV9 = {
             Render.payments();
             Render.tickets();
             Render.files();
+            Render.discordUsers();
 
         } catch (err) {
             console.error('AdminV9.loadAll error:', err);
@@ -699,19 +730,19 @@ const AdminV9 = {
             inputLabel: 'Kredensial / Link yang dikirim ke pembeli:',
             inputPlaceholder: 'Email: xxx@gmail.com\nPassword: Secret123\nAtau link akun...',
             showCancelButton: true,
-            confirmButtonColor: '#ff9d00',
+            confirmButtonColor: '#ff7a00',
             confirmButtonText: 'Kirim & Selesaikan',
-            background: '#0a0e17',
-            color: '#e2e8f0',
+            background: '#ffffff',
+            color: '#000000',
         });
         if (!creds) return;
-        Swal.fire({ title: 'Memproses...', didOpen: () => Swal.showLoading(), background: '#0a0e17', color: '#e2e8f0' });
+        Swal.fire({ title: 'Memproses...', didOpen: () => Swal.showLoading(), background: '#ffffff', color: '#000000' });
         const r = await appUtils.deliverOrder(orderId, creds);
         Swal.close();
         if (r?.success) {
             showToast('✅ Produk terkirim! Email notifikasi dikirim ke pembeli.', 'success');
             await this.loadAll();
-        } else Swal.fire({ title: 'Gagal', text: r?.message || 'Error pengiriman', icon: 'error', background: '#0a0e17', color: '#e2e8f0' });
+        } else Swal.fire({ title: 'Gagal', text: r?.message || 'Error pengiriman', icon: 'error', background: '#ffffff', color: '#000000' });
     },
 
     // ── Tickets ─────────────────────────────────────────────────
@@ -722,9 +753,9 @@ const AdminV9 = {
             input: 'textarea',
             inputPlaceholder: 'Tulis balasan Anda...',
             showCancelButton: true,
-            confirmButtonColor: '#ff9d00',
-            background: '#0a0e17',
-            color: '#e2e8f0',
+            confirmButtonColor: '#ff7a00',
+            background: '#ffffff',
+            color: '#000000',
         });
         if (!reply) return;
         const r = await appUtils.replyTicket(id, reply);
@@ -748,14 +779,14 @@ const AdminV9 = {
         fd.append('admin_file', file);
         // NO Content-Type header — browser sets boundary automatically!
 
-        Swal.fire({ title: 'Mengupload...', didOpen: () => Swal.showLoading(), background: '#0a0e17', color: '#e2e8f0' });
+        Swal.fire({ title: 'Mengupload...', didOpen: () => Swal.showLoading(), background: '#ffffff', color: '#000000' });
         const r = await appUtils.uploadAdminFile(fd);
         Swal.close();
         input.value = '';
         if (r?.success) {
             showToast('✅ File berhasil diupload!', 'success');
             await this.loadAll();
-        } else Swal.fire({ title: 'Gagal', text: r?.message, icon: 'error', background: '#0a0e17', color: '#e2e8f0' });
+        } else Swal.fire({ title: 'Gagal', text: r?.message, icon: 'error', background: '#ffffff', color: '#000000' });
     },
 
     async deleteFile(filename) {
@@ -764,6 +795,16 @@ const AdminV9 = {
         const r = await appUtils.deleteAdminFile(filename);
         if (r?.success) { showToast('File dihapus!', 'success'); await this.loadAll(); }
         else showToast(r?.message || 'Gagal menghapus.', 'error');
+    },
+
+    async deleteDiscordUser(id, name) {
+        const res = await confirmDialog('Hapus User Discord?', `Akun "${name}" akan dihapus permanen dari database.`);
+        if (!res.isConfirmed) return;
+        const r = await appUtils.deleteAdminUser(id);
+        if (r?.success) {
+            showToast('User berhasil dihapus!', 'success');
+            await this.loadAll();
+        } else showToast(r?.message || 'Gagal menghapus user.', 'error');
     },
 
     // ── Modal Helpers ───────────────────────────────────────────
@@ -800,7 +841,8 @@ function switchTab(tabId) {
     const titles = {
         dashboard: 'Dashboard', products: 'Manajemen Produk', orders: 'Semua Pesanan',
         verification: 'Verifikasi Pembayaran', payments: 'Metode Pembayaran',
-        tickets: 'Tiket Support', chat: 'Live Chat', files: 'File Manager'
+        tickets: 'Tiket Support', chat: 'Live Chat', files: 'File Manager',
+        'discord-users': 'Kelola User Discord'
     };
     const titleEl = el('current-tab-title');
     if (titleEl) titleEl.textContent = titles[tabId] || tabId;

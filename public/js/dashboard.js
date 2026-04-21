@@ -39,12 +39,12 @@ const Render = {
                         </div>
                     </div>
                     ${o.credentials ? `
-                    <div class="mt-4 p-3 bg-gray-900 rounded-lg border border-primary-500/30 flex items-center justify-between gap-3">
+                    <div class="mt-4 p-3 rounded-lg border border-gray-200 flex items-center justify-between gap-3" style="background:#f9fafb;">
                         <div class="overflow-hidden">
-                            <label class="block text-[10px] uppercase font-black text-primary-500 mb-1 tracking-widest">Akses / Kredensial Produk:</label>
-                            <div class="font-mono text-xs text-green-400 truncate">${o.credentials}</div>
+                            <label class="block text-[10px] uppercase font-bold mb-1 tracking-widest" style="color:#ff7a00;">Akses / Kredensial Produk:</label>
+                            <div class="font-mono text-xs" style="color:#000000; word-break:break-all;">${o.credentials}</div>
                         </div>
-                        <button data-action="copy-text" data-text="${o.credentials.replace(/'/g, "\\'").replace(/"/g, '&quot;')}" class="flex-shrink-0 bg-primary-500 hover:bg-primary-600 text-black px-3 py-1.5 rounded-lg text-[10px] font-bold transition">SALIN</button>
+                        <button data-action="copy-text" data-text="${o.credentials.replace(/'/g, "\\'").replace(/"/g, '&quot;')}" class="flex-shrink-0 bg-primary-600 px-3 py-1.5 rounded-lg text-[10px] font-bold transition" style="background:#ff7a00; color:#ffffff;">SALIN</button>
                     </div>` : ''}
                 </div>`;
             ctn.insertAdjacentHTML('beforeend', html);
@@ -300,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
 window.downloadInvoicePDF = async function(orderId) {
     const token = appUtils.getToken();
     try {
-        Swal.fire({ title: 'Menyiapkan Invoice...', didOpen: () => Swal.showLoading(), background: '#f8fafc', color: '#1e293b' });
+        Swal.fire({ title: 'Menyiapkan Invoice...', didOpen: () => Swal.showLoading(), background: '#ffffff', color: '#000000' });
         const response = await fetch(`/api/orders/${orderId}/invoice`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -308,7 +308,7 @@ window.downloadInvoicePDF = async function(orderId) {
         if (!response.ok) {
             let errMsg = 'Tidak dapat memuat invoice.';
             try { const errData = await response.json(); errMsg = errData.message; } catch(e) {}
-            Swal.fire({ title: 'Gagal', text: errMsg, icon: 'error', background: '#f8fafc', color: '#1e293b' });
+            Swal.fire({ title: 'Gagal', text: errMsg, icon: 'error', background: '#ffffff', color: '#000000' });
             return;
         }
 
@@ -325,6 +325,6 @@ window.downloadInvoicePDF = async function(orderId) {
         appUtils.showToast('✅ Invoice berhasil didownload!', 'success');
     } catch (err) {
         console.error('Invoice download error:', err);
-        Swal.fire({ title: 'Error', text: 'Gagal mendownload invoice: ' + err.message, icon: 'error', background: '#f8fafc', color: '#1e293b' });
+        Swal.fire({ title: 'Error', text: 'Gagal mendownload invoice: ' + err.message, icon: 'error', background: '#ffffff', color: '#000000' });
     }
 };

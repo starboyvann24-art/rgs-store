@@ -472,9 +472,7 @@
         <button class="nav-item" data-tab="orders"><i class="fa-solid fa-receipt"></i> Pesanan <span class="nav-badge" id="badge-orders">0</span></button>
         <button class="nav-item" data-tab="verification"><i class="fa-solid fa-check-circle"></i> Verifikasi <span class="nav-badge" id="badge-verification">0</span></button>
         <button class="nav-item" data-tab="payments"><i class="fa-solid fa-credit-card"></i> Pembayaran</button>
-        <button class="nav-item" data-tab="tickets"><i class="fa-solid fa-headset"></i> Tiket CS</button>
-        <button class="nav-item" data-tab="chat"><i class="fa-solid fa-message"></i> Chat</button>
-        <button class="nav-item" data-tab="files"><i class="fa-solid fa-folder-open"></i> File Manager</button>
+        <button class="nav-item" data-tab="discord-users"><i class="fa-brands fa-discord"></i> Pengguna Discord</button>
         <div style="height:1px; background: rgba(255,255,255,0.05); margin: 8px 12px;"></div>
         <a href="/index.html" class="nav-item" style="text-decoration:none;"><i class="fa-solid fa-store"></i> Ke Toko</a>
         <button class="nav-item" id="btn-logout" style="color: #ff3366;"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
@@ -696,6 +694,27 @@
                         </tr>
                     </thead>
                     <tbody id="table-files"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ── TAB: Discord Users ── -->
+        <div class="tab-pane" id="tab-discord-users">
+            <div class="section-header">
+                <h2 class="section-title">Kelola User <span>Discord</span></h2>
+            </div>
+            <div class="admin-table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Discord ID</th>
+                            <th>Role</th>
+                            <th style="text-align:right;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-discord-users"></tbody>
                 </table>
             </div>
         </div>
