@@ -1,8 +1,6 @@
 import { Router } from 'express';
 import passport from 'passport';
-import { register, login, getMe, forgotPassword, resetPassword, updateProfile, logout } from '../controllers/auth.controller';
-import { validate } from '../middleware/validate.middleware';
-import { registerSchema, loginSchema } from '../validations/auth.validation';
+import { getMe, updateProfile, logout } from '../controllers/auth.controller';
 import { verifyToken } from '../middleware/auth.middleware';
 import db, { generateUUID } from '../config/database';
 import { generateToken } from '../utils/jwt';
@@ -109,9 +107,9 @@ router.get('/discord', (req: any, res, next) => {
 // Discord Callback Handler
 router.get('/discord/callback', (req: any, res, next) => {
     passport.authenticate('discord', { 
-        failureRedirect: '/login.html?error=auth_failed' 
+        failureRedirect: '/?error=auth_failed' 
     }, (err, user) => {
-        if (err || !user) return res.redirect('/login.html?error=' + (err?.message || 'auth_failed'));
+        if (err || !user) return res.redirect('/?error=' + (err?.message || 'auth_failed'));
 
         req.logIn(user, (loginErr: any) => {
             if (loginErr) return next(loginErr);
@@ -136,11 +134,7 @@ router.get('/discord/callback', (req: any, res, next) => {
 });
 
 // ─── Standard Auth Routes ─────────────────────────────────────
-router.post('/register', validate(registerSchema), register);
-router.post('/login', validate(loginSchema), login);
 router.get('/me', verifyToken, getMe);
-router.post('/forgot-password', forgotPassword);
-router.post('/reset-password', resetPassword);
 router.put('/profile', verifyToken, updateProfile);
 router.post('/logout', logout);
 

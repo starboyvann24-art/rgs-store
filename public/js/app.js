@@ -115,7 +115,7 @@ const store = {
         return res;
     },
 
-    logout() { this.removeAuth(); window.location.href = '/login.html'; },
+    logout() { this.removeAuth(); window.location.href = '/'; },
 
     async forgotPassword(email) {
         return this.apiCall('/auth/forgot-password', {
@@ -509,15 +509,14 @@ const store = {
     // ─── NAVBAR (Auth Flow TERMINATOR) ───────────────────────
     async updateNavbar() {
         const navAuth       = document.getElementById('nav-auth-container');
-        const sidebarAuth   = document.getElementById('sidebar-auth-container');
-        const sidebarProfile= document.getElementById('sidebar-profile-container');
         const avatarWrapper = document.getElementById('user-profile-avatar');
         const avatarImg     = document.getElementById('user-avatar-img');
 
-        // 🔲 Default: Tombol Masuk/Daftar visible, avatar hidden
-        if (navAuth)       navAuth.innerHTML = `<a href="/login.html" class="btn-nav-login">Masuk</a><a href="/register.html" class="btn-nav-register">Daftar</a>`;
-        if (sidebarAuth)   sidebarAuth.style.display   = 'flex';
-        if (sidebarProfile)sidebarProfile.style.display = 'none';
+        // 🔲 Default: Tombol Discord Login, avatar hidden
+        if (navAuth) {
+            navAuth.style.display = 'flex';
+            navAuth.innerHTML = `<a href="/api/auth/discord" style="background:#5865F2;color:#ffffff;font-weight:700;padding:8px 16px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;"><i class="fa-brands fa-discord"></i> Login dengan Discord</a>`;
+        }
         if (avatarWrapper) avatarWrapper.style.display  = 'none';
 
         const token = this.getToken();
@@ -530,47 +529,20 @@ const store = {
 
                     const dashboardUrl = user.role === 'admin' ? '/admin.html' : '/dashboard.html';
                     const avatarSrc    = user.avatar_url || user.avatar || '';
-                    const initials     = user.name ? user.name[0].toUpperCase() : 'U';
-                    const avatarHtml   = avatarSrc
-                        ? `<img src="${avatarSrc}" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
-                        : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#ff7a00;color:#fff;border-radius:50%;font-weight:bold">${initials}</div>`;
 
-                    // 📌 Update top navbar
-                    if (navAuth) {
-                        navAuth.innerHTML = `
-                            <div class="user-nav-group" style="display:flex;align-items:center;gap:12px">
-                                <a href="${dashboardUrl}" class="user-nav-link" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:#000;font-weight:700;font-size:0.85rem">
-                                    <div class="avatar-xs" style="width:30px;height:30px;overflow:hidden;border:1px solid #eee;border-radius:50%">${avatarHtml}</div>
-                                    <span class="nav-username-text">${user.name.split(' ')[0]}</span>
-                                </a>
-                                <button onclick="store.logout()" class="btn-logout-sm" style="background:#fff;border:1px solid #eee;color:#ff4d4d;padding:4px 10px;border-radius:8px;font-size:0.75rem;font-weight:800;cursor:pointer">Logout</button>
-                            </div>`;
-                    }
+                    // Hide auth container
+                    if (navAuth) navAuth.style.display = 'none';
 
-                    // 📌 Update avatar header slot (if exists)
+                    // Update avatar header slot
                     if (avatarWrapper && avatarImg) {
-                        if (avatarSrc) {
-                            avatarImg.src = avatarSrc;
-                            avatarWrapper.style.display = 'flex';
+                        avatarWrapper.style.display = 'flex';
+                        avatarWrapper.onclick = () => window.location.href = dashboardUrl;
+                        if (avatarSrc) avatarImg.src = avatarSrc;
+                        const nameEl = document.getElementById('user-name-display');
+                        if (nameEl) {
+                            nameEl.textContent = user.name.split(' ')[0];
+                            nameEl.style.display = 'inline';
                         }
-                    }
-
-                    // 📌 Update sidebar (Vertical Layout Bright UI)
-                    if (sidebarAuth && sidebarProfile) {
-                        sidebarAuth.style.display    = 'none';
-                        sidebarProfile.style.display = 'block';
-                        sidebarProfile.innerHTML = `
-                            <div style="background:#f9fafb;border:1px solid #f1f5f9;border-radius:20px;padding:20px;margin-bottom:15px;text-align:center">
-                                <div style="width:65px;height:65px;margin:0 auto 12px;border-radius:50%;border:2px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,0.05);overflow:hidden">
-                                    ${avatarHtml}
-                                </div>
-                                <div style="font-weight:800;font-size:0.95rem;color:#000;margin-bottom:2px">${user.name}</div>
-                                <div style="font-size:0.75rem;color:#64748b;font-weight:500;margin-bottom:15px">${user.email}</div>
-                                <div style="display:grid;grid-template-columns:1fr;gap:8px">
-                                    <a href="${dashboardUrl}" style="background:#ff7a00;color:#fff;border-radius:12px;font-weight:800;padding:12px;font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;text-decoration:none">Panel Dashboard</a>
-                                    <button onclick="store.logout()" style="background:#fff;color:#ef4444;border:1px solid #fee2e2;border-radius:12px;font-weight:800;padding:12px;font-size:0.75rem;text-transform:uppercase;letter-spacing:1px;cursor:pointer">Sign Out</button>
-                                </div>
-                            </div>`;
                     }
                 }
             } catch (err) {
@@ -649,7 +621,7 @@ const store = {
 
     // ─── TICKET MODAL ──────────────────────────────────────────
     openTicketModal() {
-        if (!this.isLoggedIn()) { window.location.href = '/login.html'; return; }
+        if (!this.isLoggedIn()) { window.location.href = '/api/auth/discord'; return; }
         this.showModal('🎫 Buat Tiket Bantuan',
             `<div class="space-y" style="display:flex;flex-direction:column;gap:16px">
                 <div>
@@ -681,7 +653,7 @@ const store = {
 
     // ─── AUTH GUARD ────────────────────────────────────────────
     requireLogin() {
-        if (!this.isLoggedIn()) { window.location.href = '/login.html'; return false; }
+        if (!this.isLoggedIn()) { window.location.href = '/api/auth/discord'; return false; }
         return true;
     },
 
@@ -700,7 +672,7 @@ const store = {
     requireAdmin() {
         const user = this.getUser();
         if (!this.isLoggedIn() || !user || user.role !== 'admin') {
-            window.location.href = '/login.html';
+            window.location.href = '/api/auth/discord';
             return false;
         }
         return true;

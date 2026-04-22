@@ -118,33 +118,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Auto-play 3000ms as requested
     let slideTimer = setInterval(nextSlide, 3000);
 
-    // ─── MOBILE HAMBURGER & SEARCH LOGIC ───────────────────────
-    const mobileBtn = document.getElementById('mobile-menu-btn');
-    const closeBtn = document.getElementById('close-sidebar-btn');
-    const sidebar = document.getElementById('mobile-sidebar');
-    const overlay = document.getElementById('mobile-sidebar-overlay');
-    const mobileSearch = document.getElementById('mobile-search');
 
-    if (mobileBtn && sidebar) {
-        const toggleMenu = () => {
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('open');
-        };
-        mobileBtn.addEventListener('click', toggleMenu);
-        closeBtn.addEventListener('click', toggleMenu);
-        overlay.addEventListener('click', toggleMenu);
-    }
-
-    if (mobileSearch) {
-        mobileSearch.addEventListener('input', e => {
-            clearTimeout(searchTimer);
-            searchTimer = setTimeout(() => {
-                loadProducts(e.target.value, currentCat);
-                if (sidebar) {
-                    sidebar.classList.remove('open');
-                    overlay.classList.remove('open');
-                }
-            }, 500);
-        });
-    }
 });
