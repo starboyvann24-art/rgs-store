@@ -61,7 +61,7 @@
             
             try {
                 btn.disabled = true;
-                btn.innerHTML = '<svg class="animate-spin h-5 w-5  inline mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Loading...';
+                btn.innerHTML = 'Loading...';
 
                 const res = await appUtils.register(
                     document.getElementById('reg-name').value,
@@ -88,9 +88,8 @@
             }
         });
     </script>
-<!-- Floating WhatsApp -->
-<a href="https://wa.me/62882016259591" target="_blank" class="wa-float" title="WhatsApp CS">
-    <i class="fa-brands fa-whatsapp"></i>
-</a>
+    <footer style="position: absolute; bottom: 1.5rem; text-align: center; width: 100%; font-size: 0.75rem; color: #9ca3af;">
+        Dev by <span style="font-weight: 800; color: #000000;">E_vann</span> | RGS STORE © 2026
+    </footer>
 </body>
 </html>

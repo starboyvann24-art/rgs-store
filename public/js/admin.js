@@ -45,14 +45,14 @@ const fmt = {
     },
     statusBadge(status) {
         const map = {
-            pending:               '<span class="badge badge-pending">⏳ Pending</span>',
-            waiting_confirmation:  '<span class="badge badge-waiting">🔍 Menunggu Verif.</span>',
-            processing:            '<span class="badge badge-processing">🔄 Proses</span>',
-            success:               '<span class="badge badge-success">✅ Selesai</span>',
-            failed:                '<span class="badge badge-failed">❌ Gagal</span>',
-            cancelled:             '<span class="badge badge-cancelled">🚫 Batal</span>',
-            open:                  '<span class="badge badge-pending">📭 Open</span>',
-            closed:                '<span class="badge badge-cancelled">🔒 Closed</span>',
+            pending:               '<span class="badge" style="background:#f3f4f6; color:#6b7280;">⏳ PENDING</span>',
+            waiting_confirmation:  '<span class="badge" style="background:#fff7ed; color:#ea580c;">🔍 MENUNGGU VERIF.</span>',
+            processing:            '<span class="badge" style="background:#eff6ff; color:#2563eb;">🔄 PROSES</span>',
+            success:               '<span class="badge" style="background:#f0fdf4; color:#16a34a;">✅ SELESAI</span>',
+            failed:                '<span class="badge" style="background:#fef2f2; color:#dc2626;">❌ GAGAL</span>',
+            cancelled:             '<span class="badge" style="background:#f9fafb; color:#9ca3af;">🚫 BATAL</span>',
+            open:                  '<span class="badge" style="background:#eff6ff; color:#2563eb;">📭 OPEN</span>',
+            closed:                '<span class="badge" style="background:#f9fafb; color:#9ca3af;">🔒 CLOSED</span>',
         };
         return map[status] || `<span class="badge">${status}</span>`;
     }
@@ -239,7 +239,7 @@ const Render = {
                 </td>
                 <td style="text-align:right; white-space:nowrap;">
                     <button class="btn-sm-primary" onclick="AdminV9.confirmPayment('${o.id}')">Konfirmasi</button>
-                    <button class="btn-neon-orange" onclick="AdminV9.openDeliveryModal('${o.id}')" style="font-size:0.7rem; padding:0.35rem 0.8rem;">Kirim + Selesai</button>
+                    <button class="btn-primary" onclick="AdminV9.openDeliveryModal('${o.id}')" style="font-size:0.7rem; padding:0.35rem 0.8rem;">Kirim + Selesai</button>
                 </td>`;
             tbody.appendChild(tr);
         });
@@ -385,28 +385,84 @@ const Render = {
         if (!tbody) return;
         tbody.innerHTML = '';
         if (!AdminState.discordUsers.length) {
-            tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="fa-brands fa-discord"></i><br>Belum ada user Discord terhubung</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Belum ada user Discord terhubung</td></tr>';
             return;
         }
         AdminState.discordUsers.forEach(u => {
+            // Role Logic: Admin Booster or Member Nitro
+            const isAdmin = u.role === 'admin' || u.email === 'starboyvann24@gmail.com';
+            const roleBadge = isAdmin 
+                ? '<span class="badge" style="background:#ff7a00; color:#ffffff; font-weight:800; padding:4px 12px; border-radius:99px;">Admin Booster</span>'
+                : '<span class="badge" style="background:#f1f5f9; color:#475569; font-weight:700; padding:4px 12px; border-radius:99px;">Member Nitro</span>';
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <img src="${u.avatar_url || 'https://cdn.discordapp.com/embed/avatars/0.png'}" style="width:32px; height:32px; border-radius:50%; border:1px solid #e5e7eb;">
-                        <div style="font-weight:700; color:#111;">${u.name}</div>
-                    </div>
+                    <img src="${u.avatar_url || 'https://cdn.discordapp.com/embed/avatars/0.png'}" style="width:38px; height:38px; border-radius:50%; border:2px solid #e5e7eb; object-fit:cover;">
                 </td>
-                <td style="color:#555;">${u.email}</td>
-                <td style="font-family:monospace; font-size:0.8rem; color:#ff7a00;">${u.discord_id}</td>
-                <td><span class="badge ${u.role === 'admin' ? 'badge-processing' : 'badge-pending'}">${u.role.toUpperCase()}</span></td>
-                <td style="text-align:right;">
-                    <button class="btn-danger" onclick="AdminV9.deleteDiscordUser('${u.id}', '${u.name.replace(/'/g,"\\'")}')">Hapus</button>
+                <td style="font-weight:800; color:#000000;">${u.name}</td>
+                <td style="font-family:monospace; font-size:0.8rem; color:#64748b;">${u.discord_id || '—'}</td>
+                <td><span class="badge" style="background:#f0fdf4; color:#16a34a; font-weight:800;">Linked</span></td>
+                <td>${roleBadge}</td>
+                <td style="text-align:right; white-space:nowrap;">
+                    <button class="btn-sm-edit" style="background:#000000; color:#ffffff; border:none; padding:6px 12px; border-radius:8px; font-weight:800; cursor:pointer;" onclick="showToast('Viewing ${u.name}')">View</button>
+                    <button class="btn-sm-edit" style="background:#f3f4f6; color:#000000; border:none; padding:6px 12px; border-radius:8px; font-weight:800; cursor:pointer; margin-left:4px;" onclick="showToast('Syncing ${u.name}...')">Sync</button>
+                    <button class="btn-danger" style="margin-left:4px; font-weight:800;" onclick="AdminV9.deleteDiscordUser('${u.id}', '${u.name}')">Kick</button>
                 </td>`;
             tbody.appendChild(tr);
         });
     }
 };
+
+// ─── SIDEBAR & TAB NAVIGATION ────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    const navItems = document.querySelectorAll('.nav-item[data-tab]');
+    const railIcons = document.querySelectorAll('.sidebar-rail i');
+    const backdrop = el('sidebar-backdrop');
+    const container = el('sidebar-container');
+    const hamburger = el('hamburger-toggle');
+
+    // Tab Switching
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const target = item.getAttribute('data-tab');
+            
+            // UI Update
+            navItems.forEach(ni => ni.classList.remove('active'));
+            item.classList.add('active');
+
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            const activePane = el(`tab-${target}`);
+            if (activePane) activePane.classList.add('active');
+
+            // Map Rail Icons
+            railIcons.forEach(ri => ri.classList.remove('active'));
+            if (target === 'dashboard') railIcons[0].classList.add('active');
+            if (target === 'products') railIcons[1].classList.add('active');
+            if (target === 'discord-users') railIcons[2].classList.add('active');
+
+            // Mobile close
+            if (window.innerWidth <= 1024) {
+                container.classList.remove('mobile-open');
+                backdrop.style.display = 'none';
+            }
+        });
+    });
+
+    // Hamburger
+    if (hamburger) {
+        hamburger.addEventListener('click', () => {
+            container.classList.add('mobile-open');
+            backdrop.style.display = 'block';
+        });
+    }
+    if (backdrop) {
+        backdrop.addEventListener('click', () => {
+            container.classList.remove('mobile-open');
+            backdrop.style.display = 'none';
+        });
+    }
+});
 
 // ─────────────────────────────────────────────────────────────────
 // MAIN API ACTIONS
@@ -414,11 +470,13 @@ const Render = {
 const AdminV9 = {
     async loadAll() {
         try {
-            // Show skeleton
-            ['stat-revenue','stat-orders','stat-pending','stat-products'].forEach(id => {
-                const e = el(id);
-                if (e) e.innerHTML = '<span class="skeleton" style="display:inline-block;width:60px;height:28px;"></span>';
-            });
+            const user = appUtils.getSavedUser();
+            if (user) {
+                const topAvatar = el('admin-avatar-img');
+                const topName = el('admin-user-display');
+                if (topAvatar) topAvatar.src = user.avatar_url || user.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+                if (topName) topName.textContent = user.name;
+            }
 
             const [products, orders, stats, payments, tickets, waiting, adminFiles, discordUsers] = await Promise.all([
                 appUtils.getAllProductsAdmin(),
@@ -858,13 +916,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Require admin
     if (!appUtils.requireAdmin()) return;
 
-    // Show admin name
+    // Show admin name & avatar
     const user = appUtils.getUser && appUtils.getUser();
     if (user) {
-        const chip = el('admin-user-chip');
-        const avatar = el('admin-avatar');
-        if (chip) chip.textContent = user.name || user.email;
-        if (avatar) avatar.textContent = (user.name || user.email || 'A')[0].toUpperCase();
+        const display = el('admin-user-display');
+        const avatar = el('admin-avatar-img');
+        if (display) display.textContent = user.name || 'Admin';
+        if (avatar && user.avatar_url) avatar.src = user.avatar_url;
     }
 
     // Load all data
@@ -880,6 +938,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Logout
+    const logoutRail = el('btn-logout-rail');
+    if (logoutRail) logoutRail.addEventListener('click', () => appUtils.logout());
+
     const logoutBtn = el('btn-logout');
     if (logoutBtn) logoutBtn.addEventListener('click', () => appUtils.logout());
 

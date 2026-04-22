@@ -107,7 +107,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // Show content
-        document.getElementById('payment-loading').classList.add('hidden');
         document.getElementById('payment-content').classList.remove('hidden');
 
     } catch (err) {

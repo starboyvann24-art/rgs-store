@@ -32,12 +32,12 @@
     /* Text - PURE BLACK SYSTEM */
     --text-bright:    #000000;
     --text-main:      #000000;
-    --text-dim:       #0d1117;
-    --text-muted:     #64748b;
+    --text-dim:       #000000;
+    --text-muted:     #4b5563;
 
     /* Borders */
-    --border:         #e2e8f0;
-    --border-hover:   #cbd5e1;
+    --border:         #e5e7eb;
+    --border-hover:   #d1d5db;
     --border-primary: rgba(255, 122, 0, 0.2);
 
     /* Shadows */
@@ -51,8 +51,8 @@
 html { scroll-behavior: smooth; overflow-x: hidden; width: 100%; }
 
 body {
-    background: var(--bg-darkest);
-    color: var(--text-main);
+    background: #ffffff;
+    color: #000000;
     font-family: 'Outfit', system-ui, sans-serif;
     line-height: 1.6;
     overflow-x: hidden;
@@ -72,16 +72,16 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: var(--bg-darkest); }
-::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--green); }
+::-webkit-scrollbar-track { background: #ffffff; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* ─── Marquee Banner ──────────────────────────────────────── */
 .marquee-bar {
-    background: linear-gradient(90deg, var(--orange), #e55a00);
-    color: #000;
+    background: var(--primary);
+    color: #ffffff;
     font-weight: 700;
     font-size: 0.85rem;
     padding: 0.5rem 0;
@@ -1092,4 +1092,34 @@ input[type="password"], textarea, select, input {
 /* 9. Banner helper */
 .banner-container { width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
 .banner-img { width: 100%; height: auto; aspect-ratio: 16/9; object-fit: contain; display: block; }
+
+/* ─── Badges ─────────────────────────────────────────────── */
+.badge {
+    padding: 0.25rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.badge-gray { background: #f1f5f9; color: #64748b; }
+.badge-orange { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
+.badge-green { background: #ecfdf5; color: #047857; border: 1px solid #d1fae5; }
+.badge-blue { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; }
+.badge-red { background: #fef2f2; color: #b91c1c; border: 1px solid #fee2e2; }
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    color: #94a3b8;
+    font-size: 0.85rem;
+}
+.empty-state i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+}
 

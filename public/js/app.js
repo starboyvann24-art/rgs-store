@@ -78,11 +78,7 @@ const store = {
 
         if (isLoading) {
             el.dataset.oldText = el.innerHTML;
-            el.innerHTML = `
-                <div style="display:flex;align-items:center;justify-content:center;gap:8px">
-                    <svg class="spinner-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle></svg>
-                    <span>${loadingText}</span>
-                </div>`;
+            el.innerHTML = `<span>${loadingText}</span>`;
             el.disabled = true;
             el.style.opacity = '0.7';
             el.style.cursor = 'not-allowed';

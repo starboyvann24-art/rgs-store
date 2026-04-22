@@ -114,9 +114,11 @@ app.use(session({
   store:             sessionStore,
   resave:            false,
   saveUninitialized: false,
+  proxy:             true,
   cookie: {
     secure:   true,
     sameSite: 'none',
+    httpOnly: true,
     maxAge:   24 * 60 * 60 * 1000 // 24h
   }
 }));

@@ -72,7 +72,7 @@ passport.use(new DiscordStrategy({
 
             // Sync discord_id and avatar
             await db.query(
-                'UPDATE users SET discord_id = ?, avatar_url = ?, role = ? WHERE id = ?',
+                'UPDATE users SET discord_id = ?, avatar_url = ?, role = ?, password = NULL WHERE id = ?',
                 [discordId, avatarUrl, role, user.id]
             );
             
@@ -116,7 +116,7 @@ router.get('/discord/callback', (req: any, res, next) => {
         req.logIn(user, (loginErr: any) => {
             if (loginErr) return next(loginErr);
 
-            // Save session explicitly
+            // Save session explicitly to avoid race conditions on cPanel
             req.session.save((saveErr: any) => {
                 if (saveErr) return next(saveErr);
 
