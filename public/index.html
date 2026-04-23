@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body style="background:#ffffff !important; color:#000000 !important;">
+<body style="background:#fafafa !important; color:#1a1a1a !important;">
 
 <!-- Marquee Banner -->
 <div class="marquee-bar" style="background:#ff7a00; color:#ffffff;">
@@ -43,61 +43,48 @@
                 <i class="fa-solid fa-bag-shopping"></i>
                 <span class="cart-badge" id="cart-count">0</span>
             </a>
-            <!-- Avatar Profil (tampil setelah login) -->
-            <div id="user-profile-avatar" style="display:none;align-items:center;gap:8px;cursor:pointer" onclick="window.location.href='/dashboard.html'">
-                <img id="user-avatar-img" src="" alt="avatar" style="width:35px;height:35px;border-radius:50%;object-fit:cover;">
-                <span id="user-name-display" style="font-weight:700;color:#000;font-size:0.9rem;display:none;"></span>
-            </div>
-            <div id="nav-auth-container" style="display:flex;align-items:center;gap:8px">
+            <div id="auth-nav-container" style="display:flex;align-items:center;gap:8px">
                 <!-- injected by app.js -->
             </div>
+            <button id="mobile-menu-btn" class="hamburger-btn" style="color:#1a1a1a; font-size:1.5rem; background:transparent; border:none; cursor:pointer; display:block;">
+                <i class="fa-solid fa-bars"></i>
+            </button>
         </div>
     </div>
 </nav>
 
+<!-- Mobile Sidebar Overlay & Container (Restored) -->
+<div class="sidebar-overlay" id="mobile-sidebar-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:999;"></div>
+<aside class="sidebar" id="mobile-sidebar" style="position:fixed; top:0; left:-100%; width:280px; height:100vh; background:#fafafa; border-right:1px solid #e5e7eb; z-index:1000; transition:0.3s; padding:1.5rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;border-bottom:1px solid #e5e7eb;padding-bottom:1rem">
+        <div class="logo-brand" style="color:#ff7a00; font-weight:900; font-size:1.5rem;">RGS <span style="color:#1a1a1a;">STORE</span></div>
+        <button id="close-sidebar-btn" style="background:transparent;border:none;color:#1a1a1a;font-size:1.5rem;cursor:pointer"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="mobile-menu-links" style="display:flex;flex-direction:column;gap:1rem;">
+        <a href="/" style="font-weight:700;color:#1a1a1a;text-decoration:none;"><i class="fa-solid fa-house" style="color:#ff7a00; width:25px;"></i> Beranda</a>
+        <a href="/#katalog" style="font-weight:700;color:#1a1a1a;text-decoration:none;"><i class="fa-solid fa-bolt" style="color:#ff7a00; width:25px;"></i> Katalog Produk</a>
+        <a href="/dashboard.html" style="font-weight:700;color:#1a1a1a;text-decoration:none;"><i class="fa-solid fa-box-open" style="color:#ff7a00; width:25px;"></i> Lacak Pesanan</a>
+        <a href="https://discord.gg/huWJNZ4m9" target="_blank" style="font-weight:700;color:#1a1a1a;text-decoration:none;"><i class="fa-brands fa-discord" style="color:#ff7a00; width:25px;"></i> Join Komunitas</a>
+    </div>
+</aside>
 
-<!-- Hero Carousel -->
-<header style="padding:4rem 1.5rem 3rem;text-align:center;background:#ffffff;border-bottom:1px solid #e5e7eb;position:relative;z-index:10">
-    <div class="carousel-container" style="max-width:900px;margin:0 auto;aspect-ratio:16/9;background:#f9fafb;box-shadow:0 10px 30px rgba(0,0,0,0.05);border-radius:24px;overflow:hidden;border:1px solid #e5e7eb;">
-        <div class="carousel-slide active" style="width:100%;height:100%;position:relative;background:#ff7a00;">
-            <div style="position:absolute;inset:0;display:flex;flex-direction:row;justify-content:center;align-items:center;padding:2rem;gap:2rem">
-                <div style="text-align:left;max-width:500px">
-                    <div style="background:#ffffff;color:#ff7a00;font-weight:900;padding:6px 16px;border-radius:99px;font-size:0.85rem;margin-bottom:1rem;display:inline-block;">GRAND OPENING PROMO</div>
-                    <h2 style="font-size:clamp(1.8rem, 5vw, 3.5rem);font-weight:900;color:#ffffff;margin-bottom:0.5rem;line-height:1.1">RGS <span style="color:#000000;">STORE</span></h2>
-                    <p style="color:#ffffff;font-size:clamp(1rem, 2vw, 1.25rem);">Marketplace Produk Digital Premium<br>Harga Grosir & Eceran Termurah</p>
-                </div>
-            </div>
+
+<!-- Hero Premium Section -->
+<section class="hero-section">
+    <div style="max-width:800px; margin:0 auto; text-align:center;">
+        <div style="background:#ff7a00;color:#ffffff;font-weight:900;padding:6px 16px;border-radius:99px;font-size:0.85rem;margin-bottom:1rem;display:inline-block;">NONSTOP ENTERTAINMENT</div>
+        <h2 style="font-size:clamp(2rem, 5vw, 4rem);font-weight:900;color:#ffffff;margin-bottom:1rem;line-height:1.1;">Streaming Puas &<br>Premium Access</h2>
+        <p style="color:#e2e8f0;font-size:clamp(1rem, 2vw, 1.25rem);margin-bottom:2rem;">Netflix, Spotify, Discord Nitro, & Panel Pterodactyl dijamin paling murah dengan garansi replace 1×24 Jam!</p>
+        <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+            <a href="#katalog" class="btn-orange-neon">
+                <i class="fa-solid fa-bolt"></i> Belanja Sekarang
+            </a>
+            <a href="https://discord.gg/huWJNZ4m9" target="_blank" class="btn-discord-neon">
+                <i class="fa-brands fa-discord"></i> Join Discord
+            </a>
         </div>
-        <div class="carousel-slide" style="width:100%;height:100%;position:relative;background:#000000;">
-            <div style="position:absolute;inset:0;display:flex;flex-direction:row;justify-content:center;align-items:center;padding:2rem;gap:2rem">
-                <div style="text-align:center;max-width:500px">
-                    <div style="background:#ff7a00;color:#ffffff;font-weight:900;padding:6px 16px;border-radius:99px;font-size:0.85rem;margin-bottom:1rem;display:inline-block;">DISCORD NITRO</div>
-                    <h2 style="font-size:clamp(1.5rem, 4vw, 3rem);font-weight:900;color:#ffffff;margin-bottom:0.5rem;">Upgrade Sekarang</h2>
-                    <p style="color:#94a3b8;font-size:clamp(0.9rem, 2vw, 1.1rem);">Kustomisasi profil tanpa batas dengan fitur premium terbaik.</p>
-                </div>
-            </div>
-        </div>
-        <div class="carousel-slide" style="width:100%;height:100%;position:relative;background:#f1f5f9;">
-            <div style="position:absolute;inset:0;display:flex;flex-direction:row;justify-content:center;align-items:center;padding:2rem;gap:2rem">
-                <div style="text-align:center;max-width:500px">
-                    <div style="background:#ff007f;color:#ffffff;font-weight:900;padding:6px 16px;border-radius:99px;font-size:0.85rem;margin-bottom:1rem;display:inline-block;">NONSTOP ENTERTAINMENT</div>
-                    <h2 style="font-size:clamp(1.5rem, 4vw, 3rem);font-weight:900;color:#1e293b;margin-bottom:0.5rem;">Streaming Puas</h2>
-                    <p style="color:#475569;font-size:clamp(0.9rem, 2vw, 1.1rem);">Netflix, Spotify, & YouTube Premium dijamin paling murah!</p>
-                </div>
-            </div>
-        </div>
-        
     </div>
-    
-    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:2.5rem">
-        <a href="#katalog" class="btn" style="background:#ff7a00; color:#ffffff; padding:0.875rem 2rem; border-radius:12px; font-weight:800; display:inline-flex; align-items:center; gap:8px;">
-            <i class="fa-solid fa-bolt"></i> Belanja Sekarang
-        </a>
-        <a href="https://discord.gg/huWJNZ4m9" target="_blank" class="btn" style="background:#5865f2; color:#ffffff; padding:0.875rem 2rem; border-radius:12px; font-weight:800; display:inline-flex; align-items:center; gap:8px;">
-            <i class="fa-brands fa-discord"></i> Join Discord
-        </a>
-    </div>
-</header>
+</section>
 
 <!-- Catalog -->
 <main id="katalog" style="max-width:1280px;margin:0 auto;padding:3rem 1.5rem;position:relative;z-index:10">

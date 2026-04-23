@@ -491,6 +491,44 @@ const store = {
         return map[status] || `<span class="badge">${status}</span>`;
     },
 
+    async updateNavbar() {
+        const authContainer = document.getElementById('auth-nav-container');
+        if (!authContainer) return;
+
+        if (this.isLoggedIn()) {
+            const user = this.getUser();
+            const avatarUrl = user.avatar_url || 'https://cdn.discordapp.com/embed/avatars/0.png';
+            
+            let adminBtn = '';
+            if (user.role === 'admin') {
+                adminBtn = `<a href="/admin.html" class="btn-admin-neon" style="font-size:0.8rem; padding:6px 12px;"><i class="fa-solid fa-shield-halved"></i> Admin</a>`;
+            }
+
+            authContainer.innerHTML = `
+                ${adminBtn}
+                <div style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="window.location.href='/dashboard.html'">
+                    <img src="${avatarUrl}" alt="avatar" style="width:35px;height:35px;border-radius:50%;object-fit:cover;border:2px solid #e5e7eb;">
+                </div>
+            `;
+        } else {
+            const token = this.getToken();
+            if (token) {
+                try {
+                    const res = await this.apiCall('/auth/me');
+                    if (res.success && res.data) {
+                        this.setUser(res.data);
+                        return this.updateNavbar(); // re-render after fetch
+                    }
+                } catch (err) { console.error('Navbar Auth Fetch Err:', err); }
+            }
+            
+            authContainer.innerHTML = `
+                <a href="/api/auth/discord" class="btn-discord-neon"><i class="fa-brands fa-discord"></i> Login Discord</a>
+            `;
+        }
+        this.updateCartBadge();
+    },
+
     getStatusBadge(status) { return this.statusBadge(status); },
 
     renderStars(rating, total = 0) {
@@ -504,52 +542,6 @@ const store = {
                 <div style="display:flex">${starsHtml}</div>
                 ${total > 0 ? `<span style="font-size:0.7rem;color:var(--text-muted);font-weight:600">(${total})</span>` : ''}
             </div>`;
-    },
-
-    // ─── NAVBAR (Auth Flow TERMINATOR) ───────────────────────
-    async updateNavbar() {
-        const navAuth       = document.getElementById('nav-auth-container');
-        const avatarWrapper = document.getElementById('user-profile-avatar');
-        const avatarImg     = document.getElementById('user-avatar-img');
-
-        // 🔲 Default: Tombol Discord Login, avatar hidden
-        if (navAuth) {
-            navAuth.style.display = 'flex';
-            navAuth.innerHTML = `<a href="/api/auth/discord" style="background:#5865F2;color:#ffffff;font-weight:700;padding:8px 16px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;"><i class="fa-brands fa-discord"></i> Login dengan Discord</a>`;
-        }
-        if (avatarWrapper) avatarWrapper.style.display  = 'none';
-
-        const token = this.getToken();
-        if (token) {
-            try {
-                const res = await this.apiCall('/auth/me');
-                if (res.success && res.data) {
-                    const user = res.data;
-                    this.setUser(user);
-
-                    const dashboardUrl = user.role === 'admin' ? '/admin.html' : '/dashboard.html';
-                    const avatarSrc    = user.avatar_url || user.avatar || '';
-
-                    // Hide auth container
-                    if (navAuth) navAuth.style.display = 'none';
-
-                    // Update avatar header slot
-                    if (avatarWrapper && avatarImg) {
-                        avatarWrapper.style.display = 'flex';
-                        avatarWrapper.onclick = () => window.location.href = dashboardUrl;
-                        if (avatarSrc) avatarImg.src = avatarSrc;
-                        const nameEl = document.getElementById('user-name-display');
-                        if (nameEl) {
-                            nameEl.textContent = user.name.split(' ')[0];
-                            nameEl.style.display = 'inline';
-                        }
-                    }
-                }
-            } catch (err) {
-                console.error('Navbar Auth Fetch Err:', err);
-            }
-        }
-        this.updateCartBadge();
     },
 
     // ─── TOAST ────────────────────────────────────────────────

@@ -16,9 +16,9 @@
     --discord:        #5865f2;
     --discord-glow:   rgba(88, 101, 242, 0.1);
 
-    /* Light Backgrounds - ABSOLUTE WHITE SYSTEM */
-    --bg-darkest:     #ffffff;
-    --bg-dark:        #ffffff;
+    /* Light Backgrounds - PREMIUM ORANGE-WHITE NEON */
+    --bg-darkest:     #fafafa;
+    --bg-dark:        #f8f9fa;
     --bg-surface:     #ffffff;
     --bg-surface2:    #f8fafc;
     --bg-glass:       rgba(255, 255, 255, 0.98);
@@ -30,9 +30,9 @@
     --orange:         #ff7a00;
 
     /* Text - PURE BLACK SYSTEM */
-    --text-bright:    #000000;
-    --text-main:      #000000;
-    --text-dim:       #000000;
+    --text-bright:    #1a1a1a;
+    --text-main:      #1a1a1a;
+    --text-dim:       #1a1a1a;
     --text-muted:     #4b5563;
 
     /* Borders */
@@ -51,8 +51,8 @@
 html { scroll-behavior: smooth; overflow-x: hidden; width: 100%; }
 
 body {
-    background: #ffffff;
-    color: #000000;
+    background: #fafafa;
+    color: #1a1a1a;
     font-family: 'Outfit', system-ui, sans-serif;
     line-height: 1.6;
     overflow-x: hidden;
@@ -437,6 +437,74 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
     transition: 0.25s;
 }
 .btn-ghost:hover { border-color: var(--green); color: var(--green); }
+
+/* ─── Premium Orange-White Neon Buttons ──────────────────── */
+.btn-orange-neon {
+    background: linear-gradient(135deg, #ff7a00, #ff9a44) !important;
+    box-shadow: 0 4px 15px rgba(255, 122, 0, 0.4) !important;
+    color: white !important; 
+    font-weight: bold; 
+    border: none; 
+    border-radius: 8px;
+    padding: 10px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.btn-orange-neon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 122, 0, 0.6) !important;
+}
+
+.btn-discord-neon {
+    background: #5865F2 !important; 
+    box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4) !important; 
+    color: white !important; 
+    font-weight: bold; 
+    border: none; 
+    border-radius: 8px;
+    padding: 8px 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+.btn-discord-neon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(88, 101, 242, 0.6) !important;
+}
+
+.btn-admin-neon {
+    background: linear-gradient(135deg, #10b981, #34d399) !important;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4) !important;
+    color: white !important;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+.btn-admin-neon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6) !important;
+}
+
+/* ─── Premium Hero Section ────────────────────────────────── */
+.hero-section {
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1614680376593-902f74cf0d41?q=80&w=1000&auto=format&fit=crop') center/cover !important; 
+    color: white !important; 
+    padding: 60px 20px; 
+    border-radius: 12px; 
+    margin: 15px; 
+    text-align: center;
+    position: relative;
+    z-index: 10;
+}
 
 /* ─── Glass Cards ─────────────────────────────────────────── */
 .glass-card {

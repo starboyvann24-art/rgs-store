@@ -26,6 +26,7 @@
                     Kembali
                 </a>
                 <h1 class="mx-auto text-lg font-black  uppercase tracking-widest">Digital Cart</h1>
+                <div id="auth-nav-container" class="absolute right-0 flex items-center gap-2"></div>
             </div>
         </div>
     </nav>
@@ -35,8 +36,8 @@
 
             <!-- Cart list -->
             <div class="w-full lg:w-8/12">
-                <div class="-800 rounded-3xl shadow-xl border border-primary-500/10 overflow-hidden">
-                    <div class="p-4 border-b border-white/10 -700/50 flex justify-between items-center">
+                <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden" style="box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
                         <span class="font-black text-primary-500 text-[10px] uppercase tracking-widest" id="cart-count-txt">MODS IN CART (0)</span>
                         <button onclick="clearCart()" class="text-[10px] font-black text-red-500 hover:text-red-400 hidden uppercase tracking-widest" id="btn-clear-cart">Purge All</button>
                     </div>
@@ -52,7 +53,7 @@
 
             <!-- Summary -->
             <div class="w-full lg:w-4/12 sticky top-24">
-                <div class="-800 rounded-3xl shadow-xl border border-primary-500/10 p-8">
+                <div class="bg-white rounded-2xl p-8 border border-gray-100" style="box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
                     <h3 class="font-black  text-lg mb-6 uppercase tracking-widest text-sm border-b border-white/10 pb-4">Extraction Summary</h3>
                     <div class="space-y-4 mb-6 border-b border-white/10 pb-6 text-xs text-gray-400">
                         <div class="flex justify-between">
@@ -68,7 +69,7 @@
                         <span class="font-black text-primary-500 text-[10px] uppercase tracking-tighter">FINAL VALUE</span>
                         <span id="grand-total" class="font-black text-2xl ">Rp 0</span>
                     </div>
-                    <a href="checkout.html" id="btn-checkout" class="block w-full bg-primary-500 hover:bg-primary-600 text-black font-black py-4 rounded-xl transition-all shadow-lg shadow-primary-500/20 text-center cursor-not-allowed opacity-50 pointer-events-none uppercase tracking-widest text-xs">
+                    <a href="checkout.html" id="btn-checkout" class="block w-full btn-orange-neon text-center cursor-not-allowed opacity-50 pointer-events-none uppercase tracking-widest text-xs">
                         Proceed To Checkout
                     </a>
                 </div>

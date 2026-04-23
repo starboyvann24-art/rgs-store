@@ -106,11 +106,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     function showSlide(index) {
         slides.forEach((s, idx) => {
-            s.classList.toggle('active', idx === index);
+            if (s) s.classList.toggle('active', idx === index);
         });
     }
 
     function nextSlide() {
+        if (slides.length === 0) return;
         currentSlide = (currentSlide + 1) % slides.length;
         showSlide(currentSlide);
     }
@@ -118,5 +119,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Auto-play 3000ms as requested
     let slideTimer = setInterval(nextSlide, 3000);
 
+    // ─── MOBILE SIDEBAR LOGIC ───────────────────────────────────
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileSidebar = document.getElementById('mobile-sidebar');
+    const mobileSidebarOverlay = document.getElementById('mobile-sidebar-overlay');
+    const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+
+    function openSidebar() {
+        if (mobileSidebar && mobileSidebarOverlay) {
+            mobileSidebar.style.left = '0';
+            mobileSidebarOverlay.style.display = 'block';
+        }
+    }
+
+    function closeSidebar() {
+        if (mobileSidebar && mobileSidebarOverlay) {
+            mobileSidebar.style.left = '-100%';
+            mobileSidebarOverlay.style.display = 'none';
+        }
+    }
+
+    if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', openSidebar);
+    if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
+    if (mobileSidebarOverlay) mobileSidebarOverlay.addEventListener('click', closeSidebar);
 
 });

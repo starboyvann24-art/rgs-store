@@ -30,7 +30,7 @@
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                         <span id="cart-badge" class="absolute -top-2 -right-2 bg-red-500  text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
                     </a>
-                    <div id="navbar-auth"></div>
+                    <div id="auth-nav-container" style="display:flex;align-items:center;gap:8px"></div>
                 </div>
             </div>
         </div>
@@ -136,10 +136,10 @@
 
                         <!-- Action Buttons -->
                         <div class="fixed md:static bottom-0 left-0 right-0 bg-white md:bg-transparent border-t md:border-t-0 p-4 md:p-0 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:shadow-none flex gap-3 mt-4">
-                            <button id="btn-buy-now" class="flex-1 border-2 border-primary-500 text-primary-600 hover:bg-primary-50 font-bold py-3.5 rounded-xl transition flex justify-center items-center disabled:opacity-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed">
+                            <button id="btn-buy-now" class="flex-1 border-2 border-orange-500 text-orange-600 hover:bg-orange-50 font-bold py-3.5 rounded-xl transition flex justify-center items-center disabled:opacity-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed">
                                 Beli Sekarang
                             </button>
-                            <button id="btn-add-cart" class="flex-1 bg-primary-500 hover:bg-primary-600  font-bold py-3.5 rounded-xl transition shadow-md flex justify-center items-center disabled:opacity-50 disabled:bg-gray-300 disabled:cursor-not-allowed">
+                            <button id="btn-add-cart" class="flex-1 btn-orange-neon font-bold py-3.5 rounded-xl transition shadow-md flex justify-center items-center disabled:opacity-50 disabled:bg-gray-300 disabled:cursor-not-allowed">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                                 Keranjang
                             </button>
