@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
-import { execute } from '../config/database';
+import db from '../config/database';
 
 /**
  * Get all users who have Discord ID linked
  */
 export const getDiscordUsers = async (req: Request, res: Response) => {
     try {
-        const users = await execute(
+        const [users] = await db.query(
             'SELECT id, name, email, discord_id, role, avatar_url FROM users WHERE discord_id IS NOT NULL ORDER BY id DESC'
         );
         res.json({ success: true, data: users });
@@ -22,7 +22,7 @@ export const getDiscordUsers = async (req: Request, res: Response) => {
 export const deleteUser = async (req: Request, res: Response) => {
     const { id } = req.params;
     try {
-        await execute('DELETE FROM users WHERE id = ?', [id]);
+        await db.query('DELETE FROM users WHERE id = ?', [id]);
         res.json({ success: true, message: 'User berhasil dihapus.' });
     } catch (error) {
         console.error('deleteUser Error:', error);

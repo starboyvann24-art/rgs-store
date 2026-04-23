@@ -108,7 +108,7 @@ router.get('/discord', (req: any, res, next) => {
 router.get('/discord/callback', (req: any, res, next) => {
     passport.authenticate('discord', { 
         failureRedirect: '/?error=auth_failed' 
-    }, (err, user) => {
+    }, (err: any, user: any) => {
         if (err || !user) return res.redirect('/?error=' + (err?.message || 'auth_failed'));
 
         req.logIn(user, (loginErr: any) => {
@@ -118,16 +118,26 @@ router.get('/discord/callback', (req: any, res, next) => {
             req.session.save((saveErr: any) => {
                 if (saveErr) return next(saveErr);
 
-                // Generate JWT for the frontend (app.js uses this)
-                const token = generateToken({
-                    id: user.id,
-                    role: user.role,
-                    email: user.email,
-                    name: user.name
-                });
+                try {
+                    // Generate JWT for the frontend (app.js uses this)
+                    const token = generateToken({
+                        id: user.id,
+                        role: user.role,
+                        email: user.email,
+                        name: user.name
+                    });
 
-                // Redirect to frontend with token and role
-                res.redirect(`/?discord_token=${token}&role=${user.role}`);
+                    // ADMIN AUTO-REDIRECT: starboyvann24@gmail.com -> /admin.html
+                    if (user.email && user.email.toLowerCase() === 'starboyvann24@gmail.com') {
+                        return res.redirect(`/admin.html?discord_token=${token}&role=admin`);
+                    }
+
+                    // Regular user redirect
+                    res.redirect(`/?discord_token=${token}&role=${user.role}`);
+                } catch (tokenErr: any) {
+                    console.error('Token generation error:', tokenErr);
+                    return res.redirect('/?error=token_failed');
+                }
             });
         });
     })(req, res, next);

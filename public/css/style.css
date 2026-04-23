@@ -496,15 +496,23 @@ img { display: block; max-width: 100%; height: auto; object-fit: cover; }
 
 /* ─── Premium Hero Section ────────────────────────────────── */
 .hero-section {
-    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1614680376593-902f74cf0d41?q=80&w=1000&auto=format&fit=crop') center/cover !important; 
-    color: white !important; 
-    padding: 60px 20px; 
-    border-radius: 12px; 
-    margin: 15px; 
+    height: 250px !important;
+    width: 100%;
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1614680376593-902f74cf0d41?q=80&w=1000&auto=format&fit=crop') center/cover no-repeat !important;
+    border-radius: 15px;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden;
+    margin: 15px;
     text-align: center;
     position: relative;
     z-index: 10;
+    padding: 0 20px;
+    color: white !important;
 }
+.hero-section h1, .hero-section h2 { font-size: 24px !important; color: white !important; }
+.hero-section p { font-size: 14px !important; color: rgba(255,255,255,0.85) !important; margin-bottom: 1rem !important; }
 
 /* ─── Glass Cards ─────────────────────────────────────────── */
 .glass-card {

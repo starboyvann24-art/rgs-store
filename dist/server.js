@@ -138,9 +138,11 @@ app.use((0, express_session_1.default)({
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
+    proxy: true,
     cookie: {
-        secure: process.env.NODE_ENV === 'production', // true in prod (HTTPS), false locally
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        secure: true,
+        sameSite: 'none',
+        httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000 // 24h
     }
 }));

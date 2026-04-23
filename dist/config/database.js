@@ -89,16 +89,18 @@ const CREATE_USERS_TABLE = `
     id VARCHAR(36) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NULL,
     whatsapp VARCHAR(50) DEFAULT NULL,
     role ENUM('user', 'admin') NOT NULL DEFAULT 'user',
     reset_token VARCHAR(255) DEFAULT NULL,
     reset_token_expiry TIMESTAMP NULL DEFAULT NULL,
+    discord_id VARCHAR(255) DEFAULT NULL,
     avatar_url VARCHAR(500) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_users_email (email),
-    INDEX idx_users_role (role)
+    INDEX idx_users_role (role),
+    INDEX idx_users_discord (discord_id)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 `;
 const CREATE_PRODUCTS_TABLE = `
@@ -272,6 +274,7 @@ async function initializeDatabase() {
         const schemaFixes = [
             ["ALTER TABLE users MODIFY COLUMN password VARCHAR(255) NULL", "password nullable"],
             ["ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500) NULL", "avatar_url column"],
+            ["ALTER TABLE users ADD COLUMN IF NOT EXISTS discord_id VARCHAR(255) NULL", "discord_id column"],
             ["ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'user'", "role column"],
         ];
         for (const [sql, label] of schemaFixes) {
