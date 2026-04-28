@@ -119,13 +119,31 @@ router.get('/discord/callback', (req: any, res, next) => {
                 if (saveErr) return next(saveErr);
 
                 try {
-                    // Generate JWT for the frontend (app.js uses this)
+                    // Generate JWT and store in httpOnly cookie
                     const token = generateToken({
                         id: user.id,
                         role: user.role,
                         email: user.email,
                         name: user.name
                     });
+
+                    // Set cookie so frontend picks up auth state after redirect
+                    res.cookie('rgs_token', token, {
+                        httpOnly: false, // Frontend needs to read it for localStorage sync
+                        secure: true,
+                        sameSite: 'none',
+                        maxAge: 24 * 60 * 60 * 1000 // 24h
+                    });
+
+                    // Store user in session for SSR auth checks
+                    req.session.user = {
+                        id: user.id,
+                        name: user.name,
+                        email: user.email,
+                        role: user.role,
+                        avatar_url: user.avatar_url
+                    };
+                    req.session.token = token;
 
                     if (user.email === 'starboyvann24@gmail.com') {
                         return res.redirect('/admin/dashboard');

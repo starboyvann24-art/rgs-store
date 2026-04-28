@@ -758,3 +758,49 @@ document.addEventListener('DOMContentLoaded', () => {
     initFakeSales();
 });
 
+// ─── DISCORD OAUTH: Cookie → LocalStorage Sync ────────────────
+// After Discord redirect, the backend sets a cookie 'rgs_token'.
+// This snippet picks it up, saves to localStorage, fetches user info,
+// then clears the cookie so it's a one-time transfer.
+(async function syncDiscordAuth() {
+    function getCookie(name) {
+        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        return match ? decodeURIComponent(match[2]) : null;
+    }
+
+    const cookieToken = getCookie('rgs_token');
+    if (cookieToken && !localStorage.getItem('rgs_jwt')) {
+        // Save token
+        localStorage.setItem('rgs_jwt', cookieToken);
+        // Clear cookie (set expiry in past)
+        document.cookie = 'rgs_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=None; Secure';
+
+        // Fetch user profile
+        try {
+            const res = await fetch('/api/auth/me', {
+                headers: { 'Authorization': 'Bearer ' + cookieToken },
+                credentials: 'include'
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success && data.data) {
+                    localStorage.setItem('rgs_user', JSON.stringify(data.data));
+                }
+            }
+        } catch(e) { console.warn('Discord auth sync failed:', e); }
+    }
+
+    // Update navbar UI based on current login state
+    const token = localStorage.getItem('rgs_jwt');
+    const loginBtns = document.querySelectorAll('a[href="/api/auth/discord"]');
+    if (token && loginBtns.length > 0) {
+        let user = null;
+        try { user = JSON.parse(localStorage.getItem('rgs_user') || 'null'); } catch(e){}
+        loginBtns.forEach(btn => {
+            btn.textContent = user ? `👤 ${user.name || 'Dashboard'}` : '👤 Akun';
+            btn.href = '/dashboard.html';
+            btn.style.background = '#1e293b';
+        });
+    }
+})();
+
