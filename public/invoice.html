@@ -3,179 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="RGS STORE - Marketplace produk digital premium terlengkap.">
-    <meta name="keywords" content="Netflix, Spotify, Discord Nitro, Pterodactyl">
-    <meta name="robots" content="index, follow">
-    <meta property="og:title" content="RGS STORE — Premium Digital">
-    <title>Cetak Invoice - RGS STORE</title>
+    <title>Invoice - RGS STORE</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Outfit:wght@900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <style>
+        body { font-family: 'Outfit', sans-serif; background-color: #f1f5f9; color: #000000; }
+        .invoice-box { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border-radius: 12px; }
         @media print {
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #fff !important; color: #000 !important; padding: 0 !important; }
+            body { background: white; }
             .no-print { display: none !important; }
-            .invoice-box { box-shadow: none !important; border: none !important; margin: 0 !important; max-width: 100% !important; }
+            .invoice-box { box-shadow: none; border: none; }
         }
-        body { font-family: 'Courier Prime', monospace; background: #000; color: #fff; padding: 2rem; }
-        .invoice-box {
-            max-width: 800px;
-            margin: auto;
-            padding: 40px;
-            border: 1px solid rgba(6, 182, 212, 0.2);
-            box-shadow: 0 0 30px rgba(6, 182, 212, 0.1);
-            background: #0b0e14;
-            border-radius: 20px;
-        }
-        .invoice-box table { width: 100%; line-height: inherit; text-align: left; border-collapse: collapse; }
-        .invoice-box table td { padding: 8px; vertical-align: top; }
-        .invoice-box table tr.top table td.title { font-size: 45px; line-height: 45px; color: #06b6d4; }
-        .invoice-box table tr.information table td { padding-bottom: 40px; color: #94a3b8; font-size: 13px; }
-        .invoice-box table tr.heading td { background: rgba(6, 182, 212, 0.1); border-bottom: 2px solid #06b6d4; font-weight: bold; color: #06b6d4; text-transform: uppercase; letter-spacing: 1px; }
-        .invoice-box table tr.details td { padding-bottom: 20px; color: #e2e8f0; }
-        .invoice-box table tr.item td { border-bottom: 1px solid rgba(255,255,255,0.05); color: #e2e8f0; }
-        .invoice-box table tr.item.last td { border-bottom: none; }
-        .invoice-box table tr.total td:nth-child(2) { border-top: 2px solid #06b6d4; font-weight: bold; color: #06b6d4; }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body>
+<body class="antialiased py-10 px-4">
 
-    <div class="fixed top-4 right-4 no-print flex gap-2">
-        <button onclick="window.print()" class="bg-blue-600  px-4 py-2 rounded shadow font-sans font-bold">🖨️ Print Invoice</button>
-        <button onclick="window.close()" class="bg-gray-600  px-4 py-2 rounded shadow font-sans font-bold">❌ Tutup</button>
+    <div class="max-w-3xl mx-auto flex justify-between items-center mb-6 no-print">
+        <a href="/" class="text-gray-500 hover:text-orange-500 font-bold text-sm"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
+        <div>
+            <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-gray-700 mr-2"><i class="fa-solid fa-print"></i> Print</button>
+            <button id="btn-download-pdf" class="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-orange-600"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
+        </div>
     </div>
 
-    <div class="invoice-box" id="invoice-content">
-        <div class="text-center py-10 font-sans text-xl">Memuat Invoice...</div>
+    <div id="invoice-content" class="max-w-3xl mx-auto invoice-box p-8 md:p-12 relative overflow-hidden hidden">
+        
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-200 pb-8 mb-8">
+            <div class="flex items-center gap-3 mb-4 md:mb-0">
+                <div class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center text-white text-2xl font-black italic">R</div>
+                <div>
+                    <h1 class="text-2xl font-black uppercase tracking-widest italic leading-tight">RGS <span class="text-orange-500">STORE</span></h1>
+                    <p class="text-xs text-gray-500 font-bold">Premium Digital Marketplace</p>
+                </div>
+            </div>
+            <div class="text-left md:text-right">
+                <h2 class="text-3xl font-black text-gray-800 tracking-tight">INVOICE</h2>
+                <p class="text-sm font-bold text-gray-500 mt-1" id="inv-number">INV-XXXXX</p>
+            </div>
+        </div>
+
+        <!-- Info -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div>
+                <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Ditagihkan Kepada:</h3>
+                <p class="font-bold text-gray-800" id="inv-customer-name">Loading...</p>
+                <p class="text-sm text-gray-600" id="inv-customer-email">Loading...</p>
+                <p class="text-sm text-gray-600 mt-1"><i class="fa-brands fa-whatsapp text-green-500"></i> <span id="inv-customer-wa">Loading...</span></p>
+            </div>
+            <div class="md:text-right">
+                <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Detail Pembayaran:</h3>
+                <p class="text-sm text-gray-600">Tanggal: <span class="font-bold text-gray-800" id="inv-date">Loading...</span></p>
+                <p class="text-sm text-gray-600 mt-1">Metode: <span class="font-bold text-gray-800" id="inv-method">Loading...</span></p>
+                <p class="text-sm text-gray-600 mt-1">Status: <span class="inline-block px-2 py-1 text-[10px] font-bold uppercase rounded" id="inv-status-badge">Loading...</span></p>
+            </div>
+        </div>
+
+        <!-- Items -->
+        <div class="mb-8">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b-2 border-gray-200">
+                        <th class="py-3 text-xs font-black uppercase tracking-widest text-gray-400">Deskripsi Produk</th>
+                        <th class="py-3 text-xs font-black uppercase tracking-widest text-gray-400 text-center">Qty</th>
+                        <th class="py-3 text-xs font-black uppercase tracking-widest text-gray-400 text-right">Harga</th>
+                        <th class="py-3 text-xs font-black uppercase tracking-widest text-gray-400 text-right">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="inv-items">
+                    <!-- Injected via JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Total & QR -->
+        <div class="flex flex-col md:flex-row justify-between items-start mt-8">
+            <div class="mb-6 md:mb-0 w-32 h-32 bg-gray-50 border border-gray-200 p-2 rounded-lg flex items-center justify-center relative">
+                <canvas id="inv-qrcode" class="w-full h-full"></canvas>
+            </div>
+            
+            <div class="w-full md:w-1/2">
+                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span class="text-sm font-bold text-gray-500">Subtotal</span>
+                    <span class="text-sm font-bold text-gray-800" id="inv-subtotal">Rp 0</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span class="text-sm font-bold text-gray-500">Biaya Admin</span>
+                    <span class="text-sm font-bold text-green-500 uppercase tracking-widest">Free</span>
+                </div>
+                <div class="flex justify-between items-center py-4">
+                    <span class="text-lg font-black text-gray-800 uppercase tracking-widest">Total Bayar</span>
+                    <span class="text-2xl font-black text-orange-500" id="inv-total">Rp 0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-12 pt-8 border-t border-gray-200 text-center">
+            <p class="text-xs font-bold text-gray-500">Terima kasih atas kepercayaan Anda berbelanja di RGS STORE.</p>
+            <p class="text-[10px] text-gray-400 mt-1">Jika ada pertanyaan, silakan hubungi Customer Service kami via WhatsApp.</p>
+        </div>
+
     </div>
 
-    <script src="/js/app.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const params = new URLSearchParams(window.location.search);
-            const orderId = params.get('id');
-            const token = localStorage.getItem('token');
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
+    <div id="loading-state" class="text-center py-20">
+        <i class="fa-solid fa-spinner fa-spin text-4xl text-orange-500 mb-4"></i>
+        <p class="text-gray-500 font-bold uppercase tracking-widest text-sm">Memuat Invoice...</p>
+    </div>
 
-            if (!orderId || !token) {
-                document.getElementById('invoice-content').innerHTML = '<div class="text-center py-10 text-red-500 font-bold font-sans">Akses Ditolak atau Order Tidak Valid</div>';
-                return;
-            }
-
-            try {
-                // Determine whether user is admin or regular user
-                const url = `/api/orders/${orderId}`;
-                const res = await fetch(url, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-
-                if (!data.success) throw new Error(data.message);
-
-                const order = data.data;
-                const dateObj = new Date(order.created_at);
-                const formatter = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' });
-
-                // Try parse items if json notes exist
-                let itemsList = '';
-                try {
-                    const notesObj = JSON.parse(order.notes);
-                    if (notesObj && notesObj.items && Array.isArray(notesObj.items)) {
-                        notesObj.items.forEach(itm => {
-                            itemsList += `
-                            <tr class="item">
-                                <td>${itm.name} (x${itm.qty})</td>
-                                <td class="text-right">${formatter.format(itm.total)}</td>
-                            </tr>`;
-                        });
-                    }
-                } catch(e) {}
-                
-                if (!itemsList) {
-                    itemsList = `
-                    <tr class="item">
-                        <td>${order.product_name} (x${order.qty})</td>
-                        <td class="text-right">${formatter.format(order.total_price)}</td>
-                    </tr>`;
-                }
-
-                document.getElementById('invoice-content').innerHTML = `
-                    <table cellpadding="0" cellspacing="0">
-                        <tr class="top">
-                            <td colspan="2">
-                                <table>
-                                    <tr>
-                                        <td class="title">
-                                            <div style="font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 2.2rem; color: #06b6d4; letter-spacing: -1px;">RGS <span style="color:#fff">STORE</span></div>
-                                        </td>
-                                        <td class="text-right">
-                                            Invoice #: <strong>${order.order_number}</strong><br />
-                                            Tanggal: ${dateObj.toLocaleDateString('id-ID')}<br />
-                                            Waktu: ${dateObj.toLocaleTimeString('id-ID')}
-                                        </td>
-                                    </tr>
-                                </table>
-                            </td>
-                        </tr>
-
-                        <tr class="information">
-                            <td colspan="2">
-                                <table>
-                                    <tr>
-                                        <td>
-                                            RGS Store Digital Marketplace.<br />
-                                            Jakarta, Indonesia<br />
-                                            support@rgsstore.com
-                                        </td>
-                                        <td class="text-right">
-                                            <strong>Kepada:</strong><br />
-                                            ${order.user_name}<br />
-                                            ${order.user_email}<br />
-                                            ${order.user_whatsapp || ''}
-                                        </td>
-                                    </tr>
-                                </table>
-                            </td>
-                        </tr>
-
-                        <tr class="heading">
-                            <td>Metode Pembayaran</td>
-                            <td class="text-right">Status</td>
-                        </tr>
-                        <tr class="details">
-                            <td>${order.payment_method.toUpperCase()}</td>
-                            <td class="text-right font-bold uppercase">${order.status}</td>
-                        </tr>
-
-                        <tr class="heading">
-                            <td>Item</td>
-                            <td class="text-right">Harga</td>
-                        </tr>
-
-                        ${itemsList}
-
-                        <tr class="total">
-                            <td></td>
-                            <td class="text-right font-bold text-xl pt-4">Total: ${formatter.format(order.total_price)}</td>
-                        </tr>
-                    </table>
-                    
-                    <div class="mt-20 text-center text-sm italic text-gray-500 border-t pt-4">
-                        Terima kasih telah berbelanja di RGS STORE.<br>Invoice ini sah dan digenerate secara otomatis oleh sistem.
-                    </div>
-                `;
-
-                // Auto print prompt after a slight delay
-                setTimeout(() => window.print(), 1000);
-
-            } catch(e) {
-                document.getElementById('invoice-content').innerHTML = `<div class="text-center py-10 text-red-500 font-bold font-sans">Error: ${e.message}</div>`;
-            }
-        });
-    </script>
-<!-- Floating WhatsApp -->
-<a href="https://wa.me/62882016259591" target="_blank" class="wa-float" title="WhatsApp CS">
-    <i class="fa-brands fa-whatsapp"></i>
-</a>
+    <script src="js/app.js"></script>
+    <script src="js/invoice.js"></script>
 </body>
 </html>

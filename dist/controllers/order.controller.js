@@ -50,7 +50,11 @@ const mailer_1 = require("../utils/mailer");
 const createOrder = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const { items, payment_method, notes, total_price: clientTotalPrice } = req.body;
+        const { items, payment_method, notes, nama_discord, whatsapp, email } = req.body;
+        if (!nama_discord || !whatsapp || !email) {
+            (0, response_1.sendResponse)(res, 400, false, 'Nama Discord, No WhatsApp, dan Alamat GMAIL wajib diisi.');
+            return;
+        }
         if (!items || !Array.isArray(items) || items.length === 0) {
             (0, response_1.sendResponse)(res, 400, false, 'Keranjang belanja kosong.');
             return;
@@ -99,9 +103,9 @@ const createOrder = async (req, res, next) => {
             orderId,
             orderNumber,
             userId,
-            user.name,
-            user.email,
-            user.whatsapp,
+            nama_discord,
+            email,
+            whatsapp,
             primaryItem.product_id,
             summaryName,
             items.reduce((acc, cur) => acc + cur.qty, 0),
@@ -109,7 +113,7 @@ const createOrder = async (req, res, next) => {
             calculatedTotalPrice,
             payment_method,
             'pending',
-            JSON.stringify({ items: processedItems, user_notes: notes || null }) // Save full detail in notes JSON
+            JSON.stringify({ items: processedItems, user_notes: notes || null, nama_discord })
         ]);
         // 4. REDUCE STOCK FOR ALL
         for (const item of items) {
@@ -130,8 +134,8 @@ const createOrder = async (req, res, next) => {
             `💰 *Total Bayar: Rp ${calculatedTotalPrice.toLocaleString('id-ID')}*`,
             `💳 *Metode: ${payment_method}*`,
             ``,
-            `👤 *Pembeli: ${user.name}*`,
-            `📧 *Email: ${user.email}*`,
+            `👤 *Pembeli (Discord): ${nama_discord}*`,
+            `📧 *Email: ${email}*`,
             ``,
             `Mohon segera diproses. Terima kasih! 🙏`
         ].join('\n');
@@ -143,16 +147,23 @@ const createOrder = async (req, res, next) => {
             qty: items.length,
             total_price: calculatedTotalPrice,
             payment_method,
-            user_name: user.name,
-            user_email: user.email
+            user_name: nama_discord,
+            user_email: email
         })).catch(() => { });
         // Email notification to customer (non-blocking)
-        (0, mailer_1.sendOrderCreatedEmail)(user.email, user.name, {
+        (0, mailer_1.sendOrderCreatedEmail)(email, nama_discord, {
             order_number: orderNumber,
             product_name: summaryName,
             total_price: calculatedTotalPrice,
             payment_method
         }).catch(err => console.error('⚠️  Order email failed:', err));
+        // Email Admin
+        (0, mailer_1.sendOrderCreatedEmail)('starboyvann24@gmail.com', 'Admin RGS', {
+            order_number: orderNumber,
+            product_name: summaryName + ' (NEW ORDER)',
+            total_price: calculatedTotalPrice,
+            payment_method
+        }).catch(err => console.error('⚠️  Admin Order email failed:', err));
         (0, response_1.sendResponse)(res, 201, true, 'Order berhasil dibuat!', {
             order: newOrder,
             whatsapp_url: waUrl

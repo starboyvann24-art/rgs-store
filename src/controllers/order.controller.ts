@@ -19,7 +19,12 @@ import { generateInvoicePDF } from '../utils/pdf';
 export const createOrder = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { items, payment_method, notes, total_price: clientTotalPrice } = req.body;
+    const { items, payment_method, notes, nama_discord, whatsapp, email } = req.body;
+
+    if (!nama_discord || !whatsapp || !email) {
+      sendResponse(res, 400, false, 'Nama Discord, No WhatsApp, dan Alamat GMAIL wajib diisi.');
+      return;
+    }
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       sendResponse(res, 400, false, 'Keranjang belanja kosong.');
@@ -84,9 +89,9 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
         orderId,
         orderNumber,
         userId,
-        user.name,
-        user.email,
-        user.whatsapp,
+        nama_discord,
+        email,
+        whatsapp,
         primaryItem.product_id,
         summaryName,
         items.reduce((acc: number, cur: any) => acc + cur.qty, 0),
@@ -94,7 +99,7 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
         calculatedTotalPrice,
         payment_method,
         'pending',
-        JSON.stringify({ items: processedItems, user_notes: notes || null }) // Save full detail in notes JSON
+        JSON.stringify({ items: processedItems, user_notes: notes || null, nama_discord }) 
       ]
     );
 
@@ -119,8 +124,8 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
       `💰 *Total Bayar: Rp ${calculatedTotalPrice.toLocaleString('id-ID')}*`,
       `💳 *Metode: ${payment_method}*`,
       ``,
-      `👤 *Pembeli: ${user.name}*`,
-      `📧 *Email: ${user.email}*`,
+      `👤 *Pembeli (Discord): ${nama_discord}*`,
+      `📧 *Email: ${email}*`,
       ``,
       `Mohon segera diproses. Terima kasih! 🙏`
     ].join('\n');
@@ -134,17 +139,25 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
       qty: items.length,
       total_price: calculatedTotalPrice,
       payment_method,
-      user_name: user.name,
-      user_email: user.email
+      user_name: nama_discord,
+      user_email: email
     })).catch(() => {});
 
     // Email notification to customer (non-blocking)
-    sendOrderCreatedEmail(user.email, user.name, {
+    sendOrderCreatedEmail(email, nama_discord, {
       order_number: orderNumber,
       product_name: summaryName,
       total_price: calculatedTotalPrice,
       payment_method
     }).catch(err => console.error('⚠️  Order email failed:', err));
+    
+    // Email Admin
+    sendOrderCreatedEmail('starboyvann24@gmail.com', 'Admin RGS', {
+      order_number: orderNumber,
+      product_name: summaryName + ' (NEW ORDER)',
+      total_price: calculatedTotalPrice,
+      payment_method
+    }).catch(err => console.error('⚠️  Admin Order email failed:', err));
 
     sendResponse(res, 201, true, 'Order berhasil dibuat!', {
       order: newOrder,

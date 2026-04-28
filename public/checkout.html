@@ -51,12 +51,16 @@
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="space-y-2">
-                            <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Username</label>
-                            <input type="text" id="co-name" readonly class="w-full form-input text-gray-500" value="Loading...">
+                            <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Nama Discord <span class="text-red-500">*</span></label>
+                            <input type="text" id="co-discord" required class="w-full form-input text-black" placeholder="Contoh: starboyvann#1234">
                         </div>
                         <div class="space-y-2">
-                            <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Email Destinasi</label>
-                            <input type="email" id="co-email" readonly class="w-full form-input text-gray-500" value="Loading...">
+                            <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">No WhatsApp <span class="text-red-500">*</span></label>
+                            <input type="text" id="co-wa" required class="w-full form-input text-black" placeholder="Contoh: 08123456789">
+                        </div>
+                        <div class="space-y-2 md:col-span-2">
+                            <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Alamat GMAIL <span class="text-red-500">*</span> (Untuk pengiriman lisensi/file)</label>
+                            <input type="email" id="co-email" required class="w-full form-input text-black" placeholder="contoh@gmail.com">
                         </div>
                     </div>
                 </div>
@@ -186,8 +190,8 @@
                     totalPrice = checkoutItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
                 }
 
-                document.getElementById('co-name').value = user.name;
-                document.getElementById('co-email').value = user.email;
+                document.getElementById('co-discord').value = user.name || '';
+                document.getElementById('co-email').value = user.email || '';
 
                 const detailContainer = document.getElementById('checkout-product-detail');
                 detailContainer.innerHTML = '';
@@ -263,8 +267,9 @@
                 try {
                     appUtils.setLoading(btn, true, 'Processing...');
                     const payload = {
-                        customer_name: user.name,
-                        customer_email: user.email,
+                        nama_discord: document.getElementById('co-discord').value,
+                        whatsapp: document.getElementById('co-wa').value,
+                        email: document.getElementById('co-email').value,
                         items: checkoutItems,
                         total_price: totalPrice,
                         payment_method: selectedMethod

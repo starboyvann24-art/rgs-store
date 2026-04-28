@@ -1258,3 +1258,77 @@ a[href="/api/auth/discord"] {
     border-radius: 12px; margin: 10px; overflow: hidden;
 }
 .hero-section h1 { font-size: 20px !important; text-align: center; color: white !important; }
+
+/* TOTAL REWRITE: PREMIUM DARK MODE & GLASSMORPHISM */
+:root {
+    --bg-main: #0f172a;
+    --bg-card: rgba(30, 41, 59, 0.7);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --neon-orange: #ff7a00;
+    --neon-purple: #8b5cf6;
+    --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+body {
+    background: var(--bg-main) !important;
+    color: var(--text-main) !important;
+}
+
+/* Glassmorphism */
+.glass-panel {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    border-radius: 16px;
+}
+
+/* Banner */
+.hero-section {
+    height: 200px !important;
+    min-height: 200px !important;
+    object-fit: cover;
+    border-radius: 12px;
+    margin: 10px;
+    overflow: hidden;
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1614680376593-902f74cf0d41?q=80&w=1000&auto=format&fit=crop') center/cover no-repeat !important;
+}
+
+/* Neons */
+.neon-text-orange { text-shadow: 0 0 10px var(--neon-orange), 0 0 20px var(--neon-orange); }
+.neon-text-purple { text-shadow: 0 0 10px var(--neon-purple), 0 0 20px var(--neon-purple); }
+
+/* Floating WhatsApp */
+.fab-wa {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #25d366;
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+    z-index: 9999;
+    transition: transform 0.3s;
+}
+.fab-wa:hover { transform: scale(1.1); }
+
+/* Popup Responsive Fix */
+.modal-box {
+    width: 90% !important;
+    max-width: 400px !important;
+    background: var(--bg-card);
+    backdrop-filter: blur(15px);
+    color: var(--text-main);
+    border: 1px solid var(--neon-orange);
+    box-shadow: 0 0 20px rgba(255, 122, 0, 0.2);
+}
+.btn-close-modal { color: var(--text-main); font-weight: bold; background: rgba(255,255,255,0.1); border-radius: 50%; padding: 5px 10px; }
+

@@ -25,6 +25,7 @@ import reviewRoutes from './routes/review.routes';
 import paymentRoutes from './routes/payment.routes';
 import messageRoutes from './routes/message.routes';
 import adminRoutes from './routes/admin.routes';
+import invoiceRoutes from './routes/invoice.routes';
 import { verifyToken, isAdmin } from './middleware/auth.middleware';
 import { errorHandler } from './middleware/error.middleware';
 import { sendResponse } from './utils/response';
@@ -159,6 +160,7 @@ apiRouter.use('/reviews', reviewRoutes);
 apiRouter.use('/payments', paymentRoutes);
 apiRouter.use('/chat', messageRoutes);
 apiRouter.use('/admin', adminRoutes);
+apiRouter.use('/invoice', invoiceRoutes);
 
 // Admin Stats route — must be AFTER admin routes are mounted
 apiRouter.get('/admin/stats', verifyToken, isAdmin, getOrderStats);
@@ -171,6 +173,19 @@ app.use('/api', apiRouter);
 app.use('/api', (req: Request, res: Response) => {
   console.log(`⚠️  Rute nyasar (API 404): ${req.method} ${req.originalUrl}`);
   sendResponse(res, 404, false, `API endpoint not found: ${req.method} ${req.originalUrl}`);
+});
+
+// ─── ADMIN DASHBOARD ROUTE ────────────────────────────────────
+app.get('/admin/dashboard', (req: any, res: Response) => {
+  if (req.isAuthenticated() && req.user && req.user.role === 'admin') {
+    res.sendFile(path.join(__dirname, '..', 'public', 'admin.html'));
+  } else {
+    res.redirect('/');
+  }
+});
+
+app.get('/invoice/:orderId', (_req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'invoice.html'));
 });
 
 // ─── SPA FALLBACK ─────────────────────────────────────────────

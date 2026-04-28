@@ -26,16 +26,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        :root {
+                :root {
             --primary: #ff7a00;
-            --primary-light: #fff4e5;
-            --bg-rail: #1a1c23; /* Rails are usually dark for contrast in high-end panels */
-            --bg-panel: #f3f4f6;
-            --bg-main: #ffffff;
-            --text-main: #000000;
-            --text-muted: #4b5563;
-            --border: #e5e7eb;
-            --shadow: 0 4px 24px rgba(0,0,0,0.06);
+            --primary-light: rgba(255, 122, 0, 0.1);
+            --bg-rail: #0a0f1c;
+            --bg-panel: rgba(15, 23, 42, 0.8);
+            --bg-main: #020617;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
 
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -55,10 +55,10 @@
         .panel-header { font-size: 0.7rem; font-weight: 800; color: #9ca3af; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.5rem; }
         .nav-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
         .nav-item { 
-            display: flex; align-items: center; gap: 12px; padding: 0.75rem 1rem; border-radius: 8px; color: #1f2937; 
+            display: flex; align-items: center; gap: 12px; padding: 0.75rem 1rem; border-radius: 8px; color: var(--text-main); 
             font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: 0.2s; background: transparent; border: none; width: 100%; text-align: left;
         }
-        .nav-item:hover { background: #e5e7eb; }
+        .nav-item:hover { background: rgba(255,255,255,0.1); }
         .nav-item.active { background: #dcfce7; color: #15803d; position: relative; }
         .nav-item.active::after { content: ''; position: absolute; left: -1rem; width: 4px; height: 1.5rem; background: #15803d; border-radius: 0 4px 4px 0; }
         .nav-item.active .dot { width: 6px; height: 6px; background: #15803d; border-radius: 50%; margin-left: auto; }
@@ -68,40 +68,40 @@
         #admin-main.full-width { margin-left: 0; }
 
         /* Topbar */
-        #admin-topbar { height: 64px; background: #ffffff; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 2rem; gap: 2rem; position: sticky; top: 0; z-index: 900; }
+        #admin-topbar { height: 64px; background: transparent; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 2rem; gap: 2rem; position: sticky; top: 0; z-index: 900; }
         .topbar-logo { font-size: 1.25rem; font-weight: 900; color: var(--primary); white-space: nowrap; }
-        .topbar-logo span { color: #000; }
+        .topbar-logo span { color: var(--text-main); }
         
         /* Search */
         .search-container { flex: 1; max-width: 600px; position: relative; }
         .search-container i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #9ca3af; }
-        .search-input { width: 100%; padding: 0.6rem 1rem 0.6rem 2.8rem; border: 1px solid var(--border); border-radius: 99px; background: #f9fafb; font-size: 0.875rem; outline: none; }
+        .search-input { width: 100%; padding: 0.6rem 1rem 0.6rem 2.8rem; border: 1px solid var(--border); border-radius: 99px; background: rgba(255,255,255,0.05); font-size: 0.875rem; outline: none; }
         
         /* User Actions */
         .user-actions { display: flex; align-items: center; gap: 1.5rem; }
-        .btn-cart { position: relative; font-size: 1.1rem; color: #4b5563; }
+        .btn-cart { position: relative; font-size: 1.1rem; color: var(--text-muted); }
         .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); }
-        .user-name { font-weight: 700; font-size: 0.875rem; color: #111; }
+        .user-name { font-weight: 700; font-size: 0.875rem; color: var(--text-main); }
 
         /* Layout Container */
-        #admin-content { padding: 2rem; overflow-y: auto; flex: 1; background: #ffffff; }
+        #admin-content { padding: 2rem; overflow-y: auto; flex: 1; background: transparent; }
 
         /* ─── COMPONENTS ─── */
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .section-title { font-size: 1.25rem; font-weight: 800; color: #111; }
+        .section-title { font-size: 1.25rem; font-weight: 800; color: var(--text-main); }
         
         /* Stat Cards */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-        .stat-card { background: #ffffff; border: 1px solid var(--border); padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow); }
-        .stat-label { font-size: 0.75rem; font-weight: 700; color: #6b7280; text-transform: uppercase; margin-bottom: 0.5rem; }
-        .stat-value { font-size: 1.75rem; font-weight: 900; color: #111; }
+        .stat-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); background: transparent; border: 1px solid var(--border); padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow); }
+        .stat-label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; }
+        .stat-value { font-size: 1.75rem; font-weight: 900; color: var(--text-main); }
 
         /* Tables */
-        .table-wrap { background: #ffffff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
+        .table-wrap { background: transparent; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
         table { width: 100%; border-collapse: collapse; }
-        th { background: #f9fafb; padding: 0.875rem 1.25rem; text-align: left; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #6b7280; border-bottom: 1px solid var(--border); }
-        td { padding: 1rem 1.25rem; font-size: 0.875rem; color: #1f2937; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        th { background: rgba(255,255,255,0.05); padding: 0.875rem 1.25rem; text-align: left; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+        td { padding: 1rem 1.25rem; font-size: 0.875rem; color: var(--text-main); border-bottom: 1px solid var(--border); vertical-align: middle; }
         tr:last-child td { border-bottom: none; }
         tr:hover { background: #fcfcfc; }
 
@@ -110,11 +110,11 @@
         .badge-green { background: #dcfce7; color: #15803d; }
         .badge-blue { background: #dbeafe; color: #1d4ed8; }
         .badge-orange { background: #ffedd5; color: #c2410c; }
-        .badge-gray { background: #f3f4f6; color: #4b5563; }
+        .badge-gray { background: #f3f4f6; color: var(--text-muted); }
 
         /* Buttons */
         .btn-primary { background: var(--primary); color: #fff; font-weight: 800; padding: 0.6rem 1.25rem; border-radius: 8px; font-size: 0.8rem; }
-        .btn-ghost { background: transparent; border: 1px solid var(--border); color: #4b5563; font-weight: 600; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.75rem; }
+        .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-muted); font-weight: 600; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.75rem; }
         .btn-danger { background: #fef2f2; color: #dc2626; font-weight: 700; padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.7rem; border: 1px solid #fee2e2; }
 
         /* Tab System */
@@ -140,7 +140,7 @@
 
         /* Forms */
         .form-group { margin-bottom: 1rem; }
-        .form-label { display: block; font-size: 0.75rem; font-weight: 700; color: #4b5563; margin-bottom: 6px; }
+        .form-label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
         .form-input { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; outline: none; }
         .form-input:focus { border-color: var(--primary); }
 
@@ -150,7 +150,7 @@
         ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
 
         /* Hamburger */
-        #hamburger-toggle { display: none; font-size: 1.5rem; cursor: pointer; color: #111; }
+        #hamburger-toggle { display: none; font-size: 1.5rem; cursor: pointer; color: var(--text-main); }
         @media (max-width: 1024px) { #hamburger-toggle { display: block; } }
 
         /* Footer Branding */
@@ -169,7 +169,7 @@
         <i class="fa-solid fa-gear" style="margin-top:auto;"></i>
         <i class="fa-solid fa-right-from-bracket" id="btn-logout-rail"></i>
     </div>
-    <div class="sidebar-panel" style="background: #f9fafb;">
+    <div class="sidebar-panel" style="background: rgba(255,255,255,0.05);">
         <div class="panel-header" style="color: #9ca3af; font-weight: 800; font-size: 0.75rem; letter-spacing: 0.1em; padding-bottom: 1rem; border-bottom: 1px solid #e5e7eb; margin-bottom: 1.5rem;">ADMIN</div>
         <nav class="nav-list" id="sidebar-nav">
             <button class="nav-item active" data-tab="dashboard">
@@ -203,7 +203,7 @@
     <!-- Topbar (Blueprint Image_0.png) -->
     <header id="admin-topbar">
         <div id="hamburger-toggle"><i class="fa-solid fa-bars"></i></div>
-        <div class="topbar-logo" style="font-weight: 900; font-size: 1.1rem; color: #000000;">RGS STORE <span style="font-weight: 400; color: #6b7280;">Admin</span></div>
+        <div class="topbar-logo" style="font-weight: 900; font-size: 1.1rem; color: #000000;">RGS STORE <span style="font-weight: 400; color: var(--text-muted);">Admin</span></div>
         
         <div class="search-container">
             <i class="fa-solid fa-magnifying-glass"></i>
@@ -577,3 +577,4 @@
 <script src="js/admin.js"></script>
 </body>
 </html>
+

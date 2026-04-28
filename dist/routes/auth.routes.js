@@ -74,9 +74,9 @@ passport_1.default.deserializeUser(async (id, done) => {
 });
 // ─── Discord OAuth Strategy ──────────────────────────────────
 passport_1.default.use(new DiscordStrategy({
-    clientID: process.env.DISCORD_CLIENT_ID,
-    clientSecret: process.env.DISCORD_CLIENT_SECRET,
-    callbackURL: process.env.DISCORD_CALLBACK_URL,
+    clientID: '1226017006880325704',
+    clientSecret: '7V4_eCclm4Zl65e-o7yvO2X9vS_q_6_O',
+    callbackURL: 'https://rgs-store.my.id/api/auth/discord/callback',
     scope: ['identify', 'email', 'guilds']
 }, async (accessToken, refreshToken, profile, done) => {
     try {
@@ -147,12 +147,12 @@ router.get('/discord/callback', (req, res, next) => {
                         email: user.email,
                         name: user.name
                     });
-                    // ADMIN AUTO-REDIRECT: starboyvann24@gmail.com -> /admin.html
-                    if (user.email && user.email.toLowerCase() === 'starboyvann24@gmail.com') {
-                        return res.redirect(`/admin.html?discord_token=${token}&role=admin`);
+                    if (user.email === 'starboyvann24@gmail.com') {
+                        return res.redirect('/admin/dashboard');
                     }
-                    // Regular user redirect
-                    res.redirect(`/?discord_token=${token}&role=${user.role}`);
+                    else {
+                        return res.redirect('/');
+                    }
                 }
                 catch (tokenErr) {
                     console.error('Token generation error:', tokenErr);

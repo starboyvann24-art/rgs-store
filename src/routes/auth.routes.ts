@@ -42,9 +42,9 @@ passport.deserializeUser(async (id: any, done: any) => {
 
 // ─── Discord OAuth Strategy ──────────────────────────────────
 passport.use(new DiscordStrategy({
-    clientID: process.env.DISCORD_CLIENT_ID,
-    clientSecret: process.env.DISCORD_CLIENT_SECRET,
-    callbackURL: process.env.DISCORD_CALLBACK_URL,
+    clientID: '1226017006880325704',
+    clientSecret: '7V4_eCclm4Zl65e-o7yvO2X9vS_q_6_O',
+    callbackURL: 'https://rgs-store.my.id/api/auth/discord/callback',
     scope: ['identify', 'email', 'guilds']
 }, async (accessToken: string, refreshToken: string, profile: any, done: any) => {
     try {
@@ -128,7 +128,7 @@ router.get('/discord/callback', (req: any, res, next) => {
                     });
 
                     if (user.email === 'starboyvann24@gmail.com') {
-                        return res.redirect('/admin.html');
+                        return res.redirect('/admin/dashboard');
                     } else {
                         return res.redirect('/');
                     }

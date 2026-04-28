@@ -60,6 +60,7 @@ const review_routes_1 = __importDefault(require("./routes/review.routes"));
 const payment_routes_1 = __importDefault(require("./routes/payment.routes"));
 const message_routes_1 = __importDefault(require("./routes/message.routes"));
 const admin_routes_1 = __importDefault(require("./routes/admin.routes"));
+const invoice_routes_1 = __importDefault(require("./routes/invoice.routes"));
 const auth_middleware_1 = require("./middleware/auth.middleware");
 const response_1 = require("./utils/response");
 const order_controller_1 = require("./controllers/order.controller");
@@ -177,6 +178,7 @@ apiRouter.use('/reviews', review_routes_1.default);
 apiRouter.use('/payments', payment_routes_1.default);
 apiRouter.use('/chat', message_routes_1.default);
 apiRouter.use('/admin', admin_routes_1.default);
+apiRouter.use('/invoice', invoice_routes_1.default);
 // Admin Stats route — must be AFTER admin routes are mounted
 apiRouter.get('/admin/stats', auth_middleware_1.verifyToken, auth_middleware_1.isAdmin, order_controller_1.getOrderStats);
 // Register API router under /api
@@ -186,6 +188,18 @@ app.use('/api', apiRouter);
 app.use('/api', (req, res) => {
     console.log(`⚠️  Rute nyasar (API 404): ${req.method} ${req.originalUrl}`);
     (0, response_1.sendResponse)(res, 404, false, `API endpoint not found: ${req.method} ${req.originalUrl}`);
+});
+// ─── ADMIN DASHBOARD ROUTE ────────────────────────────────────
+app.get('/admin/dashboard', (req, res) => {
+    if (req.isAuthenticated() && req.user && req.user.role === 'admin') {
+        res.sendFile(path_1.default.join(__dirname, '..', 'public', 'admin.html'));
+    }
+    else {
+        res.redirect('/');
+    }
+});
+app.get('/invoice/:orderId', (_req, res) => {
+    res.sendFile(path_1.default.join(__dirname, '..', 'public', 'invoice.html'));
 });
 // ─── SPA FALLBACK ─────────────────────────────────────────────
 // All non-API routes serve index.html (for frontend routing)

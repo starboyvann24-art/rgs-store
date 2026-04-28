@@ -100,7 +100,8 @@ const getProductById = async (req, res, next) => {
         (0, response_1.sendResponse)(res, 200, true, 'Produk berhasil dimuat.', product);
     }
     catch (error) {
-        next(error);
+        console.error('API Error (getProductById):', error);
+        res.json({ success: false, data: [] });
     }
 };
 exports.getProductById = getProductById;
@@ -140,7 +141,8 @@ const createProduct = async (req, res, next) => {
         (0, response_1.sendResponse)(res, 201, true, 'Produk berhasil ditambahkan.', newProduct);
     }
     catch (error) {
-        next(error);
+        console.error('API Error (createProduct):', error);
+        res.json({ success: false, data: [] });
     }
 };
 exports.createProduct = createProduct;
@@ -195,7 +197,8 @@ const updateProduct = async (req, res, next) => {
         (0, response_1.sendResponse)(res, 200, true, 'Produk berhasil diperbarui.', updatedProduct);
     }
     catch (error) {
-        next(error);
+        console.error('API Error (updateProduct):', error);
+        res.json({ success: false, data: [] });
     }
 };
 exports.updateProduct = updateProduct;
@@ -224,7 +227,8 @@ const deleteProduct = async (req, res, next) => {
         (0, response_1.sendResponse)(res, 200, true, 'Produk berhasil dihapus.', product);
     }
     catch (error) {
-        next(error);
+        console.error('API Error (deleteProduct):', error);
+        res.json({ success: false, data: [] });
     }
 };
 exports.deleteProduct = deleteProduct;
@@ -239,7 +243,8 @@ const getCategories = async (_req, res, next) => {
         (0, response_1.sendResponse)(res, 200, true, 'Kategori berhasil dimuat.', categories);
     }
     catch (error) {
-        next(error);
+        console.error('API Error (getCategories):', error);
+        res.json({ success: false, data: [] });
     }
 };
 exports.getCategories = getCategories;
