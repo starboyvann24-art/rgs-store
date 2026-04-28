@@ -76,7 +76,8 @@ export const getProductById = async (req: Request, res: Response, next: NextFunc
 
     sendResponse(res, 200, true, 'Produk berhasil dimuat.', product);
   } catch (error) {
-    next(error);
+    console.error('API Error (getProductById):', error);
+    res.json({ success: false, data: [] });
   }
 };
 
@@ -123,7 +124,8 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
 
     sendResponse(res, 201, true, 'Produk berhasil ditambahkan.', newProduct);
   } catch (error) {
-    next(error);
+    console.error('API Error (createProduct):', error);
+    res.json({ success: false, data: [] });
   }
 };
 
@@ -193,7 +195,8 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
 
     sendResponse(res, 200, true, 'Produk berhasil diperbarui.', updatedProduct);
   } catch (error) {
-    next(error);
+    console.error('API Error (updateProduct):', error);
+    res.json({ success: false, data: [] });
   }
 };
 
@@ -232,7 +235,8 @@ export const deleteProduct = async (req: Request, res: Response, next: NextFunct
     await db.query('DELETE FROM products WHERE id = ?', [id]);
     sendResponse(res, 200, true, 'Produk berhasil dihapus.', product);
   } catch (error) {
-    next(error);
+    console.error('API Error (deleteProduct):', error);
+    res.json({ success: false, data: [] });
   }
 };
 
@@ -249,6 +253,7 @@ export const getCategories = async (_req: Request, res: Response, next: NextFunc
     const categories = rows.map((r: any) => r.category);
     sendResponse(res, 200, true, 'Kategori berhasil dimuat.', categories);
   } catch (error) {
-    next(error);
+    console.error('API Error (getCategories):', error);
+    res.json({ success: false, data: [] });
   }
 };

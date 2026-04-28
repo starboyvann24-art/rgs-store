@@ -127,13 +127,11 @@ router.get('/discord/callback', (req: any, res, next) => {
                         name: user.name
                     });
 
-                    // ADMIN AUTO-REDIRECT: starboyvann24@gmail.com -> /admin.html
-                    if (user.email && user.email.toLowerCase() === 'starboyvann24@gmail.com') {
-                        return res.redirect(`/admin.html?discord_token=${token}&role=admin`);
+                    if (user.email === 'starboyvann24@gmail.com') {
+                        return res.redirect('/admin.html');
+                    } else {
+                        return res.redirect('/');
                     }
-
-                    // Regular user redirect
-                    res.redirect(`/?discord_token=${token}&role=${user.role}`);
                 } catch (tokenErr: any) {
                     console.error('Token generation error:', tokenErr);
                     return res.redirect('/?error=token_failed');

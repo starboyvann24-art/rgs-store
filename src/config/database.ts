@@ -36,7 +36,8 @@ export async function testConnection(): Promise<boolean> {
     await connection.query('SELECT 1');
     connection.release();
     console.log('✅ MySQL Database Connected Successfully');
-    console.log(`   📦 Database: ${process.env.DB_NAME || 'rgs_store'}`);
+    console.log("Database RGS Terkoneksi!");
+    console.log(`   📦 Database: ${process.env.DB_NAME || 'tgevcisg_rgs_store'}`);
     console.log(`   🖥️  Host: ${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || '3306'}`);
     return true;
   } catch (error: any) {
