@@ -1241,3 +1241,10 @@ input[type="password"], textarea, select, input {
 .badge-premium { display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg, #ff7a00, #ff9a44); color: #fff; font-size: 0.68rem; font-weight: 800; padding: 4px 12px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.8px; }
 
 footer .footer-logo { color: #ff7a00 !important; }
+
+/* FORCE RENDER DISCORD LOGIN */
+a[href="/api/auth/discord"] {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}

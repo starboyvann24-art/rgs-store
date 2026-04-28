@@ -492,40 +492,6 @@ const store = {
     },
 
     async updateNavbar() {
-        const authContainer = document.getElementById('auth-nav-container');
-        if (!authContainer) return;
-
-        if (this.isLoggedIn()) {
-            const user = this.getUser();
-            const avatarUrl = user.avatar_url || 'https://cdn.discordapp.com/embed/avatars/0.png';
-            
-            let adminBtn = '';
-            if (user.role === 'admin') {
-                adminBtn = `<a href="/admin.html" class="btn-admin-neon" style="font-size:0.8rem; padding:6px 12px;"><i class="fa-solid fa-shield-halved"></i> Admin</a>`;
-            }
-
-            authContainer.innerHTML = `
-                ${adminBtn}
-                <div style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="window.location.href='/dashboard.html'">
-                    <img src="${avatarUrl}" alt="avatar" style="width:35px;height:35px;border-radius:50%;object-fit:cover;border:2px solid #e5e7eb;">
-                </div>
-            `;
-        } else {
-            const token = this.getToken();
-            if (token) {
-                try {
-                    const res = await this.apiCall('/auth/me');
-                    if (res.success && res.data) {
-                        this.setUser(res.data);
-                        return this.updateNavbar(); // re-render after fetch
-                    }
-                } catch (err) { console.error('Navbar Auth Fetch Err:', err); }
-            }
-            
-            authContainer.innerHTML = `
-                <a href="/api/auth/discord" class="btn-discord-neon"><i class="fa-brands fa-discord"></i> Login Discord</a>
-            `;
-        }
         this.updateCartBadge();
     },
 

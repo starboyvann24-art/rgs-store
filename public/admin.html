@@ -210,12 +210,10 @@
             <input type="text" class="search-input" placeholder="Search..." style="border-radius: 8px; background: #f3f4f6; border: none;">
         </div>
 
-        <div class="user-actions">
-            <div class="btn-cart" style="color: #000000;"><i class="fa-solid fa-cart-shopping"></i></div>
-            <div class="user-profile" onclick="window.location.href='/dashboard.html'">
-                <img src="https://cdn.discordapp.com/embed/avatars/0.png" class="avatar" id="admin-avatar-img" style="border: 2px solid #e5e7eb;">
-                <span class="user-name" id="admin-user-display" style="color: #000000; font-weight: 700;">E_vann</span>
-            </div>
+        <div class="nav-right-section" style="display: flex; align-items: center; gap: 15px;">
+            <a href="/api/auth/discord" style="background: #5865F2 !important; color: white !important; padding: 12px 24px; border-radius: 10px; font-weight: bold; text-decoration: none; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(88,101,242,0.4); z-index: 9999;">
+                <i class="fab fa-discord"></i> Login Discord
+            </a>
         </div>
     </header>
 
